@@ -1,0 +1,10 @@
+{"all":[
+	{ "name":"MoveTo", "choices":[{ "name":"Stay Put", "tip":"" }, { "name":"Foundry", "tip":"" }, { "name":"Hospital", "tip":"" }, { "name":"Bank", "tip":""}, { "name":"Airport", "tip":"" }, { "name":"Food Cart", "tip":"" }, { "name":"Supermarket", "tip":"" }] },
+	{ "name":"Action", "choices":[
+		{ "name":"Wait", "tip":"Zeero" },
+		{ "name":"Attack", "tip":"One" },
+		{ "name":"Defend", "tip":"Two" },
+		{ "name":"Heal", "tip":"Three" },
+		{ "name":"Mega Attack", "tip":"Four" },
+		{ "name":"Protect", "tip":"Five" }]}
+]}

@@ -1,0 +1,48 @@
+{"all":[
+  {
+    "name": "MoveTo",
+    "choices": [
+      {"name": "Stay Put","tip": ""},
+      {"name": "Foundry","tip": ""},
+      {"name": "Hospital","tip": ""},
+      {"name": "Bank","tip": ""},
+      {"name": "Airport","tip": ""},
+      {"name": "Food Cart","tip": ""},
+      {"name": "Supermarket","tip": ""}
+    ] },
+  {
+    "name": "Action", 
+      "choices":[
+		    { "name":"None", "tip":"Zeero" },
+		    { "name":"Build", "tip":"One One " },
+		    { "name":"Harvest", "tip":"Two" },
+		    { "name":"Activate", "tip":"Three" },
+		    { "name":"Defend", "tip":"Four" },
+        {"name": "Charge Up","tip": "Five"},
+        {"name": "Assist","tip": "Five"},
+        {"name": "Hide","tip": "Five"}
+      ]},
+  {
+    "name": "Stance",
+    "choices": [
+      {"name": "Industrious","tip": ""},
+      {"name": "Reckless","tip": ""},
+      {"name": "Defensive","tip": ""},
+      {"name": "Soothing","tip": ""},
+      {"name": "Acquisitive","tip": ""},
+      {"name": "Helpful","tip": ""}
+    ]
+  },
+  {
+    "name": "Items",
+    "choices": [
+      {"name": "None","tip": ""}
+    ]
+  },
+  {
+    "name": "Equip",
+    "choices": [
+      {"name": "None","tip": ""}
+    ]
+  }
+]}
