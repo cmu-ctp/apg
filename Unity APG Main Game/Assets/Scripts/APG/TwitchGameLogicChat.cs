@@ -254,6 +254,9 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 	public string ChatOauth;
 	public string ChatChannelName;
 
+	public string GameClientID;
+	public string RedirectLink;
+
 	//___________________________________________
 
 	string launchGameLink = "GAME LAUNCHING LINK NOT SET";
@@ -313,6 +316,7 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 				launchGameLink = vals[2];
 				launchGameLink = launchGameLink.Replace( "STATE_PARMS_HERE", "B+"+ChatChannelName+"+"+LogicChannelName );
 				sr.Close();
+				// https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=hjgrph2akqwki1617ac5rdq9rqiep0k&state=STATE_PARMS_HERE&redirect_uri=http://icecreambreakfast.com/apg/bounce.htm&scope=user_read+channel_read+chat_login
 			}
 		}
 		catch { }
@@ -329,6 +333,7 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 	void InitIRCChat() {
 		IRC = this.GetComponent<TwitchIRC>();
 		//IRC.SendCommand("CAP REQ :twitch.tv/tags"); //register for additional data such as emote-ids, name color etc.
+
 		IRC.messageRecievedEvent.AddListener(msg => {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
 			string msgString = msg.Substring(msgIndex + ChatChannelName.Length + 11);
@@ -385,6 +390,8 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 		return apgSys;
 	}
 	public void Start() {
+		launchGameLink = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+RedirectLink+"&scope=user_read+channel_read+chat_login";
+
 		gameLogic.Start();
 		InitIRCChat();
 		InitIRCLogicChannel();

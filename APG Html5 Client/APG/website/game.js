@@ -84,7 +84,7 @@ function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, chat) 
     });
     function ApgSetupCore() {
         var sys = new APGSys(phaserGame, gameActions, logicIRCChannelName, playerName, chat);
-        RacingInput.make(sys);
+        MainPlayerInput.make(sys);
     }
 }
 var ActionEntry = (function () {

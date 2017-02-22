@@ -90,8 +90,8 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 	});
 	function ApgSetupCore(): void {
 		var sys = new APGSys(phaserGame, gameActions, logicIRCChannelName, playerName, chat);
-		RacingInput.make( sys );
-		//MainPlayerInput.make( sys );
+		//RacingInput.make( sys );
+		MainPlayerInput.make( sys );
 		//WaitingToJoin.make( sys );
 		//WaitingForTwitchLogin.make( sys );
 	}
