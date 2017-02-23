@@ -61,12 +61,17 @@ function addCache(cacheFunction: (loader: Phaser.Loader) => void): boolean {
 	return true;
 }
 
-function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, chat: tmiClient ) {
+function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, chat: tmiClient, APGInputWidgetDivName: string, allowFullScreen:boolean ) {
 	var phaserCached: boolean = false;
 	var executeAfterPreload = null;
-	var phaserGame: Phaser.Game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'APGInputWidget', {
+	var phaserGame: Phaser.Game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
 		preload: () => {
 			phaserGame.stage.disableVisibilityChange = true;
+			phaserGame.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+			if (allowFullScreen) {
+				phaserGame.scale.pageAlignHorizontally = true;
+				phaserGame.input.onDown.add(goFull, this);
+			}
 			for (var k = 0; k < phaserAssetCacheList.length; k++) {
 				phaserAssetCacheList[k](phaserGame.load);
 			}
@@ -82,6 +87,9 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 		update: () => { },
 		render: () => { }
 	});
+	function goFull(): void {
+		phaserGame.scale.startFullScreen(true);
+	}
 	var gameActions;
 	$.getJSON(actionList, function (data) {
 		gameActions = data.all;

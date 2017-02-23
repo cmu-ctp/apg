@@ -51,14 +51,20 @@ function addCache(cacheFunction) {
     phaserAssetCacheList.push(cacheFunction);
     return true;
 }
-function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, chat) {
+function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, chat, APGInputWidgetDivName, allowFullScreen) {
+    var _this = this;
     if (gameWidth === void 0) { gameWidth = 400; }
     if (gameHeight === void 0) { gameHeight = 300; }
     var phaserCached = false;
     var executeAfterPreload = null;
-    var phaserGame = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'APGInputWidget', {
+    var phaserGame = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
         preload: function () {
             phaserGame.stage.disableVisibilityChange = true;
+            phaserGame.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+            if (allowFullScreen) {
+                phaserGame.scale.pageAlignHorizontally = true;
+                phaserGame.input.onDown.add(goFull, _this);
+            }
             for (var k = 0; k < phaserAssetCacheList.length; k++) {
                 phaserAssetCacheList[k](phaserGame.load);
             }
@@ -74,6 +80,9 @@ function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, chat) 
         update: function () { },
         render: function () { }
     });
+    function goFull() {
+        phaserGame.scale.startFullScreen(true);
+    }
     var gameActions;
     $.getJSON(actionList, function (data) {
         gameActions = data.all;
@@ -135,7 +144,7 @@ var ButtonCollection = (function () {
                             e.addColor(baseColor, 0);
                     }
                     lastHighlight = highlighted;
-                    if (sys.g.input.activePointer.leftButton.isDown == false)
+                    if (sys.g.input.activePointer.isDown == false)
                         inputUsed = false;
                     if (!updateActive) {
                         return;
@@ -146,7 +155,7 @@ var ButtonCollection = (function () {
                     if (highlighted) {
                         setToolTip(toolTip);
                     }
-                    if (highlighted && sys.g.input.activePointer.leftButton.isDown && inputUsed == false) {
+                    if (highlighted && sys.g.input.activePointer.isDown && inputUsed == false) {
                         clickSound.play();
                         big.selected = id;
                         inputUsed = true;
@@ -478,7 +487,7 @@ var WaitingToJoin = (function () {
                         e.destroy(true);
                     return;
                 }
-                if (sys.g.input.activePointer.leftButton.isDown && !inputUsed) {
+                if (sys.g.input.activePointer.isDown && !inputUsed) {
                     inputUsed = true;
                     clickSound.play();
                     WaitingForJoinAcknowledement.make(sys);
@@ -559,7 +568,7 @@ var ShowSubmitted = (function () {
         sys.messages = new MessageHandler({});
         new Ent(sys.w, 0, 0, 'clientbkg', {
             upd: function (e) {
-                if (sys.g.input.activePointer.leftButton.isDown && !inputUsed) {
+                if (sys.g.input.activePointer.isDown && !inputUsed) {
                     inputUsed = true;
                     MainPlayerInput.make(sys);
                     clickSound.play();
@@ -724,14 +733,8 @@ var RacingInput = (function () {
         var labelColor = '#608080';
         var roundLabel, toolTipLabel, nextChoiceLabel;
         var lastRoundUpdate = 0;
-        var tickx = 0;
         new Ent(sys.w, 0, 0, 'clientbkg', {
             upd: function (e) {
-                tickx++;
-                if (tickx > 240) {
-                    sys.network.debugChat("test!");
-                    tickx = 0;
-                }
                 if (roundNumber != lastRoundUpdate) {
                     roundLabel.text = "Actions for Round " + roundNumber;
                     lastRoundUpdate = roundNumber;

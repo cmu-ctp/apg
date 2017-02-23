@@ -62,13 +62,13 @@ class ButtonCollection {
 					}
 					lastHighlight = highlighted;
 
-					if (sys.g.input.activePointer.leftButton.isDown == false) inputUsed = false;
+					if (sys.g.input.activePointer.isDown == false) inputUsed = false;
 
 					if (!updateActive) {return;}
 					highlighted = true;
 					if (sys.g.input.x < x1 || sys.g.input.x > x2 || sys.g.input.y < y1 || sys.g.input.y > y2) highlighted = false;
 					if (highlighted) { setToolTip(toolTip); }
-					if (highlighted && sys.g.input.activePointer.leftButton.isDown && inputUsed == false) {
+					if (highlighted && sys.g.input.activePointer.isDown && inputUsed == false) {
 						clickSound.play();
 						big.selected = id;
 						inputUsed = true;

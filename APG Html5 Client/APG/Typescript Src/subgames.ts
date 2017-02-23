@@ -16,7 +16,7 @@
 					if (e.x < -27) e.destroy(true);
 					return;
 				}
-				if (sys.g.input.activePointer.leftButton.isDown && !inputUsed) {
+				if (sys.g.input.activePointer.isDown && !inputUsed) {
 					inputUsed = true;
 					clickSound.play();
 					WaitingForJoinAcknowledement.make(sys); 
@@ -90,7 +90,7 @@ class ShowSubmitted {
 
 		new Ent(sys.w, 0, 0, 'clientbkg', {
 			upd: e => {
-				if (sys.g.input.activePointer.leftButton.isDown && !inputUsed) {
+				if (sys.g.input.activePointer.isDown && !inputUsed) {
 					inputUsed = true;
 					MainPlayerInput.make(sys);
 					clickSound.play();
@@ -255,14 +255,8 @@ class RacingInput {
 		var roundLabel: EntTx, toolTipLabel: EntTx, nextChoiceLabel: EntTx;
 		var lastRoundUpdate: number = 0;
 
-		var tickx: number = 0;
 		new Ent(sys.w, 0, 0, 'clientbkg', {
 			upd: e => {
-				tickx++;
-				if (tickx > 240) {
-					sys.network.debugChat("test!");
-					tickx = 0;
-				}
 				if (roundNumber != lastRoundUpdate) {
 					roundLabel.text = "Actions for Round " + roundNumber;
 					lastRoundUpdate = roundNumber;

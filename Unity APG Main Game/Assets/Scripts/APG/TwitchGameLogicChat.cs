@@ -257,9 +257,15 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 	public string GameClientID;
 	public string RedirectLink;
 
+	public string BitlyLink;
+	public string MobileBitlyLink;
+
 	//___________________________________________
 
 	string launchGameLink = "GAME LAUNCHING LINK NOT SET";
+	string mobileLaunchGameLink = "GAME LAUNCHING LINK NOT SET";
+
+	bool showMobileLink = false;
 
 	TwitchIRC IRC;
 	TwitchIRCLogic IRCLogic;
@@ -280,14 +286,19 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 		IRCLogic.SendMsg("u "+key+" "+updateString);
 	}
 	
+	private string DisplayLinks() {
+		if(!showMobileLink)return "" + launchGameLink;
+		return "PC: " + launchGameLink + " / Mobile: "+mobileLaunchGameLink;
+	}
+
 	public void InviteEmptyGame() {
-		IRC.SendMsg("Up to 20 audience members can play this game!  To join this game, go to " + launchGameLink);
+		IRC.SendMsg("Up to 20 people can play!  Join here: " + DisplayLinks() );
 	}
 	public void InvitePartiallyFullGame() {
-		IRC.SendMsg("" + apgSys.activePlayers + " of " + maxPlayers + " are now playing this game!  To join, go to " + launchGameLink);
+		IRC.SendMsg("" + apgSys.activePlayers + " of " + maxPlayers + " are playing!  Join here: " + DisplayLinks());
 	}
 	public void InviteFullGame() {
-		IRC.SendMsg("The current game is now full!  To get in line for the next game, go to " + launchGameLink);
+		IRC.SendMsg("The game is full!  Get in line to play: " + DisplayLinks());
 	}
 
 	//___________________________________________
@@ -297,26 +308,18 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 			// format of this file, for debugging purposes: logic_channel_oauth chat_channel_oauth
 			var sr = new StreamReader(@"C:\APG\apg_debug_oauths.txt");
 			if( sr != null ) {
-				/*
-				 * Settings:
-				 * Chat oauth
-				 * Logic oauth
-				 * Client-ID
-				 * redirectURI
-				 * chat name
-				 * logic name
-				 * 
-				 */
-
 				var fileContents = sr.ReadToEnd();
 				var vals = fileContents.Split(new char[] { ' ' });
 				Debug.Log( "Setting oauths to " + vals[0] + " " + vals[1] + " " + vals[2] );
 				LogicOauth = vals[0];
 				ChatOauth = vals[1];
-				launchGameLink = vals[2];
-				launchGameLink = launchGameLink.Replace( "STATE_PARMS_HERE", "B+"+ChatChannelName+"+"+LogicChannelName );
+				GameClientID = vals[2];
+				RedirectLink = vals[3];
+				launchGameLink = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+RedirectLink+"&scope=user_read+channel_read+chat_login";
+				mobileLaunchGameLink = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+GameClientID+"&state="+"M+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+RedirectLink+"&scope=user_read+channel_read+chat_login";
+				BitlyLink = vals[4];
+				MobileBitlyLink = vals[5];
 				sr.Close();
-				// https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=hjgrph2akqwki1617ac5rdq9rqiep0k&state=STATE_PARMS_HERE&redirect_uri=http://icecreambreakfast.com/apg/bounce.htm&scope=user_read+channel_read+chat_login
 			}
 		}
 		catch { }
@@ -391,6 +394,19 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 	}
 	public void Start() {
 		launchGameLink = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+RedirectLink+"&scope=user_read+channel_read+chat_login";
+		mobileLaunchGameLink = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+GameClientID+"&state="+"M+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+RedirectLink+"&scope=user_read+channel_read+chat_login";
+
+		Debug.Log( "HTML5 Client is launched for this game and this twitch account with the following URL: " + launchGameLink );
+		Debug.Log( "Mobile HTML5 Client is launched for this game and this twitch account with the following URL: " + mobileLaunchGameLink );
+		Debug.Log( "Paste these specific URLs into Bitly for shortened URLs." );
+
+		if( BitlyLink != "" ) {
+			launchGameLink = BitlyLink;
+		}
+		if( MobileBitlyLink != "" ) {
+			mobileLaunchGameLink = MobileBitlyLink;
+			showMobileLink = true;
+		}
 
 		gameLogic.Start();
 		InitIRCChat();
