@@ -53,54 +53,44 @@ class APGSys {
 }
 
 var phaserAssetCacheList: { (loader: Phaser.Loader): void; }[] = [];
-function addCache(cacheFunction: (loader: Phaser.Loader) => void): boolean {
+function addCache(cacheFunction: (loader: Phaser.Loader) => void): void {
 	if (phaserAssetCacheList == undefined) {
 		phaserAssetCacheList = [];
 	}
 	phaserAssetCacheList.push(cacheFunction);
-	return true;
 }
 
 function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, chat: tmiClient, APGInputWidgetDivName: string, allowFullScreen:boolean ) {
-	var phaserCached: boolean = false;
-	var executeAfterPreload = null;
-	var phaserGame: Phaser.Game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
-		preload: () => {
-			phaserGame.stage.disableVisibilityChange = true;
-			phaserGame.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
-			if (allowFullScreen) {
-				phaserGame.scale.pageAlignHorizontally = true;
-				phaserGame.input.onDown.add(goFull, this);
-			}
-			for (var k = 0; k < phaserAssetCacheList.length; k++) {
-				phaserAssetCacheList[k](phaserGame.load);
-			}
-			phaserCached = true;
-		},
-		create: () => {
-			phaserGame.input.mouse.capture = true;
-			if (executeAfterPreload != null) {
-				executeAfterPreload();
-				executeAfterPreload = null;
-			}
-		},
-		update: () => { },
-		render: () => { }
-	});
-	function goFull(): void {
-		phaserGame.scale.startFullScreen(true);
-	}
-	var gameActions;
 	$.getJSON(actionList, function (data) {
-		gameActions = data.all;
-		if (phaserCached) ApgSetupCore();
-		else executeAfterPreload = ApgSetupCore;
+		var gameActions = data.all;
+		var phaserGame: Phaser.Game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
+			preload: () => {
+				phaserGame.stage.disableVisibilityChange = true;
+				phaserGame.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+				if (allowFullScreen) {
+					phaserGame.scale.pageAlignHorizontally = true;
+					phaserGame.input.onDown.add(goFull, this);
+				}
+				for (var k = 0; k < phaserAssetCacheList.length; k++) {
+					phaserAssetCacheList[k](phaserGame.load);
+				}
+			},
+			create: () => {
+				phaserGame.input.mouse.capture = true;
+				RunGame(new APGSys(phaserGame, gameActions, logicIRCChannelName, playerName, chat));
+			},
+			update: () => { },
+			render: () => { }
+		});
+		function goFull(): void {
+			phaserGame.scale.startFullScreen(true);
+		}
 	});
-	function ApgSetupCore(): void {
-		var sys = new APGSys(phaserGame, gameActions, logicIRCChannelName, playerName, chat);
-		//RacingInput.make( sys );
-		MainPlayerInput.make( sys );
-		//WaitingToJoin.make( sys );
-		//WaitingForTwitchLogin.make( sys );
-	}
+}
+
+function RunGame(sys: APGSys) {
+	//RacingInput( sys );
+	//MainPlayerInput(sys);
+	WaitingToJoin( sys );
+	//WaitingForTwitchLogin( sys );
 }

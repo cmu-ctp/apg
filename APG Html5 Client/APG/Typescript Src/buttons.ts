@@ -7,11 +7,11 @@
 	}
 }
 
+addCache( l => {
+	l.image('blueorb', 'assets/imgs/blueorb.png');
+	l.audio('clickThrough', 'assets/snds/fx/strokeup2.mp3');
+});
 class ButtonCollection {
-	private static cacher: boolean = addCache((l: Phaser.Loader) => {
-		l.image('blueorb', 'assets/imgs/blueorb.png');
-		l.audio('clickThrough', 'assets/snds/fx/strokeup2.mp3');
-	});
 
 	selected: number;
 	update: (active: boolean) => void;
