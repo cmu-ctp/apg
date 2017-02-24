@@ -6,11 +6,11 @@ function WaitingToJoin(sys: APGSys): void {
 	var clickSound: Phaser.Sound = sys.g.add.audio('clickThrough', 1, false);
 
 	sys.messages = new MessageHandler({});
-	var inputUsed: boolean = false, goAway: boolean = false;
+	var inputUsed: boolean = false, endSubgame: boolean = false;
 
 	new Ent(sys.g.world, 0, 0, 'clientbkg', {
 		upd: e => {
-			if (goAway) {
+			if (endSubgame) {
 				e.x = e.x * .7 + .3 * -30;
 				if (e.x < -27) e.destroy(true);
 				return;
@@ -20,14 +20,14 @@ function WaitingToJoin(sys: APGSys): void {
 				clickSound.play();
 				WaitingForJoinAcknowledement(sys);
 				sys.network.join();
-				goAway = true;
+				endSubgame = true;
 			}
 		}
 	});
 	var tc: number = 0, textColor = { font: '16px Arial', fill: '#222' };
 	new EntTx(sys.w, 60, 50 + 20, "Click to Join Game!", textColor, {
 		upd: e => {
-			if (goAway) {
+			if (endSubgame) {
 				e.x = e.x * .7 + .3 * -50;
 				if (e.x < -47) e.destroy(true);
 				return;
@@ -45,13 +45,24 @@ addCache( l => {
 });
 function WaitingForJoinAcknowledement(sys: APGSys): void {
 	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('endOfRound', 1, false);
-	var goAway: boolean = false;
+	var endSubgame: boolean = false, timeOut:number = 0;
 	sys.messages = new MessageHandler({
-		onJoin: () => { endOfRoundSound.play(); MainPlayerInput(sys); return true; }
+		onJoin: () => {
+			endSubgame = true;
+			endOfRoundSound.play();
+			MainPlayerInput(sys);
+			return true;
+		}
 	});
 	new Ent(sys.w, 60, 0, 'clientbkg', { alpha: 0,
 		upd: e => {
-			if (goAway) {
+			timeOut++;
+			if (timeOut > ticksPerSecond * 30) {
+				endSubgame = true;
+				WaitingToJoin(sys);
+				return;
+			}
+			if (endSubgame) {
 				e.x = e.x * .7 + .3 * -30;
 				if (e.x < -27) e.destroy(true);
 				return;
@@ -60,15 +71,17 @@ function WaitingForJoinAcknowledement(sys: APGSys): void {
 			e.alpha = e.alpha * .8 + .2 * 1;
 		}
 	});
+	var tick: number = 0;
 	new EntTx(sys.w, 160, 50 + 20, "Waiting to Connect...", { font: '16px Arial', fill: '#222' }, { alpha: 0,
 		upd: e => {
-			if (goAway) {
+			if (endSubgame) {
 				e.x = e.x * .7 + .3 * -50;
 				if (e.x < -47) e.destroy(true);
 				return;
 			}
+			tick++;
 			e.x = e.x * .7 + .3 * 60;
-			e.alpha = e.alpha * .8 + .2 * 1;
+			e.alpha = e.alpha * .8 + .2 * (.5+.5*Math.cos( tick * .01 ) );
 		}
 	});
 }
@@ -113,10 +126,10 @@ function MainPlayerInput(sys: APGSys): void {
 	function addActions(srcChoices: number[], setToolTip: (str: string) => void): ButtonCollection[] {
 		var choiceLeft: number = 50, choiceUp: number = 118;
 		var curCollection: number = 0;
-		function add(choices: ActionEntry[]): ButtonCollection {
+		function add(choiceSet: ActionEntry[]): ButtonCollection {
 			var id: number = curCollection;
 			curCollection++;
-			return makeButtonSet(choiceLeft, choiceUp, 0, 20, 14, '#F00000', '#200000', setToolTip, v => srcChoices[id] = v, choices);
+			return makeButtonSet(choiceLeft, choiceUp, 0, 20, 14, '#F00000', '#200000', setToolTip, v => srcChoices[id] = v, choiceSet);
 		}
 		function st(name: string, tip: string): ActionEntry { return new ActionEntry(name, tip); }
 

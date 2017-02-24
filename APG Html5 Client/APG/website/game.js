@@ -59,9 +59,7 @@ function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, chat, 
         var phaserGame = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
             preload: function () {
                 phaserGame.stage.disableVisibilityChange = true;
-                phaserGame.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
                 if (allowFullScreen) {
-                    phaserGame.scale.pageAlignHorizontally = true;
                     phaserGame.input.onDown.add(goFull, _this);
                 }
                 for (var k = 0; k < phaserAssetCacheList.length; k++) {
@@ -76,7 +74,13 @@ function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, chat, 
             render: function () { }
         });
         function goFull() {
-            phaserGame.scale.startFullScreen(true);
+            phaserGame.scale.pageAlignHorizontally = true;
+            phaserGame.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+            if (phaserGame.scale.isFullScreen) {
+            }
+            else {
+                phaserGame.scale.startFullScreen(true);
+            }
         }
     });
 }
@@ -466,10 +470,10 @@ addCache(function (l) {
 function WaitingToJoin(sys) {
     var clickSound = sys.g.add.audio('clickThrough', 1, false);
     sys.messages = new MessageHandler({});
-    var inputUsed = false, goAway = false;
+    var inputUsed = false, endSubgame = false;
     new Ent(sys.g.world, 0, 0, 'clientbkg', {
         upd: function (e) {
-            if (goAway) {
+            if (endSubgame) {
                 e.x = e.x * .7 + .3 * -30;
                 if (e.x < -27)
                     e.destroy(true);
@@ -480,14 +484,14 @@ function WaitingToJoin(sys) {
                 clickSound.play();
                 WaitingForJoinAcknowledement(sys);
                 sys.network.join();
-                goAway = true;
+                endSubgame = true;
             }
         }
     });
     var tc = 0, textColor = { font: '16px Arial', fill: '#222' };
     new EntTx(sys.w, 60, 50 + 20, "Click to Join Game!", textColor, {
         upd: function (e) {
-            if (goAway) {
+            if (endSubgame) {
                 e.x = e.x * .7 + .3 * -50;
                 if (e.x < -47)
                     e.destroy(true);
@@ -507,13 +511,24 @@ addCache(function (l) {
 });
 function WaitingForJoinAcknowledement(sys) {
     var endOfRoundSound = sys.g.add.audio('endOfRound', 1, false);
-    var goAway = false;
+    var endSubgame = false, timeOut = 0;
     sys.messages = new MessageHandler({
-        onJoin: function () { endOfRoundSound.play(); MainPlayerInput(sys); return true; }
+        onJoin: function () {
+            endSubgame = true;
+            endOfRoundSound.play();
+            MainPlayerInput(sys);
+            return true;
+        }
     });
     new Ent(sys.w, 60, 0, 'clientbkg', { alpha: 0,
         upd: function (e) {
-            if (goAway) {
+            timeOut++;
+            if (timeOut > ticksPerSecond * 30) {
+                endSubgame = true;
+                WaitingToJoin(sys);
+                return;
+            }
+            if (endSubgame) {
                 e.x = e.x * .7 + .3 * -30;
                 if (e.x < -27)
                     e.destroy(true);
@@ -523,16 +538,18 @@ function WaitingForJoinAcknowledement(sys) {
             e.alpha = e.alpha * .8 + .2 * 1;
         }
     });
+    var tick = 0;
     new EntTx(sys.w, 160, 50 + 20, "Waiting to Connect...", { font: '16px Arial', fill: '#222' }, { alpha: 0,
         upd: function (e) {
-            if (goAway) {
+            if (endSubgame) {
                 e.x = e.x * .7 + .3 * -50;
                 if (e.x < -47)
                     e.destroy(true);
                 return;
             }
+            tick++;
             e.x = e.x * .7 + .3 * 60;
-            e.alpha = e.alpha * .8 + .2 * 1;
+            e.alpha = e.alpha * .8 + .2 * (.5 + .5 * Math.cos(tick * .01));
         }
     });
 }
@@ -575,10 +592,10 @@ function MainPlayerInput(sys) {
     function addActions(srcChoices, setToolTip) {
         var choiceLeft = 50, choiceUp = 118;
         var curCollection = 0;
-        function add(choices) {
+        function add(choiceSet) {
             var id = curCollection;
             curCollection++;
-            return makeButtonSet(choiceLeft, choiceUp, 0, 20, 14, '#F00000', '#200000', setToolTip, function (v) { return srcChoices[id] = v; }, choices);
+            return makeButtonSet(choiceLeft, choiceUp, 0, 20, 14, '#F00000', '#200000', setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
         }
         function st(name, tip) { return new ActionEntry(name, tip); }
         var o = [];

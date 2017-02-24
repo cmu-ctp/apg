@@ -156,6 +156,7 @@ namespace APG {
 
 			GetPlayerEvents( activePlayers ).onJoin(playerName);
 			playerNames.Add( playerName );
+			playerInput.Add( new List<int>() );
 			playerMap[playerName] = activePlayers;
 			activePlayers++;
 			return true;
@@ -165,6 +166,9 @@ namespace APG {
 
 			var id = playerMap[user];
 			GetPlayerEvents( id ).onInput(parms);
+			if( id < 0 || id >= playerInput.Count ) {
+				Debug.Log( "SetPlayerInput: Player ID is out of range: " + id + " (should be between 0 and " + playerInput.Count + ")" );
+			}
 			playerInput[id] = parms;
 			return true;
 		}
@@ -242,7 +246,7 @@ namespace APG {
 	}
 }
 
-[RequireComponent(typeof(TwitchIRC))]
+[RequireComponent(typeof(TwitchIRCChat))]
 [RequireComponent(typeof(TwitchIRCLogic))]
 public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 
@@ -267,7 +271,7 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 
 	bool showMobileLink = false;
 
-	TwitchIRC IRC;
+	TwitchIRCChat IRCChat;
 	TwitchIRCLogic IRCLogic;
 	AudiencePlayersSys apgSys = new AudiencePlayersSys();
 
@@ -292,13 +296,13 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 	}
 
 	public void InviteEmptyGame() {
-		IRC.SendMsg("Up to 20 people can play!  Join here: " + DisplayLinks() );
+		IRCChat.SendMsg("Up to 20 people can play!  Join here: " + DisplayLinks() );
 	}
 	public void InvitePartiallyFullGame() {
-		IRC.SendMsg("" + apgSys.activePlayers + " of " + maxPlayers + " are playing!  Join here: " + DisplayLinks());
+		IRCChat.SendMsg("" + apgSys.activePlayers + " of " + maxPlayers + " are playing!  Join here: " + DisplayLinks());
 	}
 	public void InviteFullGame() {
-		IRC.SendMsg("The game is full!  Get in line to play: " + DisplayLinks());
+		IRCChat.SendMsg("The game is full!  Get in line to play: " + DisplayLinks());
 	}
 
 	//___________________________________________
@@ -311,8 +315,8 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 				var fileContents = sr.ReadToEnd();
 				var vals = fileContents.Split(new char[] { ' ' });
 				Debug.Log( "Setting oauths to " + vals[0] + " " + vals[1] + " " + vals[2] );
-				LogicOauth = vals[0];
-				ChatOauth = vals[1];
+				ChatOauth = vals[0];
+				LogicOauth = vals[1];
 				GameClientID = vals[2];
 				RedirectLink = vals[3];
 				launchGameLink = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+RedirectLink+"&scope=user_read+channel_read+chat_login";
@@ -334,15 +338,17 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 	}
 
 	void InitIRCChat() {
-		IRC = this.GetComponent<TwitchIRC>();
+		IRCChat = this.GetComponent<TwitchIRCChat>();
 		//IRC.SendCommand("CAP REQ :twitch.tv/tags"); //register for additional data such as emote-ids, name color etc.
 
-		IRC.messageRecievedEvent.AddListener(msg => {
+		IRCChat.messageRecievedEvent.AddListener(msg => {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
 			string msgString = msg.Substring(msgIndex + ChatChannelName.Length + 11);
 			string user = msg.Substring(1, msg.IndexOf('!') - 1);
 			apgSys.LogChat( user, msgString );
 		});
+
+		IRCChat.SendMsg( "*** Chat Channel Initialized ***" );
 	}
 
 	Dictionary<string, Action<string, string[]>> clientCommands = new Dictionary<string, Action<string, string[]>>();
@@ -385,6 +391,8 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworking {
 			for(var k = 1; k < fullMsg.Length; k++) parms.Add(Int32.Parse(fullMsg[k]));
 			apgSys.SetPlayerInput( user, parms );
 		};*/
+
+		IRCLogic.SendMsg( "*** Logic Channel Initialized ***" );
 	}
 
 	//_______________________________________________________

@@ -258,8 +258,12 @@ public class PlayerSys {
 				update = e => {
 					if(e.health <= 0) return;
 
+					if( parms == null || parms.Count < 4 ) {
+						return;
+					}
+
 					if(parms[BuddyChoice.MoveTo] != BuddyMoveTo.StayPut) {
-						var goalposx = (-13 + 12 * (parms[1]/6f)) * ((buddyID < 10) ? 1 : -1);
+						var goalposx = (-13 + 12 * (parms[BuddyChoice.MoveTo]/6f)) * ((buddyID < 10) ? 1 : -1);
 						var goal = new V3(goalposx, -6, goalz);
 						var immediateGoal = e.pos * .99f + .01f * goal;
 						if(immediateGoal.magnitude > .1f) e.MoveBy(immediateGoal - e.pos);

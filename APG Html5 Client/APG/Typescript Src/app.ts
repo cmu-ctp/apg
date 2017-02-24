@@ -66,9 +66,8 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 		var phaserGame: Phaser.Game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
 			preload: () => {
 				phaserGame.stage.disableVisibilityChange = true;
-				phaserGame.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+				
 				if (allowFullScreen) {
-					phaserGame.scale.pageAlignHorizontally = true;
 					phaserGame.input.onDown.add(goFull, this);
 				}
 				for (var k = 0; k < phaserAssetCacheList.length; k++) {
@@ -83,7 +82,13 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 			render: () => { }
 		});
 		function goFull(): void {
-			phaserGame.scale.startFullScreen(true);
+			phaserGame.scale.pageAlignHorizontally = true;
+			phaserGame.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+			if (phaserGame.scale.isFullScreen) {
+			}
+			else {
+				phaserGame.scale.startFullScreen(true);
+			}
 		}
 	});
 }
