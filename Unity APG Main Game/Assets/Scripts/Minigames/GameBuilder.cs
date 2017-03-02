@@ -31,7 +31,7 @@ public class GameBuilder:MonoBehaviour {
 
 		//spawnSys.Add(0, foeSys.beardGuy);
 
-		spawnSys.Add(0, foeSys.beardGuy);
+		/*spawnSys.Add(0, foeSys.beardGuy);
 		spawnSys.Add(40, foeSys.plantGuy);
 
 		spawnSys.Add(60, () => { }, boulder);
@@ -46,7 +46,7 @@ public class GameBuilder:MonoBehaviour {
 
 		spawnSys.Add(240, () => { }, boulder);
 
-		spawnSys.Add(300, () => { }, boulder);
+		spawnSys.Add(300, () => { }, boulder);*/
 
 
 		spawnSys.Sort();

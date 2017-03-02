@@ -5,7 +5,14 @@ using V3 = UnityEngine.Vector3;
 using APG;
 
 /*
-	Player blowing foes
+ * How exactly is blowing handled right now?
+ * 
+ * And bumping into?
+ * 
+	Player blow balloons.
+	Player push balloons.
+	Player pop balloons.
+	Balloons remove themselves.
  */
 
 public class BuddyChoice { public const int MoveTo = 0; public const int Action = 1; public const int Stance = 2; public const int Item = 3; public const int Equip = 4; };
@@ -21,7 +28,7 @@ public class Players:MonoBehaviour {
 	public Sprite player, angel;
 	public Sprite owMsg, ughMsg, thudMsg;
 	public AudioClip blowSound, bumpSound, hurtSound, dieSound;
-}
+} 
 
 public class PlayerSys {
 	public Ent playerEnt = null, player2Ent = null;
@@ -36,7 +43,7 @@ public class PlayerSys {
 		players = thePlayers;
 
 		Player(1, foeSys);
-		//Player(2, foeSys);
+		Player(2, foeSys);
 		Buddies(apgSys);
 
 		//var names = new string[] { "Taki", "Fin", "Castral Fex", "FireTiger", "Ribaeld", "Big Tong", "Gatekeeper", "KittyKat", "Purifier", "Flaer", "Soothsayer13", "xxxBarryxxx", "PlasterPant", "Kokirei", "Fighter", "Seer", "Paninea", "Graethei", "Magesty", "Revolution" };
@@ -241,7 +248,7 @@ public class PlayerSys {
 			var goalz = .8f + Rd.Fl(0, 1.5f);
 			var buddyID = k;
 			buddies.Add(new Ent(gameSys) {
-				sprite = Rd.Sprite(players.friends), pos = new V3(posx, -6, goalz), scale = .3f * 4.5f, health = 1, children = new List<Ent> { label }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerEnt : ( player2Ent != null ) ? player2Ent:playerEnt,
+				sprite = Rd.Sprite(players.friends), pos = new V3(posx, -6, goalz), scale = .3f * 4.5f, health = 3, children = new List<Ent> { label }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerEnt : ( player2Ent != null ) ? player2Ent:playerEnt,
 				onHurt = (e, src, dmg) => {
 					e.health--;
 					if(e.health > 0) {

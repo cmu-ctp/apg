@@ -30,16 +30,28 @@
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Typescript Src\app.ts" />
-    <TypeScriptCompile Include="Typescript Src\buttons.ts" />
+    <TypeScriptCompile Include="Typescript Src\Phaser\Ent.ts" />
+    <TypeScriptCompile Include="Typescript Src\Phaser\EntTx.ts" />
+    <TypeScriptCompile Include="Typescript Src\StartGame.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\APGSys.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\APGCore.ts" />
+    <TypeScriptCompile Include="Typescript Src\CartoonGame\ButtonCollection.ts" />
+    <TypeScriptCompile Include="Typescript Src\Debug\ConsoleOutput.ts" />
     <TypeScriptCompile Include="Typescript Src\Libraries\jquery.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\network.ts" />
+    <TypeScriptCompile Include="Typescript Src\Network\IRCNetwork.ts" />
     <TypeScriptCompile Include="Typescript Src\Libraries\p2.d.ts" />
     <TypeScriptCompile Include="Typescript Src\Libraries\phaser.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\phaserSys.ts" />
+    <TypeScriptCompile Include="Typescript Src\Network\NetworkInterface.ts" />
+    <TypeScriptCompile Include="Typescript Src\Network\NullNetwork.ts" />
+    <TypeScriptCompile Include="Typescript Src\Phaser\Scroller.ts" />
     <TypeScriptCompile Include="Typescript Src\Libraries\pixi.comments.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\settings.ts" />
-    <TypeScriptCompile Include="Typescript Src\subgames.ts" />
+    <TypeScriptCompile Include="Typescript Src\Racing\RacingMainInput.ts" />
+    <TypeScriptCompile Include="Typescript Src\Settings.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\APGSubgameMessageHandler.ts" />
+    <TypeScriptCompile Include="Typescript Src\CartoonGame\MainPlayerInput.ts" />
+    <TypeScriptCompile Include="Typescript Src\CartoonGame\ShowSubmitted.ts" />
+    <TypeScriptCompile Include="Typescript Src\CartoonGame\WaitingForJoinAcknowledgement.ts" />
+    <TypeScriptCompile Include="Typescript Src\CartoonGame\WaitingToJoin.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="website\TestActions.json" />

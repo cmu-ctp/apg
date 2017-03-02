@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System;
 using V3 = UnityEngine.Vector3;
-using APG;
 
 public class Treats:MonoBehaviour {
 	public Sprite[] balloons;
@@ -26,7 +24,11 @@ public class TreatSys {
 				update = e => {
 					tick+=.01f;
 					e.pos += new V3( spd, bob*Mathf.Cos( bobt * tick ), 0 );
+				},
+				use = (e, user, useType, strength) => {
+					e.pos += Rd.Vec(-.5f, .5f );
 				}
+
 			});
 		}
 	}

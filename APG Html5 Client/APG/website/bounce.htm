@@ -13,15 +13,23 @@
         var isMobile = true;
 
         // The following values should be set manually for testing locally.  These values will be overridden by the server when launching from a server.
-        var chatIRCChannelName = "";
-        var logicIRCChannelName = "";
-        var playerName = "";
-        var playerOauth = "";
-        var clientID = 'hjgrph2akqwki1617ac5rdq9rqiep0k';
-        var skipAuthentication = false;
+
+    	var chatIRCChannelName = "";
+    	var logicIRCChannelName = "";
+    	var playerName = "";
+    	var playerOauth = "";
+    	var clientID = 'hjgrph2akqwki1617ac5rdq9rqiep0k';
+    	var skipAuthentication = false;
 
         var chat = null;
         var nullNetworking = false;
+
+        if (/Mobi/.test(navigator.userAgent)) {
+
+        }
+        else {
+
+        }
 
         if (location.hash != null && location.hash != "") {
 
@@ -50,7 +58,7 @@
                 // Initialize. If we are already logged in, there is no need for the connect button
                 Twitch.init({ clientId: clientID }, function (error, status) {
                     if (status.authenticated || skipAuthentication ) {
-                        Twitch.api({ method: 'user' }, function (error, user) {
+                        Twitch.api({ method: 'user' }, function (error, user){ 
                             if (skipAuthentication) {
                             }
                             else {
