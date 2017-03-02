@@ -240,7 +240,7 @@ public class PlayerSys {
 			t.text = "Type join "+(k+1);
 			var parms = new List<int> { 0, 0, 0, 0, 0, 0, 0 };
 			var posx = (k<10) ? -11 + 9*(k/10f) : 11 - 9*((k-10)/10f);
-			playerEvents.RegisterHandler(new AudiencePlayerEventHandler {
+			playerEvents.RegisterHandler(new AudiencePlayerEventsHandler {
 				onJoin = name => t.text = name,
 				onInput = inputs => parms = inputs,
 				updateClient = () => ""
