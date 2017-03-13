@@ -20,6 +20,7 @@ public class Backgrounds:MonoBehaviour {
 			new Ent(gameSys) {
 				sprite = Rd.Sprite(clouds), pos = goal, scale = Rd.Fl(.3f, .4f) * 1.7f,
 				useGrid=true,
+				name="cloud", 
 				update = e => {
 					tick++;
 					if(Rd.Test(.0003f)) { goal = e.pos + Rd.Vec(-3, 3); }
@@ -33,9 +34,8 @@ public class Backgrounds:MonoBehaviour {
 	void Trees() {
 		foreach(var k in 300.Loop()) {
 			var zDist = Rd.Fl(7f, 60.0f); var sideScale = zDist / 60.0f;
-			var tick = Rd.Fl(0, 10000);
 			new Ent(gameSys) {
-				sprite = Rd.Sprite(trees), pos = new V3(Rd.Fl(23) * (1 + sideScale * 2), -6f+Rd.Fl(0, .2f), zDist), scale = Rd.Fl(.3f, .4f) * 2, useGrid=true,
+				sprite = Rd.Sprite(trees), pos = new V3(Rd.Fl(23) * (1 + sideScale * 2), -6f+Rd.Fl(0, .2f), zDist), scale = Rd.Fl(.3f, .4f) * 2, useGrid=true, name="tree",
 				update = e => { }
 			};
 		}
@@ -43,14 +43,14 @@ public class Backgrounds:MonoBehaviour {
 	void Bushes() {
 		foreach(var k in 100.Loop()) {
 			var zDist = Rd.Fl(3f, 27.0f); var sideScale = zDist / 60.0f;
-			new Ent(gameSys) { sprite = Rd.Sprite(bushes), pos = new V3(Rd.Fl(23) * (1 + sideScale * 2), -6f+Rd.Fl(0, .2f), zDist), scale = Rd.Fl(.3f, .4f), useGrid=true };
+			new Ent(gameSys) { sprite = Rd.Sprite(bushes), pos = new V3(Rd.Fl(23) * (1 + sideScale * 2), -6f+Rd.Fl(0, .2f), zDist), scale = Rd.Fl(.3f, .4f), name="bush", useGrid=true };
 		}
 	}
 	void Buildings() {
 		foreach(var k in 6.Loop()) {
-			var zDist = 2.5f; var sideScale = zDist / 60.0f; var posx = -12 + 10 * (k/6f);
-			new Ent(gameSys) { sprite = buildings[k], pos = new V3(posx, -6f+Rd.Fl(0, .2f), zDist), scale = Rd.Fl(.3f, .4f) * 1.7f, useGrid=true };
-			new Ent(gameSys) { sprite = buildings[k], pos = new V3(-posx, -6f+Rd.Fl(0, .2f), zDist), scale = Rd.Fl(.3f, .4f) * 1.7f, useGrid=true };
+			var zDist = 2.5f; var posx = -12 + 10 * (k/6f);
+			new Ent(gameSys) { sprite = buildings[k], pos = new V3(posx, -6f+Rd.Fl(0, .2f), zDist), scale = Rd.Fl(.3f, .4f) * 1.7f, name="building", useGrid=true };
+			new Ent(gameSys) { sprite = buildings[k], pos = new V3(-posx, -6f+Rd.Fl(0, .2f), zDist), scale = Rd.Fl(.3f, .4f) * 1.7f, name="building", useGrid=true };
 		}
 	}
 }

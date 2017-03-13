@@ -3,6 +3,7 @@ using V3 = UnityEngine.Vector3;
 
 public enum Layers { UI, Game, Background }
 
+public enum UseType { PlayerBlowing, PlayerPush, BuddyTouch }
 
 public class GameSys {
 	public GameObject basePrefab;

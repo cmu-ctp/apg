@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
-using System;
 using V3 = UnityEngine.Vector3;
 
 public class GameBuilder:MonoBehaviour {
@@ -14,6 +12,7 @@ public class GameBuilder:MonoBehaviour {
 	public Players players;
 	public Treats treats;
 	public Props props;
+	public Reacts reacts;
 	public TwitchGameLogicChat gameLogicChat;
 
 	float tick = 0;
@@ -21,13 +20,34 @@ public class GameBuilder:MonoBehaviour {
 	GameSys gameSys;
 	FoeSys foeSys;
 	PlayerSys playerSys = new PlayerSys();
+	AudiencePlayerSys audiencePlayerSys = new AudiencePlayerSys();
 	TreatSys treatSys;
 	PropSys propSys;
+	ReactSys reactSys = new ReactSys();
 	SpawnSys spawnSys = new SpawnSys();
 
 	void InitSpawns() {
 
-		//spawnSys.Add(0, treatSys.balloons);
+		//spawnSys.Add(1, treatSys.balloonClusterBottom);
+
+		//spawnSys.Add(0, foeSys.beardGuy);
+
+		/*spawnSys.Add(3, treatSys.balloonGridRight);
+
+		spawnSys.Add(12, treatSys.balloonGridLeft );
+
+		spawnSys.Add(20, treatSys.balloonGridCenter );
+
+		spawnSys.Add(30, treatSys.balloonGridAll );*/
+
+		spawnSys.Add(6, treatSys.balloonClusterLeft);
+		spawnSys.Add(12, treatSys.balloonClusterRight);
+		spawnSys.Add(18, treatSys.balloonClusterBottomLeft);
+
+		spawnSys.Add(20, foeSys.beardGuy);
+
+		spawnSys.Add(24, treatSys.balloonClusterBottom);
+		spawnSys.Add(30, treatSys.balloonClusterBottomRight);
 
 		//spawnSys.Add(0, foeSys.beardGuy);
 
@@ -54,10 +74,13 @@ public class GameBuilder:MonoBehaviour {
 	void Start() {
 		Application.runInBackground = true;
 		gameSys = new GameSys(cloud1, transform);
-		foeSys = new FoeSys(foes, gameSys, playerSys);
-		treatSys = new TreatSys	( treats, gameSys );
+		reactSys.Init( gameSys, reacts );
+		foeSys = new FoeSys(foes, gameSys, playerSys, audiencePlayerSys);
+		treatSys = new TreatSys	( treats, gameSys, reactSys );
 		propSys = new PropSys( props, gameSys );
+		
 		playerSys.Setup(gameSys, players, foeSys, gameLogicChat.GetAudienceSys());
+		audiencePlayerSys.Setup(gameSys, players, foeSys, gameLogicChat.GetAudienceSys(), playerSys);
 		backgrounds.Setup(gameSys);
 		InitSpawns();
 		incomingWaveHUD.makeUI(gameSys, this, spawnSys);
