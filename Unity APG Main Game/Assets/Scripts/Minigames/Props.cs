@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System;
 using V3 = UnityEngine.Vector3;
-using APG;
 
 public class Props:MonoBehaviour {
 }

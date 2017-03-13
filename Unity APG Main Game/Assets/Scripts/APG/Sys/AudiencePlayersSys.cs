@@ -5,7 +5,9 @@ namespace APG {
 	public class AudiencePlayersSys : AudienceSysInterface {
 
 		List<AudiencePlayerEventsHandler> playerEvents = new List<AudiencePlayerEventsHandler>();
+
 		List<string> playerNames = new List<string>();
+
 		List<List<int>> playerInput = new List<List<int>>();
 
 		AudiencePlayerEventsHandler nullEvents = new AudiencePlayerEventsHandler();
@@ -75,5 +77,4 @@ namespace APG {
 			return chatSys;
 		}
 	}
-
 }

@@ -12,5 +12,4 @@ namespace APG {
 			time = _time;
 		}
 	}
-
 }

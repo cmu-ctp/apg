@@ -15,18 +15,22 @@ namespace APG {
 		public int Count() {
 			return chatters.Count;
 		}
+
 		public string GetName( int id ) {
 			if( id < 0 || id >= chatters.Count || chatters[id] == null )return "";
 			return chatters[id].name;
 		}
+
 		public string GetMessage( int id ) {
 			if( id < 0 || id >= chatters.Count || chatters[id] == null )return "";
 			return chatters[id].msg.ToString();
 		}
+
 		public void Clear() {
 			chatters = new List<Chatter>();
 			chatterID = new Dictionary<string, int>();
 		}
+
 		public void ClearOlderThan( int maxLifeTime ) {
 			var newChatters = new List<Chatter>();
 			var newChatterID = new Dictionary<string, int>();
@@ -41,10 +45,14 @@ namespace APG {
 			chatters = newChatters;
 			chatterID = newChatterID;
 		}
+
+
 		public void SetMessageEventFunction( Action<string,string> messageFunction ) {
 			if( messageFunction == null )return;
 			customMsgEventFunction = messageFunction;
 		}
+
+
 		public void Log( string name, string msg, int time ) {
 			customMsgEventFunction( name, msg );
 			if(chatterID.ContainsKey(name) == false) {

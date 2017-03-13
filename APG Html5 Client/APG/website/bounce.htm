@@ -25,10 +25,10 @@
         var nullNetworking = false;
 
         if (/Mobi/.test(navigator.userAgent)) {
-
+            isMobile = true;
         }
         else {
-
+            isMobile = false;
         }
 
         if (location.hash != null && location.hash != "") {
