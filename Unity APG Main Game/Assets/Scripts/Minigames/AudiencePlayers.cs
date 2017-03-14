@@ -76,14 +76,11 @@ public class AudiencePlayerSys {
 			var nameColor = new Color( Rd.Fl(0,.5f), Rd.Fl(0,.5f), Rd.Fl(0,.5f), 1 );
 
 
-			var label = new Ent(gameSys, players.textName) { pos = new V3(0, 0, 0) };
-			var t = label.src.GetComponent<TextMesh>();
-			t.text = "";
-			t.color = nameColor;
+			var label = new Ent(gameSys, players.textName) { pos = new V3(0, 0, 0), text="", textColor=nameColor };
 			var parms = new List<int> { 0, 0, 0, 0, 0, 0, 0 };
 			var posx = (k<10) ? -11 + 9*(k/10f) : 11 - 9*((k-10)/10f);
 			playerEvents.RegisterHandler(new AudiencePlayerEventsHandler {
-				onJoin = name => { t.text = name; inUse = true;},
+				onJoin = name => { label.text = name; inUse = true;},
 				onInput = inputs => parms = inputs,
 				updateClient = () => ""
 			});

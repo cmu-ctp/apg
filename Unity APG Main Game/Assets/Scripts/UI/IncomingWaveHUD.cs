@@ -9,59 +9,44 @@ public class IncomingWaveHUD : MonoBehaviour {
 
 	public void makeUI( GameSys gameSys, MonoBehaviour src, SpawnSys spawners ) {
 
-		var label = new Ent(gameSys, textName) { pos = new V3(0, 4.3f, 0), scale=.09f };
-		var t = label.src.GetComponent<TextMesh>();
-		t.text = "";
-		t.color = new Color( .1f, .1f, .1f, 0 );
-		label.src.SetActive( false );
+		var uiBkg = new Ent(gameSys) { sprite = uiBackground, pos = new V3(0, 5.7f, 1), scale = .6f, layer = Layers.UI, parentMono = src};
+
 		bool labelActive = false;
 		var labelAlpha = 0f;
 		int messageTime= 0;
 
-		var uiBkg = new Ent(gameSys) {
-			sprite = uiBackground,
-			pos = new V3(0, 5.7f, 1),
-			scale = .6f,
-			layer = Layers.UI,
-			parent = src.transform,
+		new Ent(gameSys, textName) { pos = new V3(0, 4.3f, 0), scale=.09f, text="", textColor=new Color( .1f, .1f, .1f, 0 ), active=false, parent = uiBkg,
 			update = e => {
 				if( spawners.incomingMessageTime > messageTime) {
 					messageTime = spawners.incomingMessageTime;
-					t.text = spawners.incomingMessage;
+					e.text = spawners.incomingMessage;
 				}
 				if( spawners.incomingMessage != "" ) {
 					labelAlpha = labelAlpha * .9f + .1f * 1;
-					label.scale = label.scale * .8f + .2f * .09f;
-					t.color = new Color( .1f, .1f, .1f, labelAlpha );
+					e.scale = e.scale * .8f + .2f * .09f;
+					e.textColor = new Color( .1f, .1f, .1f, labelAlpha );
 					if( labelActive == false ) {
 						labelActive = true;
-						label.src.SetActive( true );
+						e.active = true;
 					}
 				}
 				else if( spawners.incomingMessage == "" ) {
 					if( labelActive == true ) {
 						labelAlpha = labelAlpha * .9f + .1f * 0;
-						label.scale = label.scale * .8f + .2f * .09f;
-						t.color = new Color( .1f, .1f, .1f, labelAlpha );
+						e.scale = e.scale * .8f + .2f * .09f;
+						e.textColor = new Color( .1f, .1f, .1f, labelAlpha );
 						if( labelAlpha < .01f ) {
 							labelActive = false;
-							label.src.SetActive( false );
+							e.active = false;
 						}
 					}
 				}
-			}
-		};
-
-		label.parent = uiBkg.gameObj.transform;
+			} };
 
 		foreach (var k in 20.Loop()) {
 			var offset = k;
 			new Ent(gameSys) {
-				sprite = offset < spawners.spawnSet.Count ? spawners.spawnSet[offset].icon : player,
-				parent = uiBkg.gameObj.transform,
-				pos = new V3(0, 0, -.1f),
-				scale = .3f,
-				layer = Layers.UI,
+				sprite = offset < spawners.spawnSet.Count ? spawners.spawnSet[offset].icon : player, parent = uiBkg, pos = new V3(0, 0, -.1f), scale = .3f, layer = Layers.UI,
 				update = e => {
 					if( offset >= spawners.spawnSet.Count ) {
 						e.color = new Color( 0,0,0,0 );
