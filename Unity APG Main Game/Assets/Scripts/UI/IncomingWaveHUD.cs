@@ -7,10 +7,7 @@ public class IncomingWaveHUD : MonoBehaviour {
 
 	private int tick = 0;
 
-	public void makeUI( GameSys gameSys, MonoBehaviour src, SpawnSys spawners ) {
-
-		var uiBkg = new Ent(gameSys) { sprite = uiBackground, pos = new V3(0, 5.7f, 1), scale = .6f, layer = Layers.UI, parentMono = src};
-
+	void spawningMessage(GameSys gameSys, SpawnSys spawners, Ent uiBkg ) {
 		bool labelActive = false;
 		var labelAlpha = 0f;
 		int messageTime= 0;
@@ -41,8 +38,10 @@ public class IncomingWaveHUD : MonoBehaviour {
 						}
 					}
 				}
-			} };
+		} };
+	}
 
+	void makeSpawnTimelineEntries( GameSys gameSys, SpawnSys spawners, Ent uiBkg ) {
 		foreach (var k in 20.Loop()) {
 			var offset = k;
 			new Ent(gameSys) {
@@ -60,6 +59,13 @@ public class IncomingWaveHUD : MonoBehaviour {
 						e.color = new Color( 0,0,0,0);
 						return;}
 					e.pos = new V3(-(s*8 - 4), spawners.spawnSet[offset].iconYOffset*.5f, -.1f);
-					e.color = new Color( 1, 1, 1, Num.FadeInOut( s, 8 ) );}};}}
+					e.color = new Color( 1, 1, 1, Num.FadeInOut( s, 8 ) );}};}
+	}
+
+	public void makeUI( GameSys gameSys, MonoBehaviour src, SpawnSys spawners ) {
+		var uiBkg = new Ent(gameSys) { sprite = uiBackground, pos = new V3(0, 5.7f, 1), scale = .6f, layer = Layers.UI, parentMono = src};
+		spawningMessage( gameSys, spawners, uiBkg );
+		makeSpawnTimelineEntries( gameSys, spawners, uiBkg );
+	}
 	void Update() {
 		tick++;}}

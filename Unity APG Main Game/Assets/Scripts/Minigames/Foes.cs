@@ -11,7 +11,6 @@ public class Foes:MonoBehaviour {
 
 public class FoeSys {
 	public float tick = 0;
-	public List<Ent> foeList = new List<Ent>();
 	Foes foes;
 	GameSys gameSys;
 	PlayerSys playerSys;
@@ -66,9 +65,9 @@ public class FoeSys {
 				e.removeIfOffScreen();
 
 			},
-			buddyTouch = (me, user, useType, touchStrength) => {
-				user.onHurt(user, me, 1);
-				me.remove();
+			buddyTouch = (e, user, useType, touchStrength) => {
+				user.onHurt(user, e, 1);
+				e.remove();
 			},
 			pushedByBreath = (e, user, useType, useStrength) => {
 				isPlayerAttack = true;
@@ -84,8 +83,8 @@ public class FoeSys {
 			var goal = new V3(0, 4, 30); var horizontal = (k==0) ? -3f : 3f; var vertOffset = 4 + (k == 0 ? 0 : 2); var zDepth = (k == 0 ? 30 : 20); var tickOffset = (k == 0 ? 0 : 200); var doShoot = true; var angAnim = new DualWave(4, .025f);
 			var shakeAmount = 0f; var shootDelay = 0;
 			var sprites = (k == 0) ? foes.shoes : foes.socks;
-			foeList.Add(new Ent(gameSys) {
-				sprite = (k == 0 ? foes.beardguy : foes.beardguy2), pos = new V3(Rd.Fl(-40, 40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = 1f, name = "beardguy", useGrid=true,
+			new Ent(gameSys) {
+				sprite = (k == 0 ? foes.beardguy : foes.beardguy2), pos = new V3(Rd.Fl(40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = 1f, name = "beardguy", useGrid=true,
 				update = e => {
 					if(tick - startTime > 60 * 40) {
 						goal = new V3(horizontal, vertOffset, playerSys.playerEnt.pos.z + .3f);
@@ -93,7 +92,7 @@ public class FoeSys {
 						e.pos = e.pos * .98f + .02f * goal;
 						if( e.pos.y > 45) {
 							Debug.Log( "Removing beard guy!!");
-							foeList.Remove(e); e.remove(); return;
+							e.remove(); return;
 						}
 					}
 					shootDelay--;
@@ -119,7 +118,7 @@ public class FoeSys {
 					shootDelay = 90;
 					if(e.pos.z < 10) shakeAmount = 100;
 				}
-			});
+			};
 		}
 	}
 	void PlantGuy() {
@@ -129,10 +128,13 @@ public class FoeSys {
 			float horizontal = Rd.Fl(15), vertOffset = Rd.Fl(2, 6), zDepth = Rd.Fl(20, 50), tickOffset = Rd.Fl(0, 500);
 			var doShoot = true;
 			var angAnim = new DualWave(12, .025f);
-			foeList.Add(new Ent(gameSys) {
-				sprite = foes.plantguy, pos = new V3(Rd.Fl(-40, 40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = 1f, flipped=Rd.Test(.5f), name = "plantguy",
+			new Ent(gameSys) {
+				sprite = foes.plantguy, pos = new V3(Rd.Fl(40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = 1f, flipped=Rd.Test(.5f), name = "plantguy",
 				update = e => {
-					if(tick - startTime > 60 * 40) { foeList.Remove(e); e.remove(); return; }
+					if(tick - startTime > 60 * 40) {
+						e.remove();
+						return;
+					}
 					if((tick + tickOffset) % 600 < 200) {
 						if((tick + tickOffset) % 600 > 100 && doShoot) { doShoot = false; }
 						goal = new V3(horizontal, vertOffset, 3);
@@ -144,7 +146,7 @@ public class FoeSys {
 					e.pos = e.pos * .98f + .02f * goal;
 					e.ang = angAnim.Val(tick);
 				}
-			});
+			};
 		}
 	}
 	void TrashGuy() {
@@ -154,10 +156,13 @@ public class FoeSys {
 			float horizontal = Rd.Fl(15), vertOffset = Rd.Fl(2, 6), zDepth = Rd.Fl(20, 50), tickOffset = Rd.Fl(0, 500);
 			var doShoot = true;
 			var angAnim = new DualWave(12, .025f);
-			foeList.Add(new Ent(gameSys) {
-				sprite = foes.foeTrash, pos = new V3(Rd.Fl(-40, 40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = .5f, flipped=Rd.Test(.5f), name = "trashguy",
+			new Ent(gameSys) {
+				sprite = foes.foeTrash, pos = new V3(Rd.Fl(40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = .5f, flipped=Rd.Test(.5f), name = "trashguy",
 				update = e => {
-					if(tick - startTime > 60 * 40) { foeList.Remove(e); e.remove(); return; }
+					if(tick - startTime > 60 * 40) {
+						e.remove();
+						return;
+					}
 					if((tick + tickOffset) % 600 < 200) {
 						if((tick + tickOffset) % 600 > 100 && doShoot) { doShoot = false; }
 						goal = new V3(horizontal, vertOffset, 3);
@@ -169,7 +174,7 @@ public class FoeSys {
 					e.pos = e.pos * .98f + .02f * goal;
 					e.ang = angAnim.Val(tick);
 				}
-			});
+			};
 		}
 	}
 	void MicrowaveGuy() {
@@ -179,10 +184,13 @@ public class FoeSys {
 			float horizontal = Rd.Fl(15), vertOffset = Rd.Fl(2, 6), zDepth = Rd.Fl(20, 50), tickOffset = Rd.Fl(0, 500);
 			var doShoot = true;
 			var angAnim = new DualWave(12, .025f);
-			foeList.Add(new Ent(gameSys) {
-				sprite = foes.foeMicrowave, pos = new V3(Rd.Fl(-40, 40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = 1f, flipped=Rd.Test(.5f), name = "microwaveguy",
+			new Ent(gameSys) {
+				sprite = foes.foeMicrowave, pos = new V3(Rd.Fl(40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = 1f, flipped=Rd.Test(.5f), name = "microwaveguy",
 				update = e => {
-					if(tick - startTime > 60 * 40) { foeList.Remove(e); e.remove(); return; }
+					if(tick - startTime > 60 * 40) {
+						e.remove();
+						return;
+					}
 					if((tick + tickOffset) % 600 < 200) {
 						if((tick + tickOffset) % 600 > 100 && doShoot) { doShoot = false; }
 						goal = new V3(horizontal, vertOffset, 3);
@@ -194,7 +202,7 @@ public class FoeSys {
 					e.pos = e.pos * .98f + .02f * goal;
 					e.ang = angAnim.Val(tick);
 				}
-			});
+			};
 		}
 	}
 	void MustacheGuy() {
@@ -204,10 +212,13 @@ public class FoeSys {
 			float horizontal = Rd.Fl(15), vertOffset = Rd.Fl(2, 6), zDepth = Rd.Fl(20, 50), tickOffset = Rd.Fl(0, 500);
 			var doShoot = true;
 			var angAnim = new DualWave(12, .025f);
-			foeList.Add(new Ent(gameSys) {
-				sprite = foes.foeMustache, pos = new V3(Rd.Fl(-40, 40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = 1f, flipped=Rd.Test(.5f),name = "mustacheguy",
+			new Ent(gameSys) {
+				sprite = foes.foeMustache, pos = new V3(Rd.Fl(40), Rd.Fl(-4, -7), Rd.Fl(80, 100)), scale = 1f, flipped=Rd.Test(.5f),name = "mustacheguy",
 				update = e => {
-					if(tick - startTime > 60 * 40) { foeList.Remove(e); e.remove(); return; }
+					if(tick - startTime > 60 * 40) {
+						e.remove();
+						return;
+					}
 					if((tick + tickOffset) % 600 < 200) {
 						if((tick + tickOffset) % 600 > 100 && doShoot) { doShoot = false; }
 						goal = new V3(horizontal, vertOffset, 3);
@@ -219,7 +230,7 @@ public class FoeSys {
 					e.pos = e.pos * .98f + .02f * goal;
 					e.ang = angAnim.Val(tick);
 				}
-			});
+			};
 		}
 	}
 }

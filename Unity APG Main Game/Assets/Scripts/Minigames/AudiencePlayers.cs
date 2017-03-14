@@ -13,7 +13,6 @@ public class BuddyEquip { public const int Wait = 0; public const int Attack = 1
 
 public class AudiencePlayerSys {
 
-	public List<Ent> buddies = new List<Ent>();
 	public int liveBuddies = 0;
 
 	GameSys gameSys;
@@ -39,18 +38,6 @@ public class AudiencePlayerSys {
 	void React(V3 pos, Sprite msg) {
 		var delay = 30;
 		new Ent(gameSys) { sprite = msg, name="react", pos = pos, scale = 1, update = e => { delay--; if(delay <= 0) e.remove(); } };
-	}
-
-	public void TryHitBuddies(Ent e, float dist, bool stopOnHit, Action<Ent> onHit) {
-		foreach(var b in buddies) {
-			if(b.health <= 0) continue;
-			var dif = b.pos - e.pos;
-			dif.z = 0;
-			if(dif.magnitude < dist) {
-				onHit(b);
-				if(stopOnHit) return;
-			}
-		}
 	}
 
 	public void Ghost(V3 pos, Ent leader) {
@@ -87,7 +74,7 @@ public class AudiencePlayerSys {
 			var goalz = .8f + Rd.Fl(0, 1.5f);
 			var buddyID = k;
 			var tick = 0;
-			buddies.Add(new Ent(gameSys) {
+			new Ent(gameSys) {
 				sprite = Rd.Sprite(players.friends), pos = new V3(posx, -6, goalz), scale = .3f * 4.5f, health = 3, children = new List<Ent> { label }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt, name = "buddy"+k, useGrid=true,
 				onHurt = (e, src, dmg) => {
 					e.health--;
@@ -119,7 +106,7 @@ public class AudiencePlayerSys {
 						if(immediateGoal.magnitude > .1f) e.MoveBy(immediateGoal - e.pos);
 					}
 				}
-			});
+			};
 		}
 	}
 }

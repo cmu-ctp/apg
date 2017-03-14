@@ -8,7 +8,6 @@ public class Props:MonoBehaviour {
 public class PropSys {
 	GameSys gameSys;
 	Props theProps;
-	public List<Ent> propList = new List<Ent>();
 	public PropSys(Props props, GameSys theGameSys) {
 		gameSys = theGameSys;
 		theProps = props;

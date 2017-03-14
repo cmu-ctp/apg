@@ -89,20 +89,20 @@ public class PlayerSys {
 				}
 				else {
 					var spd = Rd.Fl(.5f, size);
-					b += new V3( blowVx * .4f*spd + Rd.Fl(-.02f, .02f), blowVy * .4f*spd + Rd.Fl(-.02f, .02f), Rd.Fl(-.03f, .03f) );
+					b += new V3( blowVx * .4f*spd + Rd.Fl(.02f), blowVy * .4f*spd + Rd.Fl(.02f), Rd.Fl(.03f) );
 					f.pos = srcPos + new V3(0, .2f, 0);
 					f.scale = size * Rd.Fl(.05f, .25f);
 				}
 			});
 			inhale.Add((srcPos, blowVx, blowVy, chargeSize) => {
 				blowing = false;
-				b = new V3( Rd.Fl(-.02f, .02f), Rd.Fl(-.02f, .02f), Rd.Fl(-.03f, .03f) );
+				b = new V3( Rd.Fl(.02f), Rd.Fl(.02f), Rd.Fl(.03f) );
 				f.pos = srcPos + new V3(0, .2f, 0);
 				f.scale = Rd.Fl(.05f, .25f);
 			});
 			inhaleBig.Add((srcPos, blowVx, blowVy, chargeSize) => {
 				blowing = false;
-				b = new V3( 2*Rd.Fl(-.02f, .02f), 2*Rd.Fl(-.02f, .02f), 2*Rd.Fl(-.03f, .03f) );
+				b = new V3( 2*Rd.Fl(.02f), 2*Rd.Fl(.02f), 2*Rd.Fl(.03f) );
 				f.pos = srcPos + new V3(0, .2f, 0);
 				f.scale = 2*Rd.Fl(.05f, .25f);
 			});
@@ -151,11 +151,6 @@ public class PlayerSys {
 						else { knockback2 *= .4f; }
 						foreach(var b in blow) b(e.pos, e.vel.x, e.vel.y, blowStrength);
 						e.knockback += knockback2;
-						foreach(var f in foeSys.foeList) {
-							var dif = e.pos - f.pos;
-							dif.z = 0;
-							if(dif.magnitude < 4f) { f.pushedByBreath(f, e, UseType.PlayerBlowing, 1); }
-						}
 					}
 					useDown = false;
 				}
