@@ -6,6 +6,8 @@ public class Treats:MonoBehaviour {
 	public Sprite[] balloons;
 	public Sprite popMsg;
 	public Sprite goodies;
+	public AudioClip[] balloonPop;
+	public AudioClip[] coinSound;
 }
 
 public class TreatSys {
@@ -33,8 +35,6 @@ public class TreatSys {
 	}
 
 	// Events:
-	// Inflated by player / popped / drop stuff
-	// Popped by shots
 
 	// Definitely need some sort of Game Is Speeding Up Thingy
 	// Pushing Player should impart velocity to balloon
@@ -55,6 +55,7 @@ public class TreatSys {
 					e.removeIfOffScreen();
 				},
 				buddyTouch = (me, user, useType, strength) => {
+					gameSys.Sound(Rd.Sound( theTreats.coinSound ), 1);
 					reactSys.React( me.pos+new V3(0,0,0), "+1 Taco", new Color( .3f,.5f,.8f,1));
 					me.remove();
 				}
@@ -77,7 +78,7 @@ public class TreatSys {
 					push *= .98f;
 					e.removeIfOffScreen();
 				},
-				use = (me, user, useType, strength) => {
+				pushedByBreath = (me, user, useType, strength) => {
 					if( tick - lastPush < .05f )return;
 					var pushDir = (me.pos - user.pushCenter).normalized;
 					pushDir.z = 0;
@@ -85,6 +86,7 @@ public class TreatSys {
 					lastPush = tick;
 					goalScale += strength * .1f;
 					if( goalScale > .55f ) {
+						gameSys.Sound(Rd.Sound( theTreats.balloonPop ), 1);
 						BasicTreat( me.pos );
 						reactSys.React( me.pos + new V3(0, 0, -.2f), "Pop!", new Color(.9f, 1f, .7f, 1 ) );
 						me.remove();
@@ -104,29 +106,30 @@ public class TreatSys {
 			for( var k2 = -2; k2 < 7; k2++ ) {
 				float bob = Rd.Fl( .002f, .004f ), tick = Rd.Ang(), goalScale = .3f;
 				V3 home = new V3(k,k2,0);
-				float offset = Rd.Ang(), rotateRange = Rd.Fl(.1f, .2f) * 80, rotateSpeed = Rd.Fl(.02f, .04f), delay = Rd.Int(0,15) + 20 + 2*k, leaveDelay = delay + 60*8;
+				float offset = Rd.Ang(), rotateRange = Rd.Fl(.1f, .2f) * 80, rotateSpeed = Rd.Fl(.02f, .04f), delay = Rd.Int(0,15) + 20 + 2*k, leaveDelay = delay + 60*12;
 				treatList.Add(new Ent(gameSys) {
 					sprite = Rd.Sprite( theTreats.balloons ), pos = new V3((leftBound+rightBound)/2f, -7, 0), scale = Rd.Fl(.19f, .21f), flipped=Rd.Test(.5f), name="balloon", useGrid=true,
 					update = e => {
 						delay--;
 						if( delay > 0 )return;
+						if( leaveDelay <= 0 ) { if( e.removeIfOffScreen() ) return;}
 						e.pos = e.pos * .98f + .02f * (home + new V3( .1f*Mathf.Cos( tick * bob ), .1f*Mathf.Sin( tick * bob ), 0 ) );
 						e.ang = Mathf.Cos(tick * rotateSpeed + offset) * rotateRange;
 						goalScale = .3f * .02f + .98f * goalScale;
 						e.scale = e.scale * .8f + .2f * goalScale*.65f;
 						tick++;
 						leaveDelay--;
-						if( leaveDelay == 0 ) {
-							home = new V3( Rd.Fl(-3,3), 9, Rd.Fl( -4, 4 ));
-						}
+						if( leaveDelay == 0 ) home = new V3( Rd.Fl(-3,3), 9, Rd.Fl( -4, 4 ));
 					},
-					use = (me, user, useType, strength) => {
+					pushedByBreath = (me, user, useType, strength) => {
 						var pushDir = (me.pos - user.pushCenter).normalized;
 						pushDir.z = 0;
 						me.pos += pushDir * strength*.8f;
 						goalScale += strength * .1f;
 						if( goalScale > .6f ) {
-							React(me.pos + new V3((leftBound+rightBound)/2f, 0, -.2f), theTreats.popMsg);
+							BasicTreat( me.pos );
+							gameSys.Sound(Rd.Sound( theTreats.balloonPop ), 1);
+							reactSys.React( me.pos + new V3((leftBound+rightBound)/2f, 0, -.2f), "Pop!", new Color(.9f, 1f, .7f, 1 ) );
 							me.remove();
 						}
 					},
@@ -151,7 +154,7 @@ public class TreatSys {
 						e.pos = e.pos * .95f + .05f * home;
 						if( lastTouch == 0 )e.color = new Color( 1, 1, 1, 1 );
 					},
-					use = (me, user, useType, strength) => {
+					pushedByBreath = (me, user, useType, strength) => {
 						var pushDir = (me.pos - user.pushCenter).normalized;
 						pushDir.z = 0;
 						me.pos += pushDir * strength*.8f;

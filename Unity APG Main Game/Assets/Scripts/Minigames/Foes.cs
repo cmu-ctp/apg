@@ -41,9 +41,11 @@ public class FoeSys {
 			sprite = Rd.Sprite(sprites), pos = pos, scale = Rd.Fl(.3f, .4f)*1.5f, name = "shot",
 			update = e => {
 				e.ang = tick * rotateSpeed + offset;
+
 				if( isPlayerAttack ) {
 
 				}
+
 				playerSys.TryHitPlayers(e, 1, player => {
 					if(tick - lastHit < 30) return;
 					lastHit = tick;
@@ -58,15 +60,17 @@ public class FoeSys {
 						rotateSpeed*=2;
 					}
 				});
-				audiencePlayerSys.TryHitBuddies(e, 1, true, b => {
-					b.onHurt(b, e, 1);
-					e.remove();
-				});
+
 				vel.y -= .0008f;
 				e.MoveBy(vel);
 				e.removeIfOffScreen();
+
 			},
-			use = (e, user, useType, useStrength) => {
+			buddyTouch = (me, user, useType, touchStrength) => {
+				user.onHurt(user, me, 1);
+				me.remove();
+			},
+			pushedByBreath = (e, user, useType, useStrength) => {
 				isPlayerAttack = true;
 				vel *= .3f;
 				vel += user.vel * .05f;
@@ -88,6 +92,7 @@ public class FoeSys {
 						goal.y = 50;
 						e.pos = e.pos * .98f + .02f * goal;
 						if( e.pos.y > 45) {
+							Debug.Log( "Removing beard guy!!");
 							foeList.Remove(e); e.remove(); return;
 						}
 					}
@@ -108,7 +113,7 @@ public class FoeSys {
 					e.ang = angAnim.Val(tick) + Rd.Fl(-shakeAmount, shakeAmount);
 					Num.Ease(ref shakeAmount, 0f, .05f);
 				},
-				use = (e, user, useType, strength) => {
+				pushedByBreath = (e, user, useType, strength) => {
 					if(e.pos.z > 5)return;
 					gameSys.Sound(foes.guySurpriseSound, 1);
 					shootDelay = 90;

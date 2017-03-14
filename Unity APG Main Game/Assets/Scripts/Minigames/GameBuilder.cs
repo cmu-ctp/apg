@@ -28,16 +28,12 @@ public class GameBuilder:MonoBehaviour {
 
 	void InitSpawns() {
 
+		//spawnSys.Add(5, treatSys.balloonGridAll );
 		//spawnSys.Add(1, treatSys.balloonClusterBottom);
-
 		//spawnSys.Add(0, foeSys.beardGuy);
-
 		/*spawnSys.Add(3, treatSys.balloonGridRight);
-
 		spawnSys.Add(12, treatSys.balloonGridLeft );
-
 		spawnSys.Add(20, treatSys.balloonGridCenter );
-
 		spawnSys.Add(30, treatSys.balloonGridAll );*/
 
 		spawnSys.Add(6, treatSys.balloonClusterLeft);
@@ -51,23 +47,27 @@ public class GameBuilder:MonoBehaviour {
 
 		//spawnSys.Add(0, foeSys.beardGuy);
 
-		/*spawnSys.Add(0, foeSys.beardGuy);
+		spawnSys.Add(0, foeSys.beardGuy);
 		spawnSys.Add(40, foeSys.plantGuy);
 
-		spawnSys.Add(60, () => { }, boulder);
+		spawnSys.Add(46, treatSys.balloonClusterLeft);
+		spawnSys.Add(52, treatSys.balloonClusterRight);
+		spawnSys.Add(68, treatSys.balloonClusterBottomLeft);
+
+
+		//spawnSys.Add(60, () => { }, boulder);
 		spawnSys.Add(80, foeSys.trashGuy);
 
+		spawnSys.Add(100, treatSys.balloonGridAll );
+
 		spawnSys.Add(120, foeSys.beardGuy);
-		spawnSys.Add(120, () => { }, boulder);
+		//spawnSys.Add(120, () => { }, boulder);
 		spawnSys.Add(160, foeSys.mustacheGuy);
 
-		spawnSys.Add(180, () => { }, boulder);
-		spawnSys.Add(200, foeSys.microwaveGuy);
-
-		spawnSys.Add(240, () => { }, boulder);
-
-		spawnSys.Add(300, () => { }, boulder);*/
-
+		//spawnSys.Add(180, () => { }, boulder);
+		//spawnSys.Add(200, foeSys.microwaveGuy);
+		//spawnSys.Add(240, () => { }, boulder);
+		//spawnSys.Add(300, () => { }, boulder);
 
 		spawnSys.Sort();
 	}
@@ -93,10 +93,10 @@ public class GameBuilder:MonoBehaviour {
 
 		V3 lookPos;
 		if(playerSys.player2Ent == null) {
-			lookPos = playerSys.playerEnt.src.transform.position;
+			lookPos = playerSys.playerEnt.pos;
 		}
 		else {
-			lookPos = (playerSys.playerEnt.src.transform.position + playerSys.player2Ent.src.transform.position)/2;
+			lookPos = (playerSys.playerEnt.pos + playerSys.player2Ent.pos)/2;
 		}
 
 		transform.LookAt(new V3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));

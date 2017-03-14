@@ -70,7 +70,7 @@ public class PlayerSys {
 					e.ang += cloudRot;
 					e.vel = b;
 					if(cloudNum == 0 && blowing && e.scale > .1f) {
-						gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.use(targ, me, UseType.PlayerBlowing, (int)chargeStrength);});
+						gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.pushedByBreath(targ, me, UseType.PlayerBlowing, (int)chargeStrength);});
 					}
 				}
 			};
@@ -127,7 +127,7 @@ public class PlayerSys {
 				rot = e.vel.x * 360 / Mathf.PI;
 				if(Input.GetKey(use)) {
 					if(useDown == false) { useDownTime = t; }
-					if(t-useDownTime == 90) {
+					if(t-useDownTime == 135) {
 						foreach(var b in inhaleBig) b(e.pos, e.vel.x, e.vel.y, 1);
 					}
 					else if(t-useDownTime == 30) {
@@ -140,7 +140,7 @@ public class PlayerSys {
 						gameSys.Sound(players.blowSound, 1);
 						var knockback2 = new V3(-e.vel.x, -e.vel.y, 0).normalized;
 						var blowStrength = 1;
-						if(t-useDownTime > 90) {
+						if(t-useDownTime > 135) {
 							knockback2 *= 1.5f;
 							blowStrength = 3;
 						}
@@ -154,7 +154,7 @@ public class PlayerSys {
 						foreach(var f in foeSys.foeList) {
 							var dif = e.pos - f.pos;
 							dif.z = 0;
-							if(dif.magnitude < 4f) { f.use(f, e, UseType.PlayerBlowing, 1); }
+							if(dif.magnitude < 4f) { f.pushedByBreath(f, e, UseType.PlayerBlowing, 1); }
 						}
 					}
 					useDown = false;
@@ -170,7 +170,7 @@ public class PlayerSys {
 				e.ang = -rot * .1f;
 				gameSys.grid.Find(e.pos - new V3(0,.7f,0), 1, e, (me, targ) => { targ.playerTouch(targ, me, UseType.PlayerPush, 1);});
 			},
-			use = (e, user, useType, useStrength) => { e.knockback += user.vel * .16f;}
+			pushedByBreath = (e, user, useType, useStrength) => { e.knockback += user.vel * .16f;}
 		};
 		if(id == 2) player2Ent = pl;
 		else playerEnt = pl;
