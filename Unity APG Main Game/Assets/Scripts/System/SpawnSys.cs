@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
-using V3 = UnityEngine.Vector3;
+using v3 = UnityEngine.Vector3;
 
 public class SpawnEntry {
 	public Sprite icon;

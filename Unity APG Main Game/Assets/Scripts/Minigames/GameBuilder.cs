@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using V3 = UnityEngine.Vector3;
+using v3 = UnityEngine.Vector3;
 
 public class GameBuilder:MonoBehaviour {
 	public GameObject cloud1;
@@ -27,6 +27,8 @@ public class GameBuilder:MonoBehaviour {
 	SpawnSys spawnSys = new SpawnSys();
 
 	void InitSpawns() {
+
+		spawnSys.Add(20, treatSys.balloonGridAll );
 
 		//spawnSys.Add(5, treatSys.balloonGridAll );
 		//spawnSys.Add(1, treatSys.balloonClusterBottom);
@@ -85,13 +87,17 @@ public class GameBuilder:MonoBehaviour {
 		InitSpawns();
 		incomingWaveHUD.makeUI(gameSys, this, spawnSys);
 	}
+
+	bool pauseLatch = false;
+	bool isPaused = false;
+
 	void Update() {
 		tick++;
 		foeSys.tick = tick;
 
 		spawnSys.Update((int)tick);
 
-		V3 lookPos;
+		v3 lookPos;
 		if(playerSys.player2Ent == null) {
 			lookPos = playerSys.playerEnt.pos;
 		}
@@ -99,9 +105,18 @@ public class GameBuilder:MonoBehaviour {
 			lookPos = (playerSys.playerEnt.pos + playerSys.player2Ent.pos)/2;
 		}
 
-		transform.LookAt(new V3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));
-		transform.position = new V3(lookPos.x * .03f, lookPos.y * .03f, transform.position.z);
-		gameSys.Update();
+		transform.LookAt(new v3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));
+		transform.position = new v3(lookPos.x * .03f, lookPos.y * .03f, transform.position.z);
+
+		if( Input.GetKey(KeyCode.Escape) ) {
+			if( !pauseLatch ) {
+				isPaused = !isPaused;
+				pauseLatch = true;
+			}
+		}
+		else pauseLatch = false;
+
+		gameSys.Update( isPaused );
 
 		ground.transform.position = new Vector3(transform.position.x, transform.position.y - 6, ground.transform.position.z);
 		sky.transform.position = new Vector3(transform.position.x, transform.position.y, sky.transform.position.z);

@@ -1,9 +1,14 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
-using V3 = UnityEngine.Vector3;
+using v3 = UnityEngine.Vector3;
 
-public class Ent {
+public struct TouchInfo {
+	public int strength;
+	public UseType useType;
+}
+
+public class ent {
 	GameSys gameSys;
 	GameObject src;
 	Transform trans;
@@ -13,31 +18,36 @@ public class Ent {
 	EntLink updLink;
 	EntLink gridLink;
 
-	public Ent textLabel = null;
+	public ent textLabel = null;
 
 	public int health;
-	public Ent leader;
-	public V3 vel;
-	public V3 knockback;
-	Action<Ent> _update;
+	public ent leader;
+	public v3 vel;
+	public v3 knockback;
+
+	public Action<ent, ent, int> onHurt = (me, source, damage) => { };
+	public Action<ent, ent, TouchInfo> breathTouch;
+	public Action<ent, ent, TouchInfo> playerTouch;
+	public Action<ent, ent, TouchInfo> buddyTouch;
+
+	Action<ent> _update;
 	bool removed = false;
-
-	public Action<Ent, Ent, int> onHurt = (me, source, damage) => { };
-	public Action<Ent, Ent, UseType, int> pushedByBreath;
-	public Action<Ent, Ent, UseType, int> playerTouch;
-	public Action<Ent, Ent, UseType, int> buddyTouch;
-
 	bool usingGrid = false;
 
-	public Action<Ent> update {
+	public bool ignorePause;
+
+	public Action<ent> update {
 		get { return _update; }
 		set {
-			if(_update == null) updLink.Link(gameSys.updaters);
+			if(_update == null) {
+				if( ignorePause )updLink.Link(gameSys.sysUpdaters);
+				else updLink.Link(gameSys.updaters);
+			}
 			if(value == null) updLink.Unlink();
 			_update = value;
 		}
 	}
-	public bool useGrid {
+	public bool inGrid {
 		set { if(value == true) { usingGrid = true; gridLink.Link(gameSys.GridLink(pos)); } else { usingGrid = false; gridLink.Unlink(); } }
 	}
 	public void remove() {
@@ -64,29 +74,30 @@ public class Ent {
 		}
 		return false;
 	}
-	public Ent(GameSys sys, GameObject prefab = null) {
-		src = (GameObject)UnityEngine.Object.Instantiate((prefab != null) ? prefab : sys.basePrefab, new V3(0, 0, 0), Quaternion.identity);
+	public ent(GameSys sys, GameObject prefab = null) {
+		src = (GameObject)UnityEngine.Object.Instantiate((prefab != null) ? prefab : sys.basePrefab, new v3(0, 0, 0), Quaternion.identity);
 		trans = src.transform;
 		spr = src.GetComponent<SpriteRenderer>();
 		tx = src.GetComponent<TextMesh>();
+		ignorePause = false;
 		gameSys = sys;
 		updLink = new EntLink(this);
 		gridLink = new EntLink(this);
-		pushedByBreath = (e, user, useType, strength) => { };
-		playerTouch = (e, user, useType, strength) => { };
-		buddyTouch = (e, user, useType, strength) => { };
+		breathTouch = (e, user, info) => { };
+		playerTouch = (e, user, info) => { };
+		buddyTouch = (e, user, info) => { };
 	}
-	public V3 pos {
+	public v3 pos {
 		get { return trans.localPosition; }
 		set { if(usingGrid )gridLink.Unlink(); if(value.z != trans.localPosition.z) { trans.localPosition = value; SortByZ(); } else { trans.localPosition = value; } if(usingGrid )gridLink.Link( gameSys.GridLink( trans.localPosition )); }
 	}
-	public V3 pushCenter {
-		get { return trans.localPosition- new V3(0,.7f,0); }
+	public v3 pushCenter {
+		get { return trans.localPosition- new v3(0,.7f,0); }
 	}
-	public float scale { get { return trans.localScale.x; } set { trans.localScale = new V3(value, value, value); } }
-	public float ang { get { return trans.eulerAngles.z; } set { trans.eulerAngles = new V3(0, 0, value); } }
-	public void MoveBy(V3 moveVector) { if(removed) return; gridLink.Unlink(); trans.Translate(moveVector, Space.World); if(moveVector.z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
-	public void MoveBy(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.Translate(new V3(x, y, z), Space.World); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
+	public float scale { get { return trans.localScale.x; } set { trans.localScale = new v3(value, value, value); } }
+	public float ang { get { return trans.eulerAngles.z; } set { trans.eulerAngles = new v3(0, 0, value); } }
+	public void MoveBy(v3 moveVector) { if(removed) return; gridLink.Unlink(); trans.Translate(moveVector, Space.World); if(moveVector.z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
+	public void MoveBy(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.Translate(new v3(x, y, z), Space.World); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public Sprite sprite { set { if( spr != null)spr.sprite = value; } }
 	public void SortByZ() { if(spr != null )spr.sortingOrder = Math.Min(Math.Max((int)(-trans.position.z * 1024.0f), -32768), 32767); }
 	public Color color { set { spr.color = value; } }
@@ -110,13 +121,13 @@ public class Ent {
 			spr.sortingLayerName = s;
 		}
 	}
-	public Ent parent {
+	public ent parent {
 		set { trans.parent = value.src.transform; }
 	}
 	public MonoBehaviour parentMono {
 		set { trans.parent = value.transform; }
 	}
-	public List<Ent> children { set { foreach(var child in value) { child.trans.parent = trans; child.trans.localPosition = new V3(0, -.2f, -.2f); } } }
+	public List<ent> children { set { foreach(var child in value) { child.trans.parent = trans; child.trans.localPosition = new v3(0, -.2f, -.2f); } } }
 
 	public string text { set { tx.text = value;} get { return tx.text; } }
 	public Color textColor { set { tx.color = value;} get { return tx.color; } }
@@ -125,15 +136,15 @@ public class Ent {
 
 public class FixedEntPool {
 	int limit;
-	Ent[] entSet;
+	ent[] entSet;
 	int nextToSpawn = 0;
 
 	public FixedEntPool( GameSys gameSys, int count ) {
 		limit = count;
-		entSet = new Ent[limit];
-		for( var k = 0; k < limit; k++ )entSet[k] = new Ent(gameSys );
+		entSet = new ent[limit];
+		for( var k = 0; k < limit; k++ )entSet[k] = new ent(gameSys );
 	}
-	public Ent Alloc() {
+	public ent Alloc() {
 		var e = entSet[nextToSpawn];
 		nextToSpawn = (nextToSpawn+1)%limit;
 		return e;
@@ -141,24 +152,25 @@ public class FixedEntPool {
 }
 
 class ReuseEnt {
-	public Ent e;
+	public ent e;
 	public ReuseEnt( FixedEntPool pool, bool clear = false ) {
 		e = pool.Alloc();
 		// Fixme: Make clear work.
 	}
 
-	public Ent textLabel {set { e.textLabel=value; } }
+	public ent textLabel {set { e.textLabel=value; } }
 	public int health {set {e.health=value; } }
-	public Ent leader {set { e.leader=value;} }
-	public V3 vel {set { e.vel=value;} }
-	public V3 knockback {set { e.knockback=value;} }
-	public Action<Ent, Ent, int> onHurt { set { e.onHurt = value; } }
-	public Action<Ent, Ent, UseType, int> pushedByBreath {set { e.pushedByBreath=value;} }
-	public Action<Ent, Ent, UseType, int> playerTouch {set { e.playerTouch=value;} }
-	public Action<Ent, Ent, UseType, int> buddyTouch {set { e.buddyTouch=value;} }
-	public Action<Ent> update {set { e.update = value;}}
-	public bool useGrid {set { e.useGrid = value; }}
-	public V3 pos {set { e.pos = value; }}
+	public ent leader {set { e.leader=value;} }
+	public v3 vel {set { e.vel=value;} }
+	public v3 knockback {set { e.knockback=value;} }
+	public Action<ent, ent, int> onHurt { set { e.onHurt = value; } }
+	public Action<ent, ent, TouchInfo> pushedByBreath {set { e.breathTouch=value;} }
+	public Action<ent, ent, TouchInfo> playerTouch {set { e.playerTouch=value;} }
+	public Action<ent, ent, TouchInfo> buddyTouch {set { e.buddyTouch=value;} }
+	public Action<ent> update {set { e.update = value;}}
+	public bool useGrid {set { e.inGrid = value; }}
+	public bool ignorePause{set { e.ignorePause = value; }}
+	public v3 pos {set { e.pos = value; }}
 	public float scale { set { e.scale=value; } }
 	public float ang { set { e.ang=value; } }
 	public Sprite sprite { set { e.sprite=value; } }
@@ -167,9 +179,9 @@ class ReuseEnt {
 	public string name { set { e.name = value;} }
 	public bool active { set {  e.active = value; } }
 	public Layers layer { set { e.layer = value; } }
-	public Ent parent {set { e.parent = value; }}
+	public ent parent {set { e.parent = value; }}
 	public MonoBehaviour parentMono { set { e.parentMono=value; }}
-	public List<Ent> children { set { e.children = value; } }
+	public List<ent> children { set { e.children = value; } }
 	public string text { set { e.text = value;}  }
 	public Color textColor { set { e.textColor = value;}  }
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
-using V3 = UnityEngine.Vector3;
+using v3 = UnityEngine.Vector3;
 using APG;
 
 public class Players:MonoBehaviour {
@@ -13,7 +13,7 @@ public class Players:MonoBehaviour {
 } 
 
 public class PlayerSys {
-	public Ent playerEnt = null, player2Ent = null;
+	public ent playerEnt = null, player2Ent = null;
 
 	GameSys gameSys;
 	Players players;
@@ -27,17 +27,61 @@ public class PlayerSys {
 		//Player(2, foeSys);
 	}
 
-	public void TryHitPlayers(Ent e, float dist, Action<Ent> onHit) {
-		var dif = playerEnt.pos - e.pos;
-		dif.z = 0;
-		if(dif.magnitude < dist) {
-			onHit(playerEnt);
-			return;
+	public void MakeBreath( List<Action<v3, float, float, float>> blow, List<Action<v3, float, float, float>> inhale, List<Action<v3, float, float, float>> inhaleBig ) {
+		var cloudSet = new List<ent>();
+		foreach(var k in 20.Loop()) {
+			float cloudRot = rd.f(-3f, 3f), fallSpeed = rd.f(.85f, .95f), chargeStrength = 1f;
+			var b = new v3( 0f, 0f, 0f );
+			var cloudNum = k;
+			var blowing = false;
+			var f = new ent(gameSys) {
+				sprite = rd.Sprite(players.clouds), scale=0, name="playerbreath",
+				update = e => {
+					if(e.scale < .01f) return;
+					e.MoveBy(b);
+					b *= fallSpeed;
+					e.scale *= fallSpeed;
+					e.ang += cloudRot;
+					e.vel = b;
+					if(cloudNum == 0 && blowing && e.scale > .1f) {
+						gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.breathTouch(targ, me, new TouchInfo { useType= UseType.PlayerBlowing, strength=(int)chargeStrength });});
+					}
+				}
+			};
+			blow.Add((srcPos, blowVx, blowVy, chargeSize) => {
+				var size = 1f;
+				blowing = true;
+				if(chargeSize == 3) { size = 4;}
+				if(chargeSize == 2) { size = 2; }
+				chargeStrength = chargeSize;
+				if(cloudNum == 0) {
+					var spd = size;
+					b += new v3( blowVx * .4f*spd, blowVy * .4f*spd, 0 );
+					b.z = 0;
+					f.pos = srcPos;
+					f.scale = size*.25f;
+				}
+				else {
+					var spd = rd.f(.5f, size);
+					b += new v3( blowVx * .4f*spd + rd.f(.02f), blowVy * .4f*spd + rd.f(.02f), rd.f(.03f) );
+					f.pos = srcPos + new v3(0, .2f, 0);
+					f.scale = size * rd.f(.05f, .25f);
+				}
+			});
+			inhale.Add((srcPos, blowVx, blowVy, chargeSize) => {
+				blowing = false;
+				b = new v3( rd.f(.02f), rd.f(.02f), rd.f(.03f) );
+				f.pos = srcPos + new v3(0, .2f, 0);
+				f.scale = rd.f(.05f, .25f);
+			});
+			inhaleBig.Add((srcPos, blowVx, blowVy, chargeSize) => {
+				blowing = false;
+				b = new v3( 2*rd.f(.02f), 2*rd.f(.02f), 2*rd.f(.03f) );
+				f.pos = srcPos + new v3(0, .2f, 0);
+				f.scale = 2*rd.f(.05f, .25f);
+			});
 		}
-		if( player2Ent == null)return;
-		dif = player2Ent.pos - e.pos;
-		dif.z = 0;
-		if(dif.magnitude < dist)onHit(player2Ent);
+
 	}
 
 	void Player(int id, FoeSys foeSys) {
@@ -51,79 +95,28 @@ public class PlayerSys {
 		else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.LeftShift; startingX = -5f; }
 		else {  pic = players.friends[0]; startingX = 5f;}
 
-		var cloudSet = new List<Ent>();
-		var blow = new List<Action<V3, float, float, float>>();
-		var inhale = new List<Action<V3, float, float, float>>();
-		var inhaleBig = new List<Action<V3, float, float, float>>();
-		foreach(var k in 20.Loop()) {
-			float cloudRot = Rd.Fl(-3f, 3f), fallSpeed = Rd.Fl(.85f, .95f), chargeStrength = 1f;
-			var b = new V3( 0f, 0f, 0f );
-			var cloudNum = k;
-			var blowing = false;
-			var f = new Ent(gameSys) {
-				sprite = Rd.Sprite(players.clouds), scale=0, name="playerbreath",
-				update = e => {
-					if(e.scale < .01f) return;
-					e.MoveBy(b);
-					b *= fallSpeed;
-					e.scale *= fallSpeed;
-					e.ang += cloudRot;
-					e.vel = b;
-					if(cloudNum == 0 && blowing && e.scale > .1f) {
-						gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.pushedByBreath(targ, me, UseType.PlayerBlowing, (int)chargeStrength);});
-					}
-				}
-			};
-			blow.Add((srcPos, blowVx, blowVy, chargeSize) => {
-				var size = 1f;
-				blowing = true;
-				if(chargeSize == 3) { size = 4;}
-				if(chargeSize == 2) { size = 2; }
-				chargeStrength = chargeSize;
-				if(cloudNum == 0) {
-					var spd = size;
-					b += new V3( blowVx * .4f*spd, blowVy * .4f*spd, 0 );
-					b.z = 0;
-					f.pos = srcPos;
-					f.scale = size*.25f;
-				}
-				else {
-					var spd = Rd.Fl(.5f, size);
-					b += new V3( blowVx * .4f*spd + Rd.Fl(.02f), blowVy * .4f*spd + Rd.Fl(.02f), Rd.Fl(.03f) );
-					f.pos = srcPos + new V3(0, .2f, 0);
-					f.scale = size * Rd.Fl(.05f, .25f);
-				}
-			});
-			inhale.Add((srcPos, blowVx, blowVy, chargeSize) => {
-				blowing = false;
-				b = new V3( Rd.Fl(.02f), Rd.Fl(.02f), Rd.Fl(.03f) );
-				f.pos = srcPos + new V3(0, .2f, 0);
-				f.scale = Rd.Fl(.05f, .25f);
-			});
-			inhaleBig.Add((srcPos, blowVx, blowVy, chargeSize) => {
-				blowing = false;
-				b = new V3( 2*Rd.Fl(.02f), 2*Rd.Fl(.02f), 2*Rd.Fl(.03f) );
-				f.pos = srcPos + new V3(0, .2f, 0);
-				f.scale = 2*Rd.Fl(.05f, .25f);
-			});
-		}
+		var blow = new List<Action<v3, float, float, float>>();
+		var inhale = new List<Action<v3, float, float, float>>();
+		var inhaleBig = new List<Action<v3, float, float, float>>();
 
-		var pl = new Ent(gameSys) {
-			sprite = pic, pos = new V3( startingX, 0, 0 ), scale = 1.5f, flipped=(id == 2) ? true : false, vel = new V3(0, 0, 0), knockback = new V3(0, 0, 0), name="player"+id,
+		MakeBreath( blow, inhale, inhaleBig );
+
+		var pl = new ent(gameSys) {
+			sprite = pic, pos = new v3( startingX, 0, 0 ), scale = 1.5f, flipped=(id == 2) ? true : false, vel = new v3(0, 0, 0), knockback = new v3(0, 0, 0), name="player"+id, inGrid=true,
 			update = e => {
 				t++;
 				if(Input.GetKey(left)) {
 					e.flipped = true;
-					Num.Ease(ref e.vel.x, -1.0f, .3f);
+					nm.ease(ref e.vel.x, -1.0f, .3f);
 				}
 				else if(Input.GetKey(right)) {
 					e.flipped = false;
-					Num.Ease(ref e.vel.x, 1.0f, .3f);
+					nm.ease(ref e.vel.x, 1.0f, .3f);
 				}
-				else Num.Ease(ref e.vel.x, 0, .1f); ;
-				if(Input.GetKey(up)) { Num.Ease(ref e.vel.y, 1.0f, .3f); }
-				else if(Input.GetKey(down)) { Num.Ease(ref e.vel.y, -1.0f, .3f); }
-				else Num.Ease(ref e.vel.y, 0, .1f);
+				else nm.ease(ref e.vel.x, 0, .1f); ;
+				if(Input.GetKey(up)) { nm.ease(ref e.vel.y, 1.0f, .3f); }
+				else if(Input.GetKey(down)) { nm.ease(ref e.vel.y, -1.0f, .3f); }
+				else nm.ease(ref e.vel.y, 0, .1f);
 				rot = e.vel.x * 360 / Mathf.PI;
 				if(Input.GetKey(use)) {
 					if(useDown == false) { useDownTime = t; }
@@ -138,7 +131,7 @@ public class PlayerSys {
 				else {
 					if(useDown == true) {
 						gameSys.Sound(players.blowSound, 1);
-						var knockback2 = new V3(-e.vel.x, -e.vel.y, 0).normalized;
+						var knockback2 = new v3(-e.vel.x, -e.vel.y, 0).normalized;
 						var blowStrength = 1;
 						if(t-useDownTime > 135) {
 							knockback2 *= 1.5f;
@@ -149,7 +142,9 @@ public class PlayerSys {
 							blowStrength = 2;
 						}
 						else { knockback2 *= .4f; }
+
 						foreach(var b in blow) b(e.pos, e.vel.x, e.vel.y, blowStrength);
+
 						e.knockback += knockback2;
 					}
 					useDown = false;
@@ -163,16 +158,16 @@ public class PlayerSys {
 				if(e.pos.y > 6.0f && e.vel.y > 0) e.vel.y = 0;
 				e.MoveBy(e.vel.x * .15f + e.knockback.x, e.vel.y * .15f+e.knockback.y, .01f * Mathf.Cos(t * .04f));
 				e.ang = -rot * .1f;
-				gameSys.grid.Find(e.pos - new V3(0,.7f,0), 1, e, (me, targ) => { targ.playerTouch(targ, me, UseType.PlayerPush, 1);});
+				gameSys.grid.Find(e.pos - new v3(0,.7f,0), 1, e, (me, targ) => { targ.playerTouch(targ, me, new TouchInfo {useType= UseType.PlayerPush, strength= 1 });});
 			},
-			pushedByBreath = (e, user, useType, useStrength) => { e.knockback += user.vel * .16f;}
+			breathTouch = (e, user, info) => { e.knockback += user.vel * .16f;}
 		};
 		if(id == 2) player2Ent = pl;
 		else playerEnt = pl;
 	}
 
-	void React(V3 pos, Sprite msg) {
+	void React(v3 pos, Sprite msg) {
 		var delay = 30;
-		new Ent(gameSys) { sprite = msg, name="react", pos = pos, scale = 1, update = e => { delay--; if(delay <= 0) e.remove(); } };
+		new ent(gameSys) { sprite = msg, name="react", pos = pos, scale = 1, update = e => { delay--; if(delay <= 0) e.remove(); } };
 	}
 }

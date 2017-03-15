@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using V3 = UnityEngine.Vector3;
+using v3 = UnityEngine.Vector3;
 
 public class IncomingWaveHUD : MonoBehaviour {
 	public Sprite uiBackground, player;
@@ -7,12 +7,12 @@ public class IncomingWaveHUD : MonoBehaviour {
 
 	private int tick = 0;
 
-	void spawningMessage(GameSys gameSys, SpawnSys spawners, Ent uiBkg ) {
+	void spawningMessage(GameSys gameSys, SpawnSys spawners, ent uiBkg ) {
 		bool labelActive = false;
 		var labelAlpha = 0f;
 		int messageTime= 0;
 
-		new Ent(gameSys, textName) { pos = new V3(0, 4.3f, 0), scale=.09f, text="", textColor=new Color( .1f, .1f, .1f, 0 ), active=false, parent = uiBkg,
+		new ent(gameSys, textName) { pos = new v3(0, 4.3f, 0), scale=.09f, text="", textColor=new Color( .1f, .1f, .1f, 0 ), active=false, parent = uiBkg,
 			update = e => {
 				if( spawners.incomingMessageTime > messageTime) {
 					messageTime = spawners.incomingMessageTime;
@@ -41,11 +41,11 @@ public class IncomingWaveHUD : MonoBehaviour {
 		} };
 	}
 
-	void makeSpawnTimelineEntries( GameSys gameSys, SpawnSys spawners, Ent uiBkg ) {
+	void makeSpawnTimelineEntries( GameSys gameSys, SpawnSys spawners, ent uiBkg ) {
 		foreach (var k in 20.Loop()) {
 			var offset = k;
-			new Ent(gameSys) {
-				sprite = offset < spawners.spawnSet.Count ? spawners.spawnSet[offset].icon : player, parent = uiBkg, pos = new V3(0, 0, -.1f), scale = .3f, layer = Layers.UI,
+			new ent(gameSys) {
+				sprite = offset < spawners.spawnSet.Count ? spawners.spawnSet[offset].icon : player, parent = uiBkg, pos = new v3(0, 0, -.1f), scale = .3f, layer = Layers.UI,
 				update = e => {
 					if( offset >= spawners.spawnSet.Count ) {
 						e.color = new Color( 0,0,0,0 );
@@ -58,14 +58,13 @@ public class IncomingWaveHUD : MonoBehaviour {
 					if( s > 1 ) {
 						e.color = new Color( 0,0,0,0);
 						return;}
-					e.pos = new V3(-(s*8 - 4), spawners.spawnSet[offset].iconYOffset*.5f, -.1f);
-					e.color = new Color( 1, 1, 1, Num.FadeInOut( s, 8 ) );}};}
+					e.pos = new v3(-(s*8 - 4), spawners.spawnSet[offset].iconYOffset*.5f, -.1f);
+					e.color = new Color( 1, 1, 1, nm.FadeInOut( s, 8 ) );}};}
 	}
 
 	public void makeUI( GameSys gameSys, MonoBehaviour src, SpawnSys spawners ) {
-		var uiBkg = new Ent(gameSys) { sprite = uiBackground, pos = new V3(0, 5.7f, 1), scale = .6f, layer = Layers.UI, parentMono = src};
+		var uiBkg = new ent(gameSys) { sprite = uiBackground, pos = new v3(0, 5.7f, 1), scale = .6f, layer = Layers.UI, parentMono = src, update = e => tick++ };
 		spawningMessage( gameSys, spawners, uiBkg );
 		makeSpawnTimelineEntries( gameSys, spawners, uiBkg );
 	}
-	void Update() {
-		tick++;}}
+}

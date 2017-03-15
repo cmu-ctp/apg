@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
-using V3 = UnityEngine.Vector3;
+using v3 = UnityEngine.Vector3;
 using APG;
 
 public class BuddyChoice { public const int MoveTo = 0; public const int Action = 1; public const int Stance = 2; public const int Item = 3; public const int Equip = 4; };
@@ -35,15 +35,15 @@ public class AudiencePlayerSys {
 		};*/
 	}
 
-	void React(V3 pos, Sprite msg) {
+	void React(v3 pos, Sprite msg) {
 		var delay = 30;
-		new Ent(gameSys) { sprite = msg, name="react", pos = pos, scale = 1, update = e => { delay--; if(delay <= 0) e.remove(); } };
+		new ent(gameSys) { sprite = msg, name="react", pos = pos, scale = 1, update = e => { delay--; if(delay <= 0) e.remove(); } };
 	}
 
-	public void Ghost(V3 pos, Ent leader) {
-		float stopDist = Rd.Fl(-4, -2), fadeOffset = Rd.Ang(), tick = 0;
-		var goalOffset = Rd.Vec(-2, 2); 
-		new Ent(gameSys) {
+	public void Ghost(v3 pos, ent leader) {
+		float stopDist = rd.f(-4, -2), fadeOffset = rd.Ang(), tick = 0;
+		var goalOffset = rd.Vec(-2, 2); 
+		new ent(gameSys) {
 			sprite = players.angel, pos = pos, scale = .35f, leader=leader,
 			update = e => {
 				tick++;
@@ -60,10 +60,10 @@ public class AudiencePlayerSys {
 			liveBuddies++;
 
 			bool inUse = false;
-			var nameColor = new Color( Rd.Fl(0,.5f), Rd.Fl(0,.5f), Rd.Fl(0,.5f), 1 );
+			var nameColor = new Color( rd.f(0,.5f), rd.f(0,.5f), rd.f(0,.5f), 1 );
 
 
-			var label = new Ent(gameSys, players.textName) { pos = new V3(0, 0, 0), text="", textColor=nameColor };
+			var label = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=nameColor };
 			var parms = new List<int> { 0, 0, 0, 0, 0, 0, 0 };
 			var posx = (k<10) ? -11 + 9*(k/10f) : 11 - 9*((k-10)/10f);
 			playerEvents.RegisterHandler(new AudiencePlayerEventsHandler {
@@ -71,22 +71,22 @@ public class AudiencePlayerSys {
 				onInput = inputs => parms = inputs,
 				updateClient = () => ""
 			});
-			var goalz = .8f + Rd.Fl(0, 1.5f);
+			var goalz = .8f + rd.f(0, 1.5f);
 			var buddyID = k;
 			var tick = 0;
-			new Ent(gameSys) {
-				sprite = Rd.Sprite(players.friends), pos = new V3(posx, -6, goalz), scale = .3f * 4.5f, health = 3, children = new List<Ent> { label }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt, name = "buddy"+k, useGrid=true,
+			new ent(gameSys) {
+				sprite = rd.Sprite(players.friends), pos = new v3(posx, -6, goalz), scale = .3f * 4.5f, health = 3, children = new List<ent> { label }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt, name = "buddy"+k, inGrid=true,
 				onHurt = (e, src, dmg) => {
 					e.health--;
 					if(e.health > 0) {
 						gameSys.Sound(players.hurtSound, 1);
-						React(e.pos + new V3(0, 0, -.2f), players.owMsg);
+						React(e.pos + new v3(0, 0, -.2f), players.owMsg);
 					}
 					else {
 						gameSys.Sound(players.dieSound, 1);
 						liveBuddies--;
 						Ghost(e.pos, e.leader);
-						React(e.pos + new V3(0, 0, -.2f), players.ughMsg); e.color = new Color(1, 0, 0, .5f);
+						React(e.pos + new v3(0, 0, -.2f), players.ughMsg); e.color = new Color(1, 0, 0, .5f);
 					}
 				},
 				update = e => {
@@ -97,11 +97,11 @@ public class AudiencePlayerSys {
 					}
 					tick++;
 
-					gameSys.grid.Find(e.pos - new V3(0,.7f,0), 1, e, (me, targ) => { targ.buddyTouch(targ, me, UseType.BuddyTouch, 1);});
+					gameSys.grid.Find(e.pos - new v3(0,.7f,0), 1, e, (me, targ) => { targ.buddyTouch(targ, me, new TouchInfo {strength=1 });});
 
 					if(parms[BuddyChoice.MoveTo] != BuddyMoveTo.StayPut) {
 						var goalposx = (-13 + 12 * (parms[BuddyChoice.MoveTo]/6f)) * ((buddyID < 10) ? 1 : -1);
-						var goal = new V3(goalposx, -6, goalz);
+						var goal = new v3(goalposx, -6, goalz);
 						var immediateGoal = e.pos * .99f + .01f * goal;
 						if(immediateGoal.magnitude > .1f) e.MoveBy(immediateGoal - e.pos);
 					}
