@@ -19,7 +19,6 @@ public class Backgrounds:MonoBehaviour {
 			var tick = 0f;
 			new ent(gameSys) {
 				sprite = rd.Sprite(clouds), pos = goal, scale = rd.f(.3f, .4f) * 1.7f,
-				inGrid=true,
 				name="cloud", 
 				update = e => {
 					tick++;
@@ -35,7 +34,7 @@ public class Backgrounds:MonoBehaviour {
 		foreach(var k in 300.Loop()) {
 			var zDist = rd.f(7f, 60.0f); var sideScale = zDist / 60.0f;
 			new ent(gameSys) {
-				sprite = rd.Sprite(trees), pos = new v3(rd.f(23) * (1 + sideScale * 2), -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 2, inGrid=true, name="tree",
+				sprite = rd.Sprite(trees), pos = new v3(rd.f(23) * (1 + sideScale * 2), -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 2, name="tree",
 				update = e => { }
 			};
 		}
@@ -43,14 +42,14 @@ public class Backgrounds:MonoBehaviour {
 	void Bushes() {
 		foreach(var k in 100.Loop()) {
 			var zDist = rd.f(3f, 27.0f); var sideScale = zDist / 60.0f;
-			new ent(gameSys) { sprite = rd.Sprite(bushes), pos = new v3(rd.f(23) * (1 + sideScale * 2), -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f), name="bush", inGrid=true };
+			new ent(gameSys) { sprite = rd.Sprite(bushes), pos = new v3(rd.f(23) * (1 + sideScale * 2), -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f), name="bush" };
 		}
 	}
 	void Buildings() {
 		foreach(var k in 6.Loop()) {
 			var zDist = 2.5f; var posx = -12 + 10 * (k/6f);
-			new ent(gameSys) { sprite = buildings[k], pos = new v3(posx, -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 1.7f, name="building", inGrid=true };
-			new ent(gameSys) { sprite = buildings[k], pos = new v3(-posx, -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 1.7f, name="building", inGrid=true };
+			new ent(gameSys) { sprite = buildings[k], pos = new v3(posx, -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 1.7f, name="building" };
+			new ent(gameSys) { sprite = buildings[k], pos = new v3(-posx, -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 1.7f, name="building" };
 		}
 	}
 }
