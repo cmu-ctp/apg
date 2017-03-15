@@ -15,6 +15,21 @@ public class GameBuilder:MonoBehaviour {
 	public Reacts reacts;
 	public TwitchGameLogicChat gameLogicChat;
 
+	FullGame fullGame;
+
+	void Start() {
+		Application.runInBackground = true;
+		fullGame = new FullGame( this );
+		fullGame.Init( this );
+	}
+
+	void Update() {
+		fullGame.RunUpdate( transform );
+	}
+}
+
+class FullGame {
+
 	float tick = 0;
 
 	GameSys gameSys;
@@ -25,10 +40,12 @@ public class GameBuilder:MonoBehaviour {
 	PropSys propSys;
 	ReactSys reactSys = new ReactSys();
 	SpawnSys spawnSys = new SpawnSys();
+	WaveHUD  waveHUD;
+
+	bool pauseLatch = false;
+	bool isPaused = false;
 
 	void InitSpawns() {
-
-		spawnSys.Add(20, treatSys.balloonGridAll );
 
 		//spawnSys.Add(5, treatSys.balloonGridAll );
 		//spawnSys.Add(1, treatSys.balloonClusterBottom);
@@ -47,13 +64,11 @@ public class GameBuilder:MonoBehaviour {
 		spawnSys.Add(24, treatSys.balloonClusterBottom);
 		spawnSys.Add(30, treatSys.balloonClusterBottomRight);
 
-		//spawnSys.Add(0, foeSys.beardGuy);
-
-		spawnSys.Add(0, foeSys.beardGuy);
-		spawnSys.Add(40, foeSys.plantGuy);
-
 		spawnSys.Add(46, treatSys.balloonClusterLeft);
 		spawnSys.Add(52, treatSys.balloonClusterRight);
+
+		spawnSys.Add(60, foeSys.plantGuy);
+
 		spawnSys.Add(68, treatSys.balloonClusterBottomLeft);
 
 
@@ -73,25 +88,24 @@ public class GameBuilder:MonoBehaviour {
 
 		spawnSys.Sort();
 	}
-	void Start() {
-		Application.runInBackground = true;
-		gameSys = new GameSys(cloud1, transform);
-		reactSys.Init( gameSys, reacts );
-		foeSys = new FoeSys(foes, gameSys, playerSys, audiencePlayerSys);
-		treatSys = new TreatSys	( treats, gameSys, reactSys );
-		propSys = new PropSys( props, gameSys );
+
+	public void Init( MonoBehaviour src ) {
+		gameSys = new GameSys(assets.cloud1, src.transform);
+		reactSys.Init( gameSys, assets.reacts );
+		foeSys = new FoeSys(assets.foes, gameSys, playerSys, audiencePlayerSys);
+		treatSys = new TreatSys	( assets.treats, gameSys, reactSys );
+		propSys = new PropSys( assets.props, gameSys );
 		
-		playerSys.Setup(gameSys, players, foeSys, gameLogicChat.GetAudienceSys());
-		audiencePlayerSys.Setup(gameSys, players, foeSys, gameLogicChat.GetAudienceSys(), playerSys);
-		backgrounds.Setup(gameSys);
+		
+		playerSys.Setup(gameSys, assets.players, foeSys, assets.gameLogicChat.GetAudienceSys());
+		audiencePlayerSys.Setup(gameSys, assets.players, foeSys, assets.gameLogicChat.GetAudienceSys(), playerSys);
+		assets.backgrounds.Setup(gameSys);
 		InitSpawns();
-		incomingWaveHUD.makeUI(gameSys, this, spawnSys);
+
+		waveHUD = new WaveHUD( gameSys, assets.incomingWaveHUD, src, spawnSys );
 	}
 
-	bool pauseLatch = false;
-	bool isPaused = false;
-
-	void Update() {
+	public void RunUpdate( Transform transform ) {
 		tick++;
 		foeSys.tick = tick;
 
@@ -118,16 +132,22 @@ public class GameBuilder:MonoBehaviour {
 
 		gameSys.Update( isPaused );
 
-		ground.transform.position = new Vector3(transform.position.x, transform.position.y - 6, ground.transform.position.z);
-		sky.transform.position = new Vector3(transform.position.x, transform.position.y, sky.transform.position.z);
+		assets.ground.transform.position = new Vector3(transform.position.x, transform.position.y - 6, assets.ground.transform.position.z);
+		assets.sky.transform.position = new Vector3(transform.position.x, transform.position.y, assets.sky.transform.position.z);
 
-		overlay1.transform.position = new Vector3(transform.position.x, transform.position.y, overlay1.transform.position.z);
-		overlay2.transform.position = new Vector3(transform.position.x, transform.position.y, overlay2.transform.position.z);
+		assets.overlay1.transform.position = new Vector3(transform.position.x, transform.position.y, assets.overlay1.transform.position.z);
+		assets.overlay2.transform.position = new Vector3(transform.position.x, transform.position.y, assets.overlay2.transform.position.z);
 
-		overlay1.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, .9f, .15f + .11f * Mathf.Cos(tick * .01f + 73.0f) + .13f * Mathf.Cos(tick * .0073f + 13.0f));
-		overlay2.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, .9f, .12f + .09f * Mathf.Cos(tick * .0083f + 173.0f) + .11f * Mathf.Cos(tick * .0063f + 23.0f));
+		assets.overlay1.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, .9f, .15f + .11f * Mathf.Cos(tick * .01f + 73.0f) + .13f * Mathf.Cos(tick * .0073f + 13.0f));
+		assets.overlay2.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, .9f, .12f + .09f * Mathf.Cos(tick * .0083f + 173.0f) + .11f * Mathf.Cos(tick * .0063f + 23.0f));
 
-		overlay1.transform.localEulerAngles = new Vector3(0, 0, .2f + 21f * Mathf.Cos(tick * .01f + 73.0f) + 16f * Mathf.Cos(tick * .0053f + 13.0f));
-		overlay2.transform.localEulerAngles = new Vector3(0, 0, .2f + 11f * Mathf.Cos(tick * .0311f + 173.0f) + 23f * Mathf.Cos(tick * .0073f + 213.0f));
+		assets.overlay1.transform.localEulerAngles = new Vector3(0, 0, .2f + 21f * Mathf.Cos(tick * .01f + 73.0f) + 16f * Mathf.Cos(tick * .0053f + 13.0f));
+		assets.overlay2.transform.localEulerAngles = new Vector3(0, 0, .2f + 11f * Mathf.Cos(tick * .0311f + 173.0f) + 23f * Mathf.Cos(tick * .0073f + 213.0f));
+	}
+
+	GameBuilder assets;
+
+	public FullGame( GameBuilder builder ) {
+		assets = builder;
 	}
 }

@@ -11,6 +11,7 @@ public class Foes:MonoBehaviour {
 
 public class FoeSys {
 	public float tick = 0;
+
 	Foes foes;
 	GameSys gameSys;
 	PlayerSys playerSys;
@@ -78,20 +79,23 @@ public class FoeSys {
 	void BeardyGuy() {
 		var startTime = tick;
 		foreach(var k in 2.Loop()) {
-			var goal = new v3(0, 4, 30); var horizontal = (k==0) ? -3f : 3f; var vertOffset = 4 + (k == 0 ? 0 : 2); var zDepth = (k == 0 ? 30 : 20); var tickOffset = (k == 0 ? 0 : 200); var doShoot = true; var angAnim = new DualWave(4, .025f);
-			var shakeAmount = 0f; var shootDelay = 0;
+			var goal = new v3(0, 4, 30); var horizontal = (k==0) ? -3f : 3f; var vertOffset = 4 + (k == 0 ? 0 : 2); var zDepth = (k == 0 ? 30 : 20); var tickOffset = (k == 0 ? 0 : 200);
+			var lastNoiseTime = 0f;
+			var doShoot = true;
+			var angAnim = new DualWave(4, .025f);
+			var shakeAmount = 0f; var shootDelay = 0; 
 			var sprites = (k == 0) ? foes.shoes : foes.socks;
 			new ent(gameSys) {
 				sprite = (k == 0 ? foes.beardguy : foes.beardguy2), pos = new v3(rd.f(40), rd.f(-4, -7), rd.f(80, 100)), scale = 1f, name = "beardguy", inGrid=true,
 				update = e => {
-					if(tick - startTime > 60 * 40) {
+					if(tick - startTime > 60 * 30) {
 						goal = new v3(horizontal, vertOffset, playerSys.playerEnt.pos.z + .3f);
 						goal.y = 50;
-						e.pos = e.pos * .98f + .02f * goal;
+						e.pos = e.pos * .99f + .01f * goal;
 						if( e.pos.y > 45) {
-							Debug.Log( "Removing beard guy!!");
 							e.remove(); return;
 						}
+						return;
 					}
 					shootDelay--;
 					if((tick + tickOffset) % 600 < 200 && shakeAmount < .5f) {
@@ -112,7 +116,10 @@ public class FoeSys {
 				},
 				breathTouch = (e, user, info) => {
 					if(e.pos.z > 5)return;
-					gameSys.Sound(foes.guySurpriseSound, 1);
+					if( lastNoiseTime < tick - 10) {
+						gameSys.Sound(foes.guySurpriseSound, 1);
+						lastNoiseTime = tick;
+					}
 					shootDelay = 90;
 					if(e.pos.z < 10) shakeAmount = 100;
 				}

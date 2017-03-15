@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System;
 using v3 = UnityEngine.Vector3;
 using APG;
 
@@ -47,7 +46,7 @@ public class AudiencePlayerSys {
 			sprite = players.angel, pos = pos, scale = .35f, leader=leader,
 			update = e => {
 				tick++;
-				e.color = new Color(1, 1, 1, .5f + .5f * Mathf.Cos(tick * .02f + fadeOffset));
+				e.color = nm.col(1, .5f + .5f * Mathf.Cos(tick * .02f + fadeOffset));
 				var goal = e.leader.pos - e.pos + goalOffset;
 				var spd = Mathf.Max( (goal.magnitude - stopDist)*.003f, 0 );
 				if(spd > 0) e.MoveBy(goal.normalized * spd);

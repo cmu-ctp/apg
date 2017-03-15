@@ -11,6 +11,7 @@ public struct TouchInfo {
 public class ent {
 	GameSys gameSys;
 	GameObject src;
+
 	Transform trans;
 	SpriteRenderer spr;
 	TextMesh tx = null;
