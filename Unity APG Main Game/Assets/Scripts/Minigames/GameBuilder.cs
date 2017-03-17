@@ -2,8 +2,8 @@
 using v3 = UnityEngine.Vector3;
 
 public class GameBuilder:MonoBehaviour {
-	public GameObject cloud1;
-	public Sprite boulder;
+	public GameObject basicSpriteObject;
+
 	public GameObject sky, ground, overlay1, overlay2;
 
 	public IncomingWaveHUD incomingWaveHUD;
@@ -90,7 +90,7 @@ class FullGame {
 	}
 
 	public void Init( MonoBehaviour src ) {
-		gameSys = new GameSys(assets.cloud1, src.transform);
+		gameSys = new GameSys(assets.basicSpriteObject, src.transform);
 		reactSys.Init( gameSys, assets.reacts );
 		foeSys = new FoeSys(assets.foes, gameSys, playerSys, audiencePlayerSys);
 		treatSys = new TreatSys	( assets.treats, gameSys, reactSys );

@@ -55,7 +55,8 @@ public class AudiencePlayerSys {
 	}
 
 	void Buddies(AudienceSysInterface playerEvents, PlayerSys playerSys) {
-		foreach(var k in 20.Loop()) {
+		var bsrc = new ent(gameSys) { name="buddySet" };
+		for( var k = 0; k < 20; k++ ) {
 			liveBuddies++;
 
 			bool inUse = false;
@@ -74,7 +75,8 @@ public class AudiencePlayerSys {
 			var buddyID = k;
 			var tick = 0;
 			new ent(gameSys) {
-				sprite = rd.Sprite(players.friends), pos = new v3(posx, -6, goalz), scale = .3f * 4.5f, health = 3, children = new List<ent> { label }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt, name = "buddy"+k, inGrid=true,
+				sprite = rd.Sprite(players.friends), pos = new v3(posx, -6, goalz), scale = .3f * 4.5f, health = 3, children = new List<ent> { label }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt,
+					name = "buddy"+k, inGrid=true, parent = bsrc,
 				onHurt = (e, src, dmg) => {
 					e.health--;
 					if(e.health > 0) {

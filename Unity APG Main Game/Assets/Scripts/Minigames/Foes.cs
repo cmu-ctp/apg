@@ -78,7 +78,7 @@ public class FoeSys {
 
 	void BeardyGuy() {
 		var startTime = tick;
-		foreach(var k in 2.Loop()) {
+		for( var k = 0; k < 2; k++ ) {
 			var goal = new v3(0, 4, 30); var horizontal = (k==0) ? -3f : 3f; var vertOffset = 4 + (k == 0 ? 0 : 2); var zDepth = (k == 0 ? 30 : 20); var tickOffset = (k == 0 ? 0 : 200);
 			var lastNoiseTime = 0f;
 			var doShoot = true;
@@ -128,7 +128,7 @@ public class FoeSys {
 	}
 	void PlantGuy() {
 		var startTime = tick;
-		foreach(var k in 5.Loop()) {
+		for( var k = 0; k < 5; k++ ) {
 			var goal = new v3(0, 4, 30);
 			float horizontal = rd.f(15), vertOffset = rd.f(2, 6), zDepth = rd.f(20, 50), tickOffset = rd.f(0, 500);
 			var doShoot = true;
@@ -156,7 +156,7 @@ public class FoeSys {
 	}
 	void TrashGuy() {
 		var startTime = tick;
-		foreach(var k in 5.Loop()) {
+		for( var k = 0; k < 5; k++ ) {
 			var goal = new v3(0, 4, 30);
 			float horizontal = rd.f(15), vertOffset = rd.f(2, 6), zDepth = rd.f(20, 50), tickOffset = rd.f(0, 500);
 			var doShoot = true;
@@ -184,7 +184,7 @@ public class FoeSys {
 	}
 	void MicrowaveGuy() {
 		var startTime = tick;
-		foreach(var k in 5.Loop()) {
+		for( var k = 0; k < 5; k++ ) {
 			var goal = new v3(0, 4, 30);
 			float horizontal = rd.f(15), vertOffset = rd.f(2, 6), zDepth = rd.f(20, 50), tickOffset = rd.f(0, 500);
 			var doShoot = true;
@@ -212,7 +212,7 @@ public class FoeSys {
 	}
 	void MustacheGuy() {
 		var startTime = tick;
-		foreach(var k in 5.Loop()) {
+		for( var k = 0; k < 5; k++ ) {
 			var goal = new v3(0, 4, 30);
 			float horizontal = rd.f(15), vertOffset = rd.f(2, 6), zDepth = rd.f(20, 50), tickOffset = rd.f(0, 500);
 			var doShoot = true;

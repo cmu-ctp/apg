@@ -28,14 +28,14 @@ public class PlayerSys {
 	}
 
 	public void MakeBreath( List<Action<v3, float, float, float>> blow, List<Action<v3, float, float, float>> inhale, List<Action<v3, float, float, float>> inhaleBig ) {
-		var cloudSet = new List<ent>();
-		foreach(var k in 20.Loop()) {
+		var src = new ent(gameSys) { name="breatheSet" };
+		for( var k = 0; k < 20; k++ ) {
 			float cloudRot = rd.f(-3f, 3f), fallSpeed = rd.f(.85f, .95f), chargeStrength = 1f;
 			var b = new v3( 0f, 0f, 0f );
 			var cloudNum = k;
 			var blowing = false;
 			var f = new ent(gameSys) {
-				sprite = rd.Sprite(players.clouds), scale=0, name="playerbreath",
+				sprite = rd.Sprite(players.clouds), scale=0, name="playerbreath", parent = src,
 				update = e => {
 					if(e.scale < .01f) return;
 					e.MoveBy(b);

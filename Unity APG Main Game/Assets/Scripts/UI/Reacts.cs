@@ -20,9 +20,11 @@ public class ReactSys {
 
 		newReacts = new FixedEntPool( gameSys, 10 );
 
-		foreach( var k in 10.Loop()) {
+		var src = new ent(gameSys) { name="reactSet" };
+
+		for( var k = 0; k < 10; k++ ) {
 			var label = new ent(gameSys, reacts.textName) { pos = new v3(0, 0, 0), text="" };
-			new ReuseEnt( newReacts ) { sprite = reacts.shockBkg, name="react", scale = 1, update = null, textLabel = label, children = new List<ent> { label }, active=false };
+			new ReuseEnt( newReacts ) { sprite = reacts.shockBkg, name="react", scale = 1, update = null, textLabel = label, children = new List<ent> { label }, active=false, parent = src };
 		}
 	}
 

@@ -60,7 +60,7 @@ public class TreatSys {
 	}
 
 	void BalloonCluster( v3 pos, v3 vel ) {
-		foreach(var k in 5.Loop()) {
+		for( var k = 0; k < 5; k++ ) {
 			v3 scaledVel = vel * rd.f(1,1.3f), push=new v3(0,0,0);
 			float bob = rd.f( .002f, .004f ), bobt = rd.f( .8f, 1.2f ), tick = rd.Ang(), lastPush = 0.0f, goalScale = .3f;
 			new ent(gameSys) {

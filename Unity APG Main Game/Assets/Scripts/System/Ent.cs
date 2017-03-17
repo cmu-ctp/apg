@@ -77,6 +77,7 @@ public class ent {
 	}
 	public ent(GameSys sys, GameObject prefab = null) {
 		src = (GameObject)UnityEngine.Object.Instantiate((prefab != null) ? prefab : sys.basePrefab, new v3(0, 0, 0), Quaternion.identity);
+
 		trans = src.transform;
 		spr = src.GetComponent<SpriteRenderer>();
 		tx = src.GetComponent<TextMesh>();
