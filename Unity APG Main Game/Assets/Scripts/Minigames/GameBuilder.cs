@@ -97,7 +97,7 @@ class FullGame {
 		propSys = new PropSys( assets.props, gameSys );
 		
 		
-		playerSys.Setup(gameSys, assets.players, foeSys, assets.gameLogicChat.GetAudienceSys());
+		playerSys.Setup(gameSys, assets.players, foeSys);
 		audiencePlayerSys.Setup(gameSys, assets.players, foeSys, assets.gameLogicChat.GetAudienceSys(), playerSys);
 		assets.backgrounds.Setup(gameSys);
 		InitSpawns();

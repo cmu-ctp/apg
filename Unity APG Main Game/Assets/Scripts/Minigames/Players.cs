@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System;
 using v3 = UnityEngine.Vector3;
-using APG;
 
 public class Players:MonoBehaviour {
 	public GameObject textName;
@@ -18,7 +17,7 @@ public class PlayerSys {
 	GameSys gameSys;
 	Players players;
 
-	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys, APG.AudienceSysInterface apgSys) {
+	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys) {
 		gameSys = theGameSys;
 		players = thePlayers;
 

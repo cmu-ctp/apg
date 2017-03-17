@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System;
 using APG;
+using UnityEditor;
 
 [RequireComponent(typeof(TwitchIRCChat))]
 [RequireComponent(typeof(TwitchIRCLogic))]
@@ -69,7 +70,6 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 			if( sr != null ) {
 				var fileContents = sr.ReadToEnd();
 				var vals = fileContents.Split(new char[] { ' ' });
-				Debug.Log( "Setting oauths to " + vals[0] + " " + vals[1] + " " + vals[2] );
 				ChatOauth = vals[0];
 				LogicOauth = vals[1];
 				GameClientID = vals[2];
@@ -83,10 +83,22 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 	}
 	public string GetLogicOauth() {
 		LoadDebugOauths();
+
+		if( LogicOauth == "" )
+			EditorUtility.DisplayDialog( "Error!", 
+				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Logic Oauth isn't set to a valid Oauth.\n\nMake sure you have a separate twitch account for your logic channel, then get an Oauth for your logic channel here:\n\n http://www.twitchapps.com/tmi/ \n\nthen fill in that field.", 
+				"Okay");
+
 		return LogicOauth;
 	}
 	public string GetChatOauth() {
 		LoadDebugOauths();
+
+		if( ChatOauth == "" )
+			EditorUtility.DisplayDialog( "Error!", 
+				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Chat Oauth isn't set to a valid Oauth.\n\nGet an Oauth for your chat channel here:\n\n http://www.twitchapps.com/tmi/ \n\nthen fill in that field.", 
+				"Okay");
+
 		return ChatOauth;
 	}
 
@@ -158,6 +170,15 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 
 		Debug.Log( "HTML5 Client is launched for this game and this twitch account with the following URL: " + launchGameLink );
 		Debug.Log( "Paste these specific URLs into Bitly for shortened URLs." );
+
+		if( LogicChannelName == "" )
+			EditorUtility.DisplayDialog( "Error!", 
+				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Logic Channel Name isn't set to a valid Twitch Account.  This will be used for network traffic.  Go register for a new account on Twitch if you don't have one.", 
+				"Okay");
+		if( ChatChannelName == "" )
+			EditorUtility.DisplayDialog( "Error!", 
+				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Chat Channel Name isn't set to a valid Twitch Account.  This will be used for inviting players to join the game.  Go register for a new account on Twitch if you don't have one.", 
+				"Okay");
 
 		if( BitlyLink != "" ) {
 			launchGameLink = BitlyLink;
