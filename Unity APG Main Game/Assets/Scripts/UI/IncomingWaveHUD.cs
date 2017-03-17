@@ -41,11 +41,12 @@ public class WaveHUD {
 						}
 					}
 				}
-		} };
+			}
+		};
 	}
 
 	void makeSpawnTimelineEntries( GameSys gameSys, SpawnSys spawners, ent uiBkg, Sprite player ) {
-		foreach (var k in 20.Loop()) {
+		for( var k = 0; k < 20; k++ ) {
 			var offset = k;
 			new ent(gameSys) {
 				sprite = offset < spawners.spawnSet.Count ? spawners.spawnSet[offset].icon : player, parent = uiBkg, pos = nm.v3z( -.1f ), scale = .3f, layer = Layers.UI,
@@ -62,12 +63,23 @@ public class WaveHUD {
 						e.color = new Color( 0,0,0,0);
 						return;}
 					e.pos = new v3(-(s*8 - 4), spawners.spawnSet[offset].iconYOffset*.5f, -.1f);
-					e.color = nm.col( 1, nm.FadeInOut( s, 8 ) );}};}
+					e.color = nm.col( 1, nm.FadeInOut( s, 8 ) );
+				}
+			};
+		}
 	}
 
 	public WaveHUD( GameSys gameSys, IncomingWaveHUD assets, MonoBehaviour src, SpawnSys spawners  ) {
 		var uiBkg = new ent(gameSys) { sprite = assets.uiBackground, pos = new v3(0, 5.7f, 1), scale = .6f, layer = Layers.UI, parentMono = src, update = e => tick++ };
 		spawningMessage( gameSys, spawners, uiBkg, assets.textName );
 		makeSpawnTimelineEntries( gameSys, spawners, uiBkg, assets.player );
+
+		var timer = 99*120;
+		new ent(gameSys, assets.textName) { pos = new v3(-3.8f, 5.3f, 0 ), scale=.1f, text="99", textColor=nm.col( 0f, 1 ), active=true, parent = uiBkg,
+			update = e => {
+				timer--;
+				if( timer % 120 == 0 )e.text = ""+(int)( timer / 120 );
+			}
+		};
 	}
 }
