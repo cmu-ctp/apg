@@ -121,6 +121,7 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 	// what messages can come from clients?
 	void InitIRCLogicChannel() {
 		IRCLogic = this.GetComponent<TwitchIRCLogic>();
+		
 		IRCLogic.messageRecievedEvent.AddListener(msg => {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
 			string msgString = msg.Substring(msgIndex + LogicChannelName.Length + 11);
