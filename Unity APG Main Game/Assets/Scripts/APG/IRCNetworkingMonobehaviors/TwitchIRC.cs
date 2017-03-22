@@ -31,7 +31,9 @@ public class TwitchIRC:MonoBehaviour {
 		var input = new System.IO.StreamReader(networkStream);
 		var output = new System.IO.StreamWriter(networkStream);
 		//Send PASS & NICK.
+
 		logic = this.GetComponent<TwitchGameLogicChat>();
+
 		output.WriteLine("PASS " + getOauth());
 		output.WriteLine("NICK " + getChannelName().ToLower());
 		output.Flush();

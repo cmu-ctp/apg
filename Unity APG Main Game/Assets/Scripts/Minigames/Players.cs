@@ -21,9 +21,9 @@ public class PlayerSys {
 		gameSys = theGameSys;
 		players = thePlayers;
 
-		Player(0, foeSys);
-		//Player(1, foeSys);
-		//Player(2, foeSys);
+		//Player(0, foeSys);
+		Player(1, foeSys);
+		Player(2, foeSys);
 	}
 
 	public void MakeBreath( List<Action<v3, float, float, float>> blow, List<Action<v3, float, float, float>> inhale, List<Action<v3, float, float, float>> inhaleBig ) {
