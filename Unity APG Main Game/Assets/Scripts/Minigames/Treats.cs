@@ -72,7 +72,7 @@ public class TreatSys {
 					nm.ease( ref goalScale, .3f, .02f );
 					e.scale = e.scale * .8f + .2f * goalScale;
 					nm.ease( ref push, new v3(0,0,0), .02f );
-					e.removeIfOffScreen();
+					e.removeIfOffScreen( false );
 				},
 				breathTouch = (e, user, info) => {
 					if( tick - lastPush < .05f )return;
@@ -91,6 +91,7 @@ public class TreatSys {
 				playerTouch = (e, user, info) => {
 					var pushDir = (e.pos - user.pushCenter).normalized;
 					pushDir.z = 0;
+					pushDir.y *= .1f;
 					push += pushDir * .01f;
 				}
 			};
@@ -108,7 +109,7 @@ public class TreatSys {
 					update = e => {
 						delay--;
 						if( delay > 0 )return;
-						if( leaveDelay <= 0 ) { if( e.removeIfOffScreen() ) return;}
+						if( leaveDelay <= 0 ) { if( e.removeIfOffScreen( false ) ) return;}
 						e.pos = e.pos * .98f + .02f * (home + new v3( .1f*Mathf.Cos( tick * bob ), .1f*Mathf.Sin( tick * bob ), 0 ) );
 						e.ang = Mathf.Cos(tick * rotateSpeed + offset) * rotateRange;
 						goalScale = .3f * .02f + .98f * goalScale;
@@ -132,6 +133,7 @@ public class TreatSys {
 					playerTouch = (e, user, info) => {
 						var pushDir = (e.pos - user.pushCenter).normalized;
 						pushDir.z = 0;
+						pushDir.y *= .2f;
 						e.pos += pushDir * .05f;
 					}
 				};

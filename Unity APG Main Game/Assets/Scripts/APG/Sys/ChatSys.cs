@@ -66,5 +66,11 @@ namespace APG {
 				chatter.time = time;
 			}
 		}
+
+		void OnSubscribe( Action<string>) { }
+
+		void OnDonate( Action<string, int>) { }
+
+
 	}
 }

@@ -97,7 +97,7 @@ class FullGame {
 		propSys = new PropSys( assets.props, gameSys );
 		
 		
-		playerSys.Setup(gameSys, assets.players, foeSys);
+		playerSys.Setup(gameSys, assets.players, foeSys, reactSys);
 		audiencePlayerSys.Setup(gameSys, assets.players, foeSys, assets.gameLogicChat.GetAudienceSys(), playerSys);
 		assets.backgrounds.Setup(gameSys);
 		InitSpawns();
@@ -118,6 +118,7 @@ class FullGame {
 		else {
 			lookPos = (playerSys.playerEnt.pos + playerSys.player2Ent.pos)/2;
 		}
+		lookPos.y -= 10f;
 
 		transform.LookAt(new v3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));
 		transform.position = new v3(lookPos.x * .03f, lookPos.y * .03f, transform.position.z);

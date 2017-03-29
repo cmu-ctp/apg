@@ -6,6 +6,7 @@ using v3 = UnityEngine.Vector3;
 public struct TouchInfo {
 	public int strength;
 	public UseType useType;
+	public ent src;
 }
 
 public class ent {
@@ -60,16 +61,16 @@ public class ent {
 		// fixme - deal with parenting stuff
 		UnityEngine.Object.Destroy(src);
 	}
-	public bool outOfBounds( int xWidth, int yWidth ) {
+	public bool outOfBounds( int xWidth, int yWidth, bool ignoreUp ) {
 		// There is some fudge factor here, so spawned objects can exist off screen in the margins.  Should make this more rigorous though.
 		if(pos.x - xWidth < -13.0f ) return true;
 		if(pos.x + xWidth > 13.0f ) return true;
 		if(pos.y - yWidth < -8.0f ) return true;
-		if(pos.y + yWidth > 8.0f ) return true;
+		if(!ignoreUp && pos.y + yWidth > 8.0f ) return true;
 		return false;
 	}
-	public bool removeIfOffScreen() {
-		if(outOfBounds(0,0)) {
+	public bool removeIfOffScreen( bool ignoreUp = true ) {
+		if(outOfBounds(0,0, ignoreUp )) {
 			remove();
 			return true;
 		}

@@ -17,16 +17,19 @@ public class PlayerSys {
 	GameSys gameSys;
 	Players players;
 
-	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys) {
+	ReactSys reactSys;
+
+	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys, ReactSys theReactSys) {
 		gameSys = theGameSys;
 		players = thePlayers;
+		reactSys = theReactSys;
 
-		//Player(0, foeSys);
-		Player(1, foeSys);
-		Player(2, foeSys);
+		Player(0, foeSys);
+		//Player(1, foeSys);
+		//Player(2, foeSys);
 	}
 
-	public void MakeBreath( List<Action<v3, float, float, float>> blow, List<Action<v3, float, float, float>> inhale, List<Action<v3, float, float, float>> inhaleBig ) {
+	public void MakeBreath( ent owner, List<Action<v3, float, float, float>> blow, List<Action<v3, float, float, float>> inhale, List<Action<v3, float, float, float>> inhaleBig ) {
 		var src = new ent(gameSys) { name="breatheSet" };
 		for( var k = 0; k < 20; k++ ) {
 			float cloudRot = rd.f(-3f, 3f), fallSpeed = rd.f(.85f, .95f), chargeStrength = 1f;
@@ -44,7 +47,7 @@ public class PlayerSys {
 					e.ang += cloudRot;
 					e.vel = b;
 					if(cloudNum == 0 && blowing && e.scale > .1f) {
-						gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.breathTouch(targ, me, new TouchInfo { useType= UseType.PlayerBlowing, strength=(int)chargeStrength });});
+						gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.breathTouch(targ, me, new TouchInfo { useType= UseType.PlayerBlowing, strength=(int)chargeStrength, src=owner });});
 					}
 				}
 			};
@@ -88,26 +91,30 @@ public class PlayerSys {
 	}
 
 	void Player(int id, FoeSys foeSys) {
-		float t = 0.0f, rot = 0.0f, useDownTime = 0f;
+		float tick = 0.0f, rot = 0.0f, useDownTime = 0f;
 		var useDown = false;
 		KeyCode left, right, up, down, use;
 		Sprite pic = players.player;
-		left = KeyCode.LeftArrow; right = KeyCode.RightArrow; up = KeyCode.UpArrow; down = KeyCode.DownArrow; use = KeyCode.RightShift;
+		//left = KeyCode.LeftArrow; right = KeyCode.RightArrow; up = KeyCode.UpArrow; down = KeyCode.DownArrow; use = KeyCode.RightShift;
+		left = KeyCode.Keypad1; right = KeyCode.Keypad3; up = KeyCode.Keypad5; down = KeyCode.Keypad2; use = KeyCode.Return;
 		var startingX = 0f;
 		if( id == 0 ) { use = KeyCode.Space; }
-		else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.LeftShift; startingX = -5f; }
+		//else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.LeftShift; startingX = -5f; }
+		else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.Space; startingX = -5f; }
 		else {  pic = players.friends[0]; startingX = 5f;}
 
 		var blow = new List<Action<v3, float, float, float>>();
 		var inhale = new List<Action<v3, float, float, float>>();
 		var inhaleBig = new List<Action<v3, float, float, float>>();
 
-		MakeBreath( blow, inhale, inhaleBig );
+		var lastChat = 0f;
+
+		var lastAimDir = new v3( 0, 0, 0 );
 
 		var pl = new ent(gameSys) {
 			sprite = pic, pos = nm.v3x( startingX ), scale = 1.5f, flipped=(id == 2) ? true : false, vel = new v3(0, 0, 0), knockback = new v3(0, 0, 0), name="player"+id, inGrid=true,
 			update = e => {
-				t++;
+				tick++;
 				if(Input.GetKey(left)) {
 					e.flipped = true;
 					nm.ease(ref e.vel.x, -1.0f, .3f);
@@ -116,40 +123,44 @@ public class PlayerSys {
 					e.flipped = false;
 					nm.ease(ref e.vel.x, 1.0f, .3f);
 				}
-				else nm.ease(ref e.vel.x, 0, .1f); ;
+				else nm.ease(ref e.vel.x, 0, .15f); ;
 
 				if(Input.GetKey(up)) { nm.ease(ref e.vel.y, 1.0f, .3f); }
 				else if(Input.GetKey(down)) { nm.ease(ref e.vel.y, -1.0f, .3f); }
-				else nm.ease(ref e.vel.y, 0, .1f);
+				else nm.ease(ref e.vel.y, 0, .15f);
 
 				rot = e.vel.x * 360 / Mathf.PI;
 
+				if( e.vel.sqrMagnitude > .1f ) {
+					lastAimDir = e.vel;
+				}
+
 				if(Input.GetKey(use)) {
-					if(useDown == false) { useDownTime = t; }
-					if(t-useDownTime == 135) {
-						foreach(var b in inhaleBig) b(e.pos, e.vel.x, e.vel.y, 1);
+					if(useDown == false) { useDownTime = tick; }
+					if(tick-useDownTime == 135) {
+						foreach(var b in inhaleBig) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
 					}
-					else if(t-useDownTime == 30) {
-						foreach(var b in inhale) b(e.pos, e.vel.x, e.vel.y, 1);
+					else if(tick-useDownTime == 30) {
+						foreach(var b in inhale) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
 					}
 					useDown = true;
 				}
 				else {
 					if(useDown == true) {
 						gameSys.Sound(players.blowSound, 1);
-						var knockback2 = new v3(-e.vel.x, -e.vel.y, 0).normalized;
+						var knockback2 = new v3(-lastAimDir.x, -lastAimDir.y, 0).normalized;
 						var blowStrength = 1;
-						if(t-useDownTime > 115) {
+						if(tick-useDownTime > 115) {
 							knockback2 *= 1.5f;
 							blowStrength = 3;
 						}
-						else if(t-useDownTime > 20) {
+						else if(tick-useDownTime > 20) {
 							knockback2 *= .8f;
 							blowStrength = 2;
 						}
-						else { knockback2 *= .4f; }
+						else { knockback2 *= .05f; }
 
-						foreach(var b in blow) b(e.pos, e.vel.x, e.vel.y, blowStrength);
+						foreach(var b in blow) b(e.pos, lastAimDir.x, lastAimDir.y, blowStrength);
 
 						e.knockback += knockback2;
 					}
@@ -162,12 +173,26 @@ public class PlayerSys {
 				if(e.pos.x > 11.0f && e.vel.x > 0) e.vel.x = 0;
 				if(e.pos.y < -6.0f && e.vel.y < 0) e.vel.y = 0;
 				if(e.pos.y > 6.0f && e.vel.y > 0) e.vel.y = 0;
-				e.MoveBy(e.vel.x * .15f + e.knockback.x, e.vel.y * .15f+e.knockback.y, .01f * Mathf.Cos(t * .04f));
+				e.MoveBy(e.vel.x * .15f + e.knockback.x, e.vel.y * .15f+e.knockback.y, .01f * Mathf.Cos(tick * .04f));
 				e.ang = -rot * .1f;
 				gameSys.grid.Find(e.pos - nm.v3y( .7f ), 1, e, (me, targ) => { targ.playerTouch(targ, me, new TouchInfo {useType= UseType.PlayerPush, strength= 1 });});
 			},
-			breathTouch = (e, user, info) => { e.knockback += user.vel * .16f;}
+			breathTouch = (e, user, info) => {
+				if( info.src == e )return;
+				e.knockback += user.vel * .16f;
+				if( info.strength == 3 ) { 
+					e.knockback += user.vel * .16f;
+					if( tick - lastChat > 120 )
+					{
+						lastChat = tick;
+						reactSys.Chat( e.pos+new v3(0,0,0), "Oooof!", new Color( .3f,.5f,.8f,1));
+					}
+				}
+			}
 		};
+
+		MakeBreath( pl, blow, inhale, inhaleBig );
+
 		if(id == 2) player2Ent = pl;
 		else playerEnt = pl;
 	}
