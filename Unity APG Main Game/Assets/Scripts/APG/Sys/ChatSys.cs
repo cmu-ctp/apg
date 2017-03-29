@@ -67,9 +67,17 @@ namespace APG {
 			}
 		}
 
-		void OnSubscribe( Action<string>) { }
+		/*assets.gameLogicChat.GetAudienceSys().Chatters().SetMessageEventFunction( 
+			(name, msg) => {
+				if( name == "twitchnotify" ) {
+					// do something here.
+				}
+			}
+		);*/
 
-		void OnDonate( Action<string, int>) { }
+		public void SetOnSubscribe( Action<string> onSubscribeFunc ) { }
+
+		public void SetOnDonate( Action<string, int> onDonateFunc ) { }
 
 
 	}

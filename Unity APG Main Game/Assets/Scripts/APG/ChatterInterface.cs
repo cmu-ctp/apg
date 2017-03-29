@@ -16,17 +16,9 @@ namespace APG {
 
 		void SetMessageEventFunction( Action<string,string> messageFunction );
 
-		/*assets.gameLogicChat.GetAudienceSys().Chatters().SetMessageEventFunction( 
-			(name, msg) => {
-				if( name == "twitchnotify" ) {
-					// do something here.
-				}
-			}
-		);*/
+		void SetOnSubscribe( Action<string> onSubscribeFunc );
 
-		void OnSubscribe( Action<string>);
-
-		void OnDonate( Action<string, int>);
+		void SetOnDonate( Action<string, int> onDonateFunc );
 
 		// if a moderator speaks up in chat - how can we tell who is a moderator?
 
