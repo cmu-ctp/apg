@@ -7,10 +7,9 @@
 	}
 }
 
-addCache( l => {
-	l.image('blueorb', 'assets/imgs/blueorb.png');
-	l.audio('clickThrough', 'assets/snds/fx/strokeup2.mp3');
-});
+cacheImages('assets/imgs', ['blueorb.png']);
+cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
+
 class ButtonCollection {
 
 	selected: number;
@@ -25,7 +24,8 @@ class ButtonCollection {
 			updateActive = active;
 		};
 
-		let clickSound: Phaser.Sound = sys.g.add.audio('clickThrough', 1, false);
+		let clickSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+		var fontName: string = "Caveat Brush";
 
 		function addOption(id: number, str: string, x: number, y: number, toolTip: string): void {
 			let highlighted: boolean = false, highlightVertical: number = size * 3 / 4, highlightHorizontal: number = size * 16 / 40, x1: number = x, x2: number = x + str.length * highlightHorizontal, y1: number = y - highlightVertical, y2: number = y,
@@ -38,8 +38,8 @@ class ButtonCollection {
 				fy2 = y2;
 			}
 
-			var textColor = { font: '20px Calibri', fill: '#222' };
-			new EntTx(sys.w, 60, 50 + 20, str, textColor, {
+			var textColor = { font: '20px ' + fontName, fill: '#222' };
+			new enttx(sys.w, 60, 50 + 20, str, textColor, {
 				upd: e => {
 					mul = mul * (1 - spd) + spd * (updateActive ? 1 : 0);
 
@@ -90,7 +90,7 @@ class ButtonCollection {
 
 		function addSelector(): void {
 			let goalx: number = 0, goaly: number = 0, mul: number = 1, tick: number = Math.random() * Math.PI * 2, tickScale: number = Math.random() * .8 + .4;
-			new Ent(sys.w, 50, 50, 'blueorb', { scalex : .24, scaley : .24,
+			new ent(sys.w, 50, 50, 'assets/imgs/blueorb.png', { scalex : .24, scaley : .24,
 				upd: e => {
 					e.x = goalx;
 					e.y = goaly;

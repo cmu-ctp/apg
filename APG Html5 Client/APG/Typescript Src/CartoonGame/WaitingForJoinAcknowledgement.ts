@@ -1,9 +1,8 @@
-﻿addCache(l => {
-	l.image('clientbkg', 'assets/imgs/ClientUI.png');
-	l.audio('endOfRound', 'assets/snds/fx/strokeup4.mp3');
-});
+﻿cacheImages('assets/imgs', ['ClientUI.png']);
+cacheSounds('assets/snds/fx', ['strokeup4.mp3']);
+cacheGoogleWebFonts(['Caveat Brush']);
 function WaitingForJoinAcknowledement(sys: APGSys): void {
-	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('endOfRound', 1, false);
+	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
 	var endSubgame: boolean = false, timeOut: number = 0;
 	sys.messages = new APGSubgameMessageHandler({
 		onJoin: () => {
@@ -13,7 +12,7 @@ function WaitingForJoinAcknowledement(sys: APGSys): void {
 			return true;
 		}
 	});
-	new Ent(sys.w, 60, 0, 'clientbkg', {
+	new ent(sys.w, 60, 0, 'assets/imgs/ClientUI.png', {
 		alpha: 0,
 		upd: e => {
 			timeOut++;
@@ -32,7 +31,7 @@ function WaitingForJoinAcknowledement(sys: APGSys): void {
 		}
 	});
 	var tick: number = 0;
-	new EntTx(sys.w, 160, 50 + 20, "Waiting to Connect...", { font: '16px Arial', fill: '#222' }, {
+	new enttx(sys.w, 160, 50 + 20, "Waiting to Connect...", { font: '16px Caveat Brush', fill: '#222' }, {
 		alpha: 0,
 		upd: e => {
 			if (endSubgame) {

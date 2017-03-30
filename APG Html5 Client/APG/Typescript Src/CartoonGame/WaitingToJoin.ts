@@ -1,14 +1,14 @@
-﻿addCache(l => {
-	l.image('clientbkg', 'assets/imgs/ClientUI.png');
-	l.audio('clickThrough', 'assets/snds/fx/strokeup2.mp3');
-});
+﻿cacheImages('assets/imgs', ['ClientUI.png']);
+cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
+cacheGoogleWebFonts(['Caveat Brush']);
+
 function WaitingToJoin(sys: APGSys): void {
-	var clickSound: Phaser.Sound = sys.g.add.audio('clickThrough', 1, false);
+	var clickSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
 
 	sys.messages = new APGSubgameMessageHandler({});
 	var inputUsed: boolean = false, endSubgame: boolean = false;
 
-	new Ent(sys.g.world, 0, 0, 'clientbkg', {
+	new ent(sys.g.world, 0, 0, 'assets/imgs/ClientUI.png', {
 		upd: e => {
 			if (endSubgame) {
 				e.x = e.x * .7 + .3 * -30;
@@ -25,8 +25,8 @@ function WaitingToJoin(sys: APGSys): void {
 		}
 	});
 
-	var tc: number = 0, textColor = { font: '16px Arial', fill: '#222' };
-	new EntTx(sys.w, 60, 50 + 20, "Click to Join Game!", textColor, {
+	var tc: number = 0, textColor = { font: '16px Caveat Brush', fill: '#222' };
+	new enttx(sys.w, 60, 50 + 20, "Click to Join Game!", textColor, {
 		upd: e => {
 			if (endSubgame) {
 				e.x = e.x * .7 + .3 * -50;

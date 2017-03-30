@@ -1,15 +1,13 @@
-﻿addCache(l => {
-	l.image('clientbkg', 'assets/imgs/ClientUI.png');
-	l.audio('clickThrough', 'assets/snds/fx/strokeup2.mp3');
-});
-
+﻿cacheImages('assets/imgs', ['ClientUI.png']);
+cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
+cacheGoogleWebFonts(['Caveat Brush']);
 function ShowSubmitted(sys: APGSys, getRoundNumber: () => number): void {
 	var inputUsed: boolean = false;
-	var clickSound: Phaser.Sound = sys.g.add.audio('clickThrough', 1, false);
+	var clickSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
 
 	sys.messages = new APGSubgameMessageHandler({});
 
-	new Ent(sys.w, 0, 0, 'clientbkg', {
+	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI.png', {
 		upd: e => {
 			if (sys.g.input.activePointer.isDown && !inputUsed) {
 				inputUsed = true;
@@ -19,6 +17,6 @@ function ShowSubmitted(sys: APGSys, getRoundNumber: () => number): void {
 		}
 	});
 
-	new EntTx(sys.w, 60, 50 + 20, "Chosen For Round " + getRoundNumber() + ":", { font: '16px Arial', fill: '#222' });
+	new enttx(sys.w, 60, 50 + 20, "Chosen For Round " + getRoundNumber() + ":", { font: '16px Caveat Brush', fill: '#222' });
 
 }

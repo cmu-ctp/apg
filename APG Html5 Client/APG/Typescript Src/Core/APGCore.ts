@@ -17,13 +17,81 @@ if (typeof Object.assign != 'function') {
 	})();
 }
 
+/*______________________________________________________________________________________________
+
+															Asset Caching
+
+______________________________________________________________________________________________*/
+
+declare var WebFontConfig: Object;
+
 var phaserAssetCacheList: { (loader: Phaser.Loader): void; }[] = [];
-function addCache(cacheFunction: (loader: Phaser.Loader) => void): void {
+var phaserImageList: string[] = [];
+var phaserSoundList: string[] = [];
+
+function cachePhaserAssets(cacheFunction: (loader: Phaser.Loader) => void): void {
+
 	if (phaserAssetCacheList == undefined) {
 		phaserAssetCacheList = [];
 	}
+
 	phaserAssetCacheList.push(cacheFunction);
 }
+
+function cacheImages(dir: string, imageList: string[]): void {
+	if (phaserImageList == undefined) {
+		phaserImageList = [];
+	}
+
+	for (var k = 0; k < imageList.length; k++) {
+		phaserImageList.push(dir + "/" +imageList[k]);
+	}
+}
+
+function cacheSounds( dir:string, soundList: string[]): void {
+	if (phaserSoundList == undefined) {
+		phaserSoundList = [];
+	}
+
+	for (var k = 0; k < soundList.length; k++) {
+		phaserSoundList.push(dir+"/"+soundList[k]);
+	}
+}
+
+// Phaser supports a number of font styles with different performance and ease-of-use characteristics.
+// At present, for our prototypes, I am relying exclusively on google's own web fonts, which can be found here: https://fonts.google.com/
+// 
+var phaserGoogleWebFontList: string[] = [];
+
+function cacheGoogleWebFonts(googleWebFontNames: string[]): void {
+	if (phaserGoogleWebFontList == undefined) {
+		phaserGoogleWebFontList = [];
+	}
+
+	for (var k = 0; k < googleWebFontNames.length; k++) {
+		phaserGoogleWebFontList.push(googleWebFontNames[k]);
+	}
+}
+
+var jsonAssetCacheNameList: string[] = [];
+
+function cacheJSONs(fileNames:string[]): void {
+
+	if (jsonAssetCacheNameList == undefined) {
+		jsonAssetCacheNameList = [];
+	}
+
+	for (var k = 0; k < fileNames.length; k++) {
+		jsonAssetCacheNameList.push(fileNames[k]);
+	}
+}
+
+
+/*______________________________________________________________________________________________
+
+															App Initialization
+
+______________________________________________________________________________________________*/
 
 
 function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, chat: tmiClient, APGInputWidgetDivName: string, allowFullScreen: boolean) {
@@ -48,39 +116,86 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 		ConsoleOutput.debugError("ApgSetup: APGInputWidgetDivName is not set.  The game cannot work without this.  This should be the name of a valid div to contain the PhaserJS canvas.", "sys");
 		return;
 	}
-	
-	$.getJSON(actionList, function (data) {
-		var gameActions = data.all;
-		var phaserGame: Phaser.Game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
+
+	var curJSONAsset = 0;
+	var JSONAssets = {};
+
+	console.log(jsonAssetCacheNameList );
+
+	function LoadJSONAsset() {
+		if (curJSONAsset >= jsonAssetCacheNameList.length) {
+			LoadPhaserAssets();
+			return;
+		}
+		$.getJSON(jsonAssetCacheNameList[curJSONAsset], function (data) {
+			JSONAssets[jsonAssetCacheNameList[curJSONAsset]] = data.all;
+
+			ConsoleOutput.logAsset(jsonAssetCacheNameList[curJSONAsset]);
+
+			curJSONAsset++;
+
+			LoadJSONAsset();
+		});
+	}
+	LoadJSONAsset();
+
+	function LoadPhaserAssets() {
+		var game: Phaser.Game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
 			preload: () => {
-				phaserGame.stage.disableVisibilityChange = true;
-				
+				game.stage.disableVisibilityChange = true;
+
 				if (allowFullScreen) {
-					phaserGame.input.onDown.add(goFull, this);
+					game.input.onDown.add(goFull, this);
 				}
 
-				if (phaserAssetCacheList.length == 0 ) {
+				if (phaserAssetCacheList.length == 0) {
 					ConsoleOutput.debugWarn("ApgSetup: phaserAssetCacheList.length is 0, so no assets are being cached.  This is probably an error.", "sys");
 				}
 
 				for (var k = 0; k < phaserAssetCacheList.length; k++) {
-					phaserAssetCacheList[k](phaserGame.load);
+					phaserAssetCacheList[k](game.load);
 				}
 
+				for (var k = 0; k < phaserImageList.length; k++) {
+					game.load.image(phaserImageList[k], phaserImageList[k]);
+				}
+
+				for (var k = 0; k < phaserSoundList.length; k++) {
+					game.load.audio(phaserSoundList[k], phaserSoundList[k]);
+				}
+
+				if (phaserGoogleWebFontList != undefined && phaserGoogleWebFontList.length > 0) {
+					game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+				}
 			},
 			create: () => {
-				phaserGame.input.mouse.capture = true;
-				StartGame(new APGSys(phaserGame, gameActions, logicIRCChannelName, playerName, chat));
+				game.input.mouse.capture = true;
+				if (phaserGoogleWebFontList == undefined || phaserGoogleWebFontList.length == 0) {
+					launchGame();
+				}
 			}
 		});
+
+		WebFontConfig = {
+			//  'active' means all requested fonts have finished loading.  We need a delay after loading to give browser time to get sorted for fonts, for some reason.
+			active: function () { game.time.events.add(Phaser.Timer.SECOND, launchGame, this); },
+			google: {
+				families: phaserGoogleWebFontList
+			}
+		};
+
+		function launchGame() {
+			StartGame(new APGSys(game, logicIRCChannelName, playerName, chat, JSONAssets));
+		}
+
 		function goFull(): void {
-			phaserGame.scale.pageAlignHorizontally = true;
-			phaserGame.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
-			if (phaserGame.scale.isFullScreen) {
+			game.scale.pageAlignHorizontally = true;
+			game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+			if (game.scale.isFullScreen) {
 			}
 			else {
-				phaserGame.scale.startFullScreen(true);
+				game.scale.startFullScreen(true);
 			}
 		}
-	});
+	}
 }

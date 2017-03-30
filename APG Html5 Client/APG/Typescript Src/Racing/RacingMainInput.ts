@@ -1,45 +1,35 @@
-﻿addCache(l => {
-	l.image('clientbkg', 'assets/imgs/ClientUI.png'); l.image('blueorb', 'assets/imgs/blueorb.png');
-	l.audio('clickThrough', 'assets/snds/fx/strokeup2.mp3');
-	l.audio('warning', 'assets/snds/fx/strokeup.mp3'); l.audio('endOfRound', 'assets/snds/fx/strokeup4.mp3');
-});
-function RacingInput(sys: APGSys): void {
-	function makeButtonSet(baseX: number, baseY: number, xAdd: number, yAdd: number, size: number, highlightColor: string, baseColor: string, setToolTip: (str: string) => void, setOption: (val: number) => void, buttonsInit: ActionEntry[]): ButtonCollection {
-		return new ButtonCollection(sys, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
-	}
-	function addActionSet(setToolTip: (str: string) => void): ButtonCollection {
-		var o = [];
-		for (var j = 0; j < sys.gameActions.length; j++)o.push(new ActionEntry(sys.gameActions[j].name, ""));
-		return makeButtonSet(40, 80, 70, 0, 18, '#F00000', '#200000', setToolTip, v => { }, o);
-	}
-	function addActions(srcChoices: number[], setToolTip: (str: string) => void): ButtonCollection[] {
-		var choiceLeft: number = 50, choiceUp: number = 118;
-		var curCollection: number = 0;
-		function add(choices: ActionEntry[]): ButtonCollection {
-			var id: number = curCollection;
-			curCollection++;
-			return makeButtonSet(choiceLeft, choiceUp, 0, 20, 14, '#F00000', '#200000', setToolTip, v => srcChoices[id] = v, choices);
-		}
-		function st(name: string, tip: string): ActionEntry { return new ActionEntry(name, tip); }
+﻿var debugAllCarParts = [];
 
-		var o = [];
-		for (var j = 0; j < sys.gameActions.length; j++) {
-			var p = [];
-			for (var k = 0; k < sys.gameActions[j].choices.length; k++) {
-				var r = sys.gameActions[j].choices[k];
-				p.push(st(r.name, r.tip));
-			}
-			o.push(add(p));
+cachePhaserAssets( l => {
+	var assetSets = ["bodyHood", "bodySide", "bodyTrunk", "defense", "nitro", "offense", "case", "pistons", "plugs", "airfreshner", "seat", "steering", "tireBolts", "tireBrand", "tire"];
+
+	for (var k = 0; k < assetSets.length; k++) {
+		for (var j = 1; j < 4; j++) {
+			l.image("carPart_" + k + "_" + j, "racinggame/" + assetSets[k] + j + ".png");
+			debugAllCarParts.push( "carPart_" + k + "_" + j );
 		}
-		return o;
 	}
+});
+
+cacheImages('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselected.png']);
+cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
+cacheGoogleWebFonts(['Anton']);
+
+function RacingInput(sys: APGSys): void {
+	enum PlayerChoice {
+		bodyHood = 0, bodySide, bodyTrunk, defense, nitro, offense, case, pistons, plugs, airfreshner, seat, steering, tireBolts, tireBrand, tire
+	}
+
+	var statNames = [ "Fuel Cap", "Speed Cap", "Weight", "Suaveness", "Power" ];
 
 	var timer: number = 0;
 	var roundNumber: number = 1;
 	var choices: number[] = [1, 1, 1, 1, 1, 1];
 
-	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('endOfRound', 1, false);
-	var warningSound: Phaser.Sound = sys.g.add.audio('warning', 1, false);
+	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+	var warningSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+
+	var carSet: number = 3;
 
 	sys.messages = new APGSubgameMessageHandler({
 		timeUpdate: (round, time) => {
@@ -56,29 +46,55 @@ function RacingInput(sys: APGSys): void {
 		getParm: (id: number) => choices[id]
 	});
 
-	var toolTip: string = "";
-	function setToolTip(str: string): void { toolTip = str; }
-
-	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118, tabButtons: ButtonCollection, choiceButtons: ButtonCollection[], bkg = new Image(); bkg.src = 'ClientUI.png';
-	var labelColor: string = '#608080';
-	var roundLabel: EntTx, toolTipLabel: EntTx, nextChoiceLabel: EntTx;
+	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118;
 	var lastRoundUpdate: number = 0;
 
-	new Ent(sys.w, 0, 0, 'clientbkg', {
+	var bkg: ent = new ent(sys.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
 		upd: e => {
 			if (roundNumber != lastRoundUpdate) {
-				roundLabel.text = "Actions for Round " + roundNumber;
 				lastRoundUpdate = roundNumber;
 			}
-			tabButtons.update(true);
-			for (var j: number = 0; j < choiceButtons.length; j++)choiceButtons[j].update(tabButtons.selected == j);
-			toolTipLabel.text = toolTip;
-			nextChoiceLabel.text = "Action Selected in " + timer + " Seconds";
 		}
 	});
-	roundLabel = new EntTx(sys.w, 120, 30, "Actions for Round ", { font: '28px Calbrini', fill: '#688' });
-	toolTipLabel = new EntTx(sys.w, choiceLeft + 80, 118, "ToolTip", { font: '10px Calbrini', fill: '#688' });
-	nextChoiceLabel = new EntTx(sys.w, 120, 260, "Actions Selected in", { font: '14px Calbrini', fill: '#688' });
-	tabButtons = addActionSet(setToolTip);
-	choiceButtons = addActions(choices, setToolTip);
+
+	// ______________________
+
+	function fnt(sz: number): string {
+		return '' + sz + 'px Anton';
+	}
+
+	new enttx(sys.w, 10, 10, "CAR PERFORMANCE", { font: fnt(20), fill: '#fff' });
+
+	for (var k = 0; k < 5; k++) {
+		new enttx(sys.w, 10, 48 + (72 - 48) * k, statNames[k] + ":", { font: fnt(16), fill: '#fff' });
+	}
+
+	// ______________________
+
+	new enttx(sys.w, 12, 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
+
+	new enttx(sys.w, 15, 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
+	new enttx(sys.w, 15, 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
+
+	// ______________________
+
+	new enttx(sys.w, 152, 10, "OPTIONS", { font: fnt(20), fill: '#fff' });
+
+	new ent(sys.w, 158, 36, "racinggame/selected.png");
+	new ent(sys.w, 158, 92, "racinggame/unselected.png");
+	new ent(sys.w, 158, 150, "racinggame/unselected.png");
+
+	new enttx(sys.w, 158, 36, "Featherwate", { font: fnt(16), fill: '#0' });
+	new enttx(sys.w, 158, 92, "Unguzzler", { font: fnt(16), fill: '#0' });
+	new enttx(sys.w, 158, 150, "Hulkite", { font: fnt(16), fill: '#0' });
+
+	var picChangeTick = 0;
+	var picFrame = 0;
+
+	for (var k = 1; k < 4; k++) {
+		//"carPart_" + k + "_" + j
+		new ent(sys.w, 220, 40, debugAllCarParts[carSet*9 + (k-1)*3+2], {scalex: .5, scaley: .5});
+	}
+
+	new enttx(sys.w, 220, 178, "-1 Weight, +1 Power", { font: fnt(24), fill: '#fff' });
 }

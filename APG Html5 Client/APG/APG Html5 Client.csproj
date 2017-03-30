@@ -19,19 +19,14 @@
     <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="website\app.css" />
     <Content Include="website\bounce.htm" />
-    <Content Include="website\index-mobile-not-minified.html" />
-    <Content Include="website\index.html" />
-    <Content Include="website\index-not-minified.html" />
-    <Content Include="website\index-mobile.html" />
     <Content Include="website\phaser.js" />
     <Content Include="website\phaser.min.js" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Typescript Src\Phaser\Ent.ts" />
-    <TypeScriptCompile Include="Typescript Src\Phaser\EntTx.ts" />
+    <TypeScriptCompile Include="Typescript Src\Phaser\ent.ts" />
+    <TypeScriptCompile Include="Typescript Src\Phaser\enttx.ts" />
     <TypeScriptCompile Include="Typescript Src\StartGame.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\APGSys.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\APGCore.ts" />

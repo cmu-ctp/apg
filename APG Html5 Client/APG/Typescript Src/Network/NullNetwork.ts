@@ -10,7 +10,7 @@
 
 	constructor(messages: () => APGSubgameMessageHandler, w: Phaser.World) {
 		this.messages = messages;
-		new Ent(w, 0, 0, '', { upd: e => { this.update(); } });
+		new ent(w, 0, 0, '', { upd: e => { this.update(); } });
 	}
 
 	join(): void { }

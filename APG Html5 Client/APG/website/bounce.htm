@@ -12,24 +12,24 @@
     <script>
         var isMobile = true;
 
-        // The following values should be set manually for testing locally.  These values will be overridden by the server when launching from a server.
-
-    	var chatIRCChannelName = "";
-    	var logicIRCChannelName = "";
-    	var playerName = "";
-    	var playerOauth = "";
-    	var clientID = 'hjgrph2akqwki1617ac5rdq9rqiep0k';
-    	var skipAuthentication = false;
-
-        var chat = null;
-        var nullNetworking = false;
-
         if (/Mobi/.test(navigator.userAgent)) {
             isMobile = true;
         }
         else {
             isMobile = false;
         }
+
+        // The following values should be set manually for testing locally.  These values will be overridden by the server when launching from a server.
+
+        var chatIRCChannelName = "";
+        var logicIRCChannelName = "";
+        var playerName = "";
+        var playerOauth = "";
+        var clientID = 'hjgrph2akqwki1617ac5rdq9rqiep0k';
+        var skipAuthentication = true;
+
+        var chat = null;
+        var nullNetworking = false;
 
         if (location.hash != null && location.hash != "") {
 

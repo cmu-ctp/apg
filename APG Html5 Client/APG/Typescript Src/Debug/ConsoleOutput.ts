@@ -1,4 +1,5 @@
-﻿class ConsoleOutput {
+﻿
+class ConsoleOutput {
 	static error(s: string, tag: string = "") {
 		console.error("Error: " + s);
 
@@ -38,5 +39,11 @@
 		if (!debugPrintMessages) return;
 
 		console.log(s);
+	}
+
+	static logAsset(s: string, tag: string = "") {
+		if (!debugShowAssetMessages) return;
+
+		console.log( "Successfully loaded " + s );
 	}
 }

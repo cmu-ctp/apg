@@ -1,15 +1,22 @@
-﻿addCache(l => {
-	l.image('clientbkg', 'assets/imgs/ClientUI.png'); l.image('blueorb', 'assets/imgs/blueorb.png');
-	l.audio('clickThrough', 'assets/snds/fx/strokeup2.mp3');
-	l.audio('warning', 'assets/snds/fx/strokeup.mp3'); l.audio('endOfRound', 'assets/snds/fx/strokeup4.mp3');
-});
+﻿cacheImages('assets/imgs', ['ClientUI.png']);
+cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3','strokeup4.mp3']);
+cacheJSONs(['TestActions.json']);
+
 function MainPlayerInput(sys: APGSys): void {
+	var fontName: string = "Caveat Brush";
+
+	var actions: any = sys.JSONAssets['TestActions.json'];
+
+	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+	var warningSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+
+
 	function makeButtonSet(baseX: number, baseY: number, xAdd: number, yAdd: number, size: number, highlightColor: string, baseColor: string, setToolTip: (str: string) => void, setOption: (val: number) => void, buttonsInit: ActionEntry[]): ButtonCollection {
 		return new ButtonCollection(sys, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
 	}
 	function addActionSet(setToolTip: (str: string) => void): ButtonCollection {
 		var o = [];
-		for (var j = 0; j < sys.gameActions.length; j++)o.push(new ActionEntry(sys.gameActions[j].name, ""));
+		for (var j = 0; j < actions.length; j++)o.push(new ActionEntry(actions[j].name, ""));
 		return makeButtonSet(40, 80, 70, 0, 18, '#F00000', '#200000', setToolTip, v => { }, o);
 	}
 	function addActions(srcChoices: number[], setToolTip: (str: string) => void): ButtonCollection[] {
@@ -23,10 +30,10 @@ function MainPlayerInput(sys: APGSys): void {
 		function st(name: string, tip: string): ActionEntry { return new ActionEntry(name, tip); }
 
 		var o = [];
-		for (var j = 0; j < sys.gameActions.length; j++) {
+		for (var j = 0; j < actions.length; j++) {
 			var p = [];
-			for (var k = 0; k < sys.gameActions[j].choices.length; k++) {
-				var r = sys.gameActions[j].choices[k];
+			for (var k = 0; k < actions[j].choices.length; k++) {
+				var r = actions[j].choices[k];
 				p.push(st(r.name, r.tip));
 			}
 			o.push(add(p));
@@ -37,9 +44,6 @@ function MainPlayerInput(sys: APGSys): void {
 	var timer: number = 0;
 	var roundNumber: number = 1;
 	var choices: number[] = [1, 1, 1, 1, 1, 1];
-
-	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('endOfRound', 1, false);
-	var warningSound: Phaser.Sound = sys.g.add.audio('warning', 1, false);
 
 	sys.messages = new APGSubgameMessageHandler({
 		timeUpdate: (round, time) => {
@@ -61,10 +65,10 @@ function MainPlayerInput(sys: APGSys): void {
 
 	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118, tabButtons: ButtonCollection, choiceButtons: ButtonCollection[], bkg = new Image(); bkg.src = 'ClientUI.png';
 	var labelColor: string = '#608080';
-	var roundLabel: EntTx, toolTipLabel: EntTx, nextChoiceLabel: EntTx;
+	var roundLabel: enttx, toolTipLabel: enttx, nextChoiceLabel: enttx;
 	var lastRoundUpdate: number = 0;
 
-	new Ent(sys.w, 0, 0, 'clientbkg', {
+	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI.png', {
 		upd: e => {
 			if (roundNumber != lastRoundUpdate) {
 				roundLabel.text = "Actions for Round " + roundNumber;
@@ -76,9 +80,9 @@ function MainPlayerInput(sys: APGSys): void {
 			nextChoiceLabel.text = "Action Selected in " + timer + " Seconds";
 		}
 	});
-	roundLabel = new EntTx(sys.w, 120, 30, "Actions for Round ", { font: '28px Calbrini', fill: '#688' });
-	toolTipLabel = new EntTx(sys.w, choiceLeft + 80, 118, "ToolTip", { font: '10px Calbrini', fill: '#688' });
-	nextChoiceLabel = new EntTx(sys.w, 120, 260, "Actions Selected in", { font: '14px Calbrini', fill: '#688' });
+	roundLabel = new enttx(sys.w, 120, 30, "Actions for Round ", { font: '28px ' + fontName, fill: '#688' });
+	toolTipLabel = new enttx(sys.w, choiceLeft + 80, 118, "ToolTip", { font: '10px ' + fontName, fill: '#688' });
+	nextChoiceLabel = new enttx(sys.w, 120, 260, "Actions Selected in", { font: '14px ' + fontName, fill: '#688' });
 	tabButtons = addActionSet(setToolTip);
 	choiceButtons = addActions(choices, setToolTip);
 }
