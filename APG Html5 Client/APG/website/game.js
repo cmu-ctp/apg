@@ -467,11 +467,11 @@ var IRCNetwork = (function () {
                     messages().timeUpdate(parseInt(msg[2]), parseInt(msg[1]));
                 }
                 else if (msg[0] == 's') {
-                    var m = messages();
-                    m.startInputSubmission();
+                    var msgs = messages();
+                    msgs.startSubmitInput();
                     var choiceMsg = "upd ";
-                    for (var k = 0; k < m.getParmCount(); k++)
-                        choiceMsg += " " + m.getParm(k);
+                    for (var k = 0; k < msgs.getParmCount(); k++)
+                        choiceMsg += " " + msgs.getParm(k);
                     src.writeToChat(choiceMsg);
                 }
                 else if (msg[0] == 'u') {
@@ -523,26 +523,6 @@ var NullNetwork = (function () {
     NullNetwork.prototype.join = function () { };
     NullNetwork.prototype.debugChat = function (s) { };
     NullNetwork.prototype.update = function () {
-        this.tick--;
-        var m = this.messages();
-        if (this.waitingForJoinAcknowledgement) {
-            if (m.onJoin() == true) {
-                this.waitingForJoinAcknowledgement = false;
-            }
-            return;
-        }
-        if (this.tick == 0) {
-            this.tick = secondsPerChoice * ticksPerSecond;
-            this.round++;
-            m.startInputSubmission();
-            m.clientUpdate();
-        }
-        else if (this.tick <= (5 * ticksPerSecond) && this.tick % ticksPerSecond == 0) {
-            m.timeUpdate(this.round, this.tick / ticksPerSecond);
-        }
-        else if (this.tick % (ticksPerSecond * 5) == 0) {
-            m.timeUpdate(this.round, this.tick / ticksPerSecond);
-        }
     };
     return NullNetwork;
 }());
@@ -670,22 +650,7 @@ function RacingInput(sys) {
     var endOfRoundSound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
     var warningSound = sys.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
     var carSet = 3;
-    sys.messages = new APGSubgameMessageHandler({
-        timeUpdate: function (round, time) {
-            timer = time;
-            roundNumber = round;
-            if (timer < 6) {
-                warningSound.play('', 0, 1 - (timer * 15) / 100);
-            }
-        },
-        clientUpdate: function () { },
-        startSubmitInput: function () {
-            ShowSubmitted(sys, function () { return roundNumber; });
-            endOfRoundSound.play();
-        },
-        getParmCount: function () { return choices.length; },
-        getParm: function (id) { return choices[id]; }
-    });
+    sys.messages = new APGSubgameMessageHandler({});
     var tick = 0, choiceLeft = 50, choiceUp = 118;
     var lastRoundUpdate = 0;
     var bkg = new ent(sys.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
@@ -732,8 +697,7 @@ var APGSubgameMessageHandler = (function () {
     function APGSubgameMessageHandler(fields) {
         this.onJoin = function () { return false; };
         this.timeUpdate = function (round, time) { };
-        this.clientUpdate = function () { };
-        this.startInputSubmission = function () { };
+        this.startSubmitInput = function () { };
         this.getParmCount = function () { return 0; };
         this.getParm = function (id) { return 0; };
         if (fields)
@@ -789,7 +753,6 @@ function MainPlayerInput(sys) {
                 warningSound.play('', 0, 1 - (timer * 15) / 100);
             }
         },
-        clientUpdate: function () { },
         startSubmitInput: function () {
             ShowSubmitted(sys, function () { return roundNumber; });
             endOfRoundSound.play();

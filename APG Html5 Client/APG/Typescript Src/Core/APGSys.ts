@@ -6,7 +6,7 @@
 
 	w: Phaser.World;
 
-	JSONAssets: any;
+	JSONAssets: { any };
 
 	network: NetworkInterface;
 

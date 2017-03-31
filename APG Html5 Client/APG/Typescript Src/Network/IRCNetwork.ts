@@ -40,17 +40,17 @@
 						waitingForJoinAcknowledgement = false;
 						messages().onJoin();
 					}
-				}
+				} 
 				else if (msg[0] == 't') {
 					messages().timeUpdate(parseInt(msg[2]), parseInt(msg[1]));
 				}
 				else if (msg[0] == 's') {
-					var m: APGSubgameMessageHandler = messages();
+					var msgs: APGSubgameMessageHandler = messages();
 
-					m.startInputSubmission();
+					msgs.startSubmitInput();
 
 					var choiceMsg: string = "upd ";
-					for (var k: number = 0; k < m.getParmCount(); k++)choiceMsg += " " + m.getParm(k);
+					for (var k: number = 0; k < msgs.getParmCount(); k++)choiceMsg += " " + msgs.getParm(k);
 
 					src.writeToChat(choiceMsg);
 				}

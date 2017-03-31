@@ -51,7 +51,6 @@ function MainPlayerInput(sys: APGSys): void {
 			roundNumber = round;
 			if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
 		},
-		clientUpdate: () => { },
 		startSubmitInput: () => {
 			ShowSubmitted(sys, () => roundNumber);
 			endOfRoundSound.play();
@@ -59,6 +58,18 @@ function MainPlayerInput(sys: APGSys): void {
 		getParmCount: () => choices.length,
 		getParm: (id: number) => choices[id]
 	});
+
+/*	function reg( parmTypes:number[], func: any ) {
+		return function(parms: string[]):void {
+			var round: number = parseInt(parms[2]);
+			var time: number = parseInt(parms[1]);
+			func(round, time);
+		};
+	}
+
+	sys.messages.inputs = {
+		time_: reg( [1,1], function (round: number, time: number) { } ),
+	};*/
 
 	var toolTip: string = "";
 	function setToolTip(str: string): void { toolTip = str; }

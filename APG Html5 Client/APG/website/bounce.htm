@@ -2,162 +2,20 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
+
     <title>APG Game</title>
+
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="https://ttv-api.s3.amazonaws.com/twitch.min.js"></script>
     <script src="http://cdn.tmijs.org/js/latest/1.x/tmi.min.js"></script>
     <script src="phaser.min.js"></script>
     <script src="game.js"></script>
+    <script src="corepage.js"></script>
 
-    <script>
-        var isMobile = true;
-
-        if (/Mobi/.test(navigator.userAgent)) {
-            isMobile = true;
-        }
-        else {
-            isMobile = false;
-        }
-
-        // The following values should be set manually for testing locally.  These values will be overridden by the server when launching from a server.
-
-        var chatIRCChannelName = "";
-        var logicIRCChannelName = "";
-        var playerName = "";
-        var playerOauth = "";
-        var clientID = 'hjgrph2akqwki1617ac5rdq9rqiep0k';
-        var skipAuthentication = true;
-
-        var chat = null;
-        var nullNetworking = false;
-
-        if (location.hash != null && location.hash != "") {
-
-            skipAuthentication = false;
-
-            var lochash = location.hash.substr(1);
-
-            var stateVals = lochash.substr(lochash.indexOf('state=')).split('&')[0].split('=')[1];
-
-            var stateValTable = stateVals.split("+");
-            isMobile = (stateValTable[0] == "M") ? true : false;
-            chatIRCChannelName = stateValTable[1];
-            logicIRCChannelName = stateValTable[2];
-        }
-
-        // The Client-ID is used by Twitch.init .  See https://github.com/justintv/twitch-js-sdk
-        //	It was generated here: https://www.twitch.tv/kraken/oauth2/clients/new
-        // You need to register a new game with Twitch to get your own Client-ID.
-        // The Client-ID is public - there is no need to hide it.  It should be a string of 31 alpha-numeric digits.
-
-        if (nullNetworking) {
-            chat = null;
-        }
-        else{
-            $(function () {
-                // Initialize. If we are already logged in, there is no need for the connect button
-                Twitch.init({ clientId: clientID }, function (error, status) {
-                    if (status.authenticated || skipAuthentication ) {
-                        Twitch.api({ method: 'user' }, function (error, user){ 
-                            if (skipAuthentication) {
-                            }
-                            else {
-                                if (user == null) alert(error);
-                                playerName = user.display_name;
-                                playerOauth = "oauth:" + Twitch.getToken();
-                            }
-
-                            var options = {
-                                options: { debug: true },
-                                connection: { reconnect: true },
-                                identity: { username: playerName, password: playerOauth },
-                                channels: ["#" + logicIRCChannelName]
-                            };
-                            chat = new tmi.client(options);
-                            chat.connect().then(function(data){
-                            }).catch(function( err ){ });
-                        });
-
-                    }
-                });
-            });
-        }
-
-        function addTwitchIFrames() {
-            if (isMobile) {
-                $('.browser').removeClass();
-                return;
-            }
-
-            $('.mobile').removeClass();
-
-            var iframe = document.createElement('iframe');
-            iframe.setAttribute("frameborder", "0");
-            iframe.setAttribute("scrolling", "no");
-            iframe.setAttribute("id", "chat_embed");
-            iframe.setAttribute("src", "http://www.twitch.tv/" + chatIRCChannelName + "/chat");
-            iframe.setAttribute("width", "400");
-            iframe.setAttribute("height", "488");
-            document.getElementById("TwitchChat").appendChild(iframe);
-
-            var iframe = document.createElement('iframe');
-            iframe.setAttribute("allowfullscreen", "true");
-            iframe.setAttribute("src", "http://player.twitch.tv/?channel=" + chatIRCChannelName);
-            iframe.setAttribute("width", "800");
-            iframe.setAttribute("height", "600");
-            document.getElementById("TwitchVideo").appendChild(iframe);
-        }
-
-        function onLoadEnd() {
-            addTwitchIFrames();
-
-            var isFullScreen = false;
-            var phaserDivName = APGInputWidget;
-            
-            if (isMobile) {
-                isFullScreen = true;
-                phaserDivName = "APGInputWidgetMobile";
-            }
-
-            ApgSetup(400, 300, logicIRCChannelName, playerName, chat, phaserDivName, isFullScreen );
-        }
-
-    </script>
-
-    <style type="text/css">
-        .hidden {
-            display: none;
-        }
-    </style>
-    <style type="text/css">
-        body {
-            background: #ffffff;
-            color: #000000;
-            font-family: arial;
-            font-size: 90%;
-        }
-
-        .container {
-            width: 1200px;
-            height: auto;
-            overflow: hidden;
-        }
-
-        .rightPanel {
-            width: 400px;
-            float: right;
-            background: #FFFFFF;
-        }
-
-        .leftPanel {
-            float: none;
-            background: #e8f6fe;
-            width: auto;
-            overflow: hidden;
-        }
-    </style>
+    <link rel="stylesheet" href="client.css" type="text/css" />
 
 </head>
+
 <body onload="onLoadEnd();">
     <div class="mobile">
         <div id="APGInputWidgetMobile"></div>

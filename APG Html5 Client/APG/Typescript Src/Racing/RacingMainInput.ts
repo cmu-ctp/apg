@@ -32,18 +32,6 @@ function RacingInput(sys: APGSys): void {
 	var carSet: number = 3;
 
 	sys.messages = new APGSubgameMessageHandler({
-		timeUpdate: (round, time) => {
-			timer = time;
-			roundNumber = round;
-			if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
-		},
-		clientUpdate: () => { },
-		startSubmitInput: () => {
-			ShowSubmitted(sys, () => roundNumber);
-			endOfRoundSound.play();
-		},
-		getParmCount: () => choices.length,
-		getParm: (id: number) => choices[id]
 	});
 
 	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118;

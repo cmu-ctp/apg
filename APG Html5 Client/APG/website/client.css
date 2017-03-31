@@ -1,0 +1,29 @@
+.hidden {
+    display: none;
+}
+
+body {
+    background: #ffffff;
+    color: #000000;
+    font-family: arial;
+    font-size: 90%;
+}
+
+.container {
+    width: 1200px;
+    height: auto;
+    overflow: hidden;
+}
+
+.rightPanel {
+    width: 400px;
+    float: right;
+    background: #FFFFFF;
+}
+
+.leftPanel {
+    float: none;
+    background: #e8f6fe;
+    width: auto;
+    overflow: hidden;
+}
