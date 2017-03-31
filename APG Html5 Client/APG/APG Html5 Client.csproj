@@ -20,6 +20,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="website\bounce.htm" />
+    <Content Include="website\client.css" />
+    <Content Include="website\corepage.js" />
     <Content Include="website\phaser.js" />
     <Content Include="website\phaser.min.js" />
     <Content Include="web.config" />

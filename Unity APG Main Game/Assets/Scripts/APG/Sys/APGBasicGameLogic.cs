@@ -1,4 +1,13 @@
-﻿namespace APG {
+﻿using System;
+
+namespace APG {
+
+	[Serializable]
+	public struct RoundUpdate{
+		public int round;
+		public int time;
+	}
+
 	class APGBasicGameLogic {
 		int ticksPerSecond = 60;
 		float nextAudienceTimer;
@@ -37,7 +46,10 @@
 				// update game state
 				network.RequestPlayersUpdate();
 				roundNumber++;
-				network.UpdateTime( (int)(nextAudiencePlayerChoice/60), roundNumber);
+
+				//network.UpdateTime( (int)(nextAudiencePlayerChoice/60), roundNumber);
+				network.UpdateMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+
 				foreach(var key in apgSys.playerMap.Keys) {
 					network.UpdatePlayer( key, apgSys.GetPlayerEvents( apgSys.playerMap[key] ).updateClient());
 				}
@@ -45,7 +57,10 @@
 			}
 			else if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
 				//apgSys.onUpdate()
-				network.UpdateTime( (int)(nextAudiencePlayerChoice/60), roundNumber);
+
+				//network.UpdateTime( (int)(nextAudiencePlayerChoice/60), roundNumber);
+				network.UpdateMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+
 			}
 		}
 		public void Update( IRCNetworkingInterface network, AudiencePlayersSys apgSys, int maxPlayers ) {

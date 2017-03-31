@@ -10,7 +10,8 @@
 
 	network: NetworkInterface;
 
-	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets:any ) {
+	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any) {
+		console.log("making apgsys");
 		this.g = g;
 		this.w = g.world;
 		this.JSONAssets = JSONAssets;
@@ -18,10 +19,12 @@
 	}
 
 	private static makeNetworking(w: Phaser.World, logicIRCChannelName: string, playerName: string, chat: tmiClient, messages: () => APGSubgameMessageHandler): NetworkInterface {
+		console.log("starting up " + chat);
 		if (chat == null) {
+			ConsoleOutput.debugWarn("Chat is null - defaulting to null networking.");
 			return new NullNetwork(messages, w);
 		}
 
-		return new IRCNetwork(messages, playerName, logicIRCChannelName, chat);
+		return new IRCNetwork(messages, playerName, logicIRCChannelName, chat, w);
 	}
 }

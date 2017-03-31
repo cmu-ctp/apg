@@ -45,6 +45,11 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 	public void UpdateTime( int time, int roundNumber ) {
 		IRCLogic.SendMsg( "t " + time + " " + roundNumber );
 	}
+
+	public void UpdateMsg<T>( string msg, T parms ) {
+		IRCLogic.SendMsg( msg+"###"+JsonUtility.ToJson(parms) );
+	}
+
 	public void UpdatePlayer( string key, string updateString ) {
 		IRCLogic.SendMsg("u "+key+" "+updateString);
 	}
@@ -110,6 +115,33 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 		return ChatOauth;
 	}
 
+[Serializable]
+public struct TimePos
+{
+    public int t;
+    public int x;
+    public int y;
+}
+
+	/*
+
+[Serializable]
+public class MyClass
+{
+    public int level;
+    public float timeElapsed;
+    public string playerName;
+}
+
+MyClass myObject = new MyClass();
+myObject.level = 1;
+myObject.timeElapsed = 47.5f;
+myObject.playerName = "Dr Charles Francis";
+
+string json = JsonUtility.ToJson(myObject);
+
+	 */
+
 	void InitIRCChat() {
 		IRCChat = this.GetComponent<TwitchIRCChat>();
 		//IRC.SendCommand("CAP REQ :twitch.tv/tags"); //register for additional data such as emote-ids, name color etc.
@@ -126,6 +158,15 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 
 	Dictionary<string, Action<string, string[]>> clientCommands = new Dictionary<string, Action<string, string[]>>();
 
+	/* Okay.  How do I want to handle this?
+		
+		I have this JSON serialization and deserialization setup.
+		This is handy for sending relatively arbitrary data bundles between the server and client.
+		But what messages should be sent?  And when?  How are they synchronized?
+
+		So, on both the client and server, register a message and then a type, and a function for handling the message?
+	*/
+
 	// what messages can come from clients?
 	void InitIRCLogicChannel() {
 		IRCLogic = this.GetComponent<TwitchIRCLogic>();
@@ -134,6 +175,19 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
 			string msgString = msg.Substring(msgIndex + LogicChannelName.Length + 11);
 			string user = msg.Substring(1, msg.IndexOf('!') - 1);
+
+			// myObject = JsonUtility.FromJson<MyClass>(json);
+			
+			var jsonMSG = msgString.Split(new string[] { "###" }, StringSplitOptions.None);
+
+			if( jsonMSG.Length == 2 ) {
+				if( jsonMSG[0] == "TimePos" ) {
+					var myPos = JsonUtility.FromJson<TimePos>(jsonMSG[1]);
+					Debug.Log( " " + myPos.x + " " + myPos.y );
+				}
+			}
+
+			Debug.Log( " " + msgString );
 
 			var fullMsg = msgString.Split(new char[] { ' ' });
 			/*if(clientCommands.ContainsKey(fullMsg[0]) == true) {

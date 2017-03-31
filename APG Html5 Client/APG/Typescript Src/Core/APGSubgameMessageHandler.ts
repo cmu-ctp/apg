@@ -14,7 +14,7 @@ class APGSubgameMessageHandler {
 
 	inputs: any;
 
-	constructor(fields?: { onJoin?: () => boolean, timeUpdate?: (round: number, time: number) => void, startSubmitInput?: () => void, getParmCount?: () => void, getParm?: (id: number) => void; }) {
+	constructor(fields?: { onJoin?: () => boolean, timeUpdate?: (round: number, time: number) => void, startSubmitInput?: () => void, getParmCount?: () => void, getParm?: (id: number) => void; }, inputs?:any ) {
 		this.onJoin = () => false;
 
 		this.timeUpdate = (round: number, time: number) => { };
@@ -22,6 +22,8 @@ class APGSubgameMessageHandler {
 		this.startSubmitInput = () => { };
 		this.getParmCount = () => 0;
 		this.getParm = (id: number) => 0;
+
+		this.inputs = {};
 
 		if (fields) Object.assign(this, fields);
 	}

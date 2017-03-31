@@ -94,7 +94,7 @@ function cacheJSONs(fileNames:string[]): void {
 ______________________________________________________________________________________________*/
 
 
-function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, chat: tmiClient, APGInputWidgetDivName: string, allowFullScreen: boolean) {
+function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any ) {
 
 	if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
 		ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", "  + gameHeight +".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
@@ -109,9 +109,6 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 		ConsoleOutput.debugError("ApgSetup: playerName is not set.  The game cannot work without this.  This should be set to the name of a valid Twitch account.", "sys");
 		return;
 	}
-	if (chat == undefined ) {
-		ConsoleOutput.debugWarn("ApgSetup: chat is not set.  Defaulting to null networking.  chat should be intialized to a tmi cilent.", "sys");
-	}
 	if (APGInputWidgetDivName == undefined || APGInputWidgetDivName == "") {
 		ConsoleOutput.debugError("ApgSetup: APGInputWidgetDivName is not set.  The game cannot work without this.  This should be the name of a valid div to contain the PhaserJS canvas.", "sys");
 		return;
@@ -119,8 +116,6 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 
 	var curJSONAsset = 0;
 	var JSONAssets = {};
-
-	console.log(jsonAssetCacheNameList );
 
 	function LoadJSONAsset() {
 		if (curJSONAsset >= jsonAssetCacheNameList.length) {
@@ -185,7 +180,12 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 		};
 
 		function launchGame() {
-			StartGame(new APGSys(game, logicIRCChannelName, playerName, chat, JSONAssets));
+			if (engineParms.chat == null) {
+				engineParms.chatLoadedFunction = () => StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets));
+			}
+			else {
+				StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets));
+			}
 		}
 
 		function goFull(): void {

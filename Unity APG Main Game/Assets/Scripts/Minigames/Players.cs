@@ -95,8 +95,8 @@ public class PlayerSys {
 		var useDown = false;
 		KeyCode left, right, up, down, use;
 		Sprite pic = players.player;
-		//left = KeyCode.LeftArrow; right = KeyCode.RightArrow; up = KeyCode.UpArrow; down = KeyCode.DownArrow; use = KeyCode.RightShift;
-		left = KeyCode.Keypad1; right = KeyCode.Keypad3; up = KeyCode.Keypad5; down = KeyCode.Keypad2; use = KeyCode.Return;
+		left = KeyCode.LeftArrow; right = KeyCode.RightArrow; up = KeyCode.UpArrow; down = KeyCode.DownArrow; use = KeyCode.RightShift;
+		//left = KeyCode.Keypad1; right = KeyCode.Keypad3; up = KeyCode.Keypad5; down = KeyCode.Keypad2; use = KeyCode.Return;
 		var startingX = 0f;
 		if( id == 0 ) { use = KeyCode.Space; }
 		//else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.LeftShift; startingX = -5f; }

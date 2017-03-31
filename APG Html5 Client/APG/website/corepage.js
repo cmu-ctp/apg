@@ -4,8 +4,12 @@ var setupParms = {
     logicIRCChannelName: "",
     playerName: "",
     playerOauth: "",
-    skipAuthentication: false,
-    chat: null
+    skipAuthentication: true
+};
+
+var engineParms = {
+    chat: null,
+    chatLoadedFunction: null
 };
 
 function CreateTwitchApp() {
@@ -19,7 +23,7 @@ function CreateTwitchApp() {
 
     // The following values should be set manually for testing locally.  These values will be overridden by the server when launching from a server.
 
-    //setupParms.isMobile = true;
+    setupParms.isMobile = true;
     var clientID = 'hjgrph2akqwki1617ac5rdq9rqiep0k';
     var nullNetworking = false;
 
@@ -43,7 +47,7 @@ function CreateTwitchApp() {
     // The Client-ID is public - there is no need to hide it.  It should be a string of 31 alpha-numeric digits.
 
     if (nullNetworking) {
-        setupParms.chat = null;
+        engineParms.chat = null;
     }
     else {
         // Initialize. If we are already logged in, there is no need for the connect button
@@ -64,8 +68,12 @@ function CreateTwitchApp() {
                         identity: { username: setupParms.playerName, password: setupParms.playerOauth },
                         channels: ["#" + setupParms.logicIRCChannelName]
                     };
-                    setupParms.chat = new tmi.client(options);
-                    setupParms.chat.connect().then(function (data) {
+                    engineParms.chat = new tmi.client(options);
+                    if (engineParms.chatLoadedFunction != null) {
+                        engineParms.chatLoadedFunction();
+                        engineParms.chatLoadedFunction = null;
+                    }
+                    engineParms.chat.connect().then(function (data) {
                     }).catch(function (err) { });
                 });
             }
@@ -111,5 +119,5 @@ function onLoadEnd() {
         phaserDivName = "APGInputWidgetMobile";
     }
 
-    ApgSetup(400, 300, setupParms.logicIRCChannelName, setupParms.playerName, setupParms.chat, phaserDivName, isFullScreen);
+    ApgSetup(400, 300, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms);
 }

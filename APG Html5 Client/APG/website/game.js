@@ -108,21 +108,25 @@ var enttx = (function (_super) {
     return enttx;
 }(Phaser.Text));
 function StartGame(sys) {
+    console.log("running startgame");
     MainPlayerInput(sys);
 }
 var APGSys = (function () {
     function APGSys(g, logicIRCChannelName, playerName, chat, JSONAssets) {
         var _this = this;
+        console.log("making apgsys");
         this.g = g;
         this.w = g.world;
         this.JSONAssets = JSONAssets;
         this.network = APGSys.makeNetworking(g.world, logicIRCChannelName, playerName, chat, function () { return _this.messages; });
     }
     APGSys.makeNetworking = function (w, logicIRCChannelName, playerName, chat, messages) {
+        console.log("starting up " + chat);
         if (chat == null) {
+            ConsoleOutput.debugWarn("Chat is null - defaulting to null networking.");
             return new NullNetwork(messages, w);
         }
-        return new IRCNetwork(messages, playerName, logicIRCChannelName, chat);
+        return new IRCNetwork(messages, playerName, logicIRCChannelName, chat, w);
     };
     return APGSys;
 }());
@@ -188,7 +192,7 @@ function cacheJSONs(fileNames) {
         jsonAssetCacheNameList.push(fileNames[k]);
     }
 }
-function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, chat, APGInputWidgetDivName, allowFullScreen) {
+function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, APGInputWidgetDivName, allowFullScreen, engineParms) {
     if (gameWidth === void 0) { gameWidth = 400; }
     if (gameHeight === void 0) { gameHeight = 300; }
     if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
@@ -203,16 +207,12 @@ function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, chat, 
         ConsoleOutput.debugError("ApgSetup: playerName is not set.  The game cannot work without this.  This should be set to the name of a valid Twitch account.", "sys");
         return;
     }
-    if (chat == undefined) {
-        ConsoleOutput.debugWarn("ApgSetup: chat is not set.  Defaulting to null networking.  chat should be intialized to a tmi cilent.", "sys");
-    }
     if (APGInputWidgetDivName == undefined || APGInputWidgetDivName == "") {
         ConsoleOutput.debugError("ApgSetup: APGInputWidgetDivName is not set.  The game cannot work without this.  This should be the name of a valid div to contain the PhaserJS canvas.", "sys");
         return;
     }
     var curJSONAsset = 0;
     var JSONAssets = {};
-    console.log(jsonAssetCacheNameList);
     function LoadJSONAsset() {
         if (curJSONAsset >= jsonAssetCacheNameList.length) {
             LoadPhaserAssets();
@@ -264,7 +264,12 @@ function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, chat, 
             }
         };
         function launchGame() {
-            StartGame(new APGSys(game, logicIRCChannelName, playerName, chat, JSONAssets));
+            if (engineParms.chat == null) {
+                engineParms.chatLoadedFunction = function () { return StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets)); };
+            }
+            else {
+                StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets));
+            }
         }
         function goFull() {
             game.scale.pageAlignHorizontally = true;
@@ -442,12 +447,13 @@ var ConsoleOutput = (function () {
     return ConsoleOutput;
 }());
 var IRCNetwork = (function () {
-    function IRCNetwork(messages, player, logicChannelName, chat) {
+    function IRCNetwork(messages, player, logicChannelName, chat, w) {
         this.lastMessageTime = 0;
         this.messageQueue = [];
         var waitingForJoinAcknowledgement = true;
         this.channelName = '#' + logicChannelName;
         var src = this;
+        new ent(w, 0, 0, '', { upd: function (e) { src.update(); } });
         chat.on("chat", function (channel, userstate, message, self) {
             if (self)
                 return;
@@ -455,6 +461,14 @@ var IRCNetwork = (function () {
                 ConsoleOutput.debugLog(channel + " " + userstate.username + " " + message, "network");
             }
             if (userstate.username == logicChannelName) {
+                var msgs = messages();
+                var m1 = message.split("###");
+                if (m1.length == 2) {
+                    if (msgs.inputs[m1[0]] != undefined) {
+                        msgs.inputs[m1[0]](m1[1]);
+                    }
+                    return;
+                }
                 var msg = message.split(' ');
                 if (msg[0] == 'join') {
                     var joinName = msg[1];
@@ -691,15 +705,16 @@ var maxBufferedIRCWrites = 5;
 var debugErrorsAsAlerts = false;
 var debugPrintMessages = false;
 var debugLogIncomingIRCChat = false;
-var debugLogOutgoingIRCChat = false;
+var debugLogOutgoingIRCChat = true;
 var debugShowAssetMessages = false;
 var APGSubgameMessageHandler = (function () {
-    function APGSubgameMessageHandler(fields) {
+    function APGSubgameMessageHandler(fields, inputs) {
         this.onJoin = function () { return false; };
         this.timeUpdate = function (round, time) { };
         this.startSubmitInput = function () { };
         this.getParmCount = function () { return 0; };
         this.getParm = function (id) { return 0; };
+        this.inputs = {};
         if (fields)
             Object.assign(this, fields);
     }
@@ -745,6 +760,12 @@ function MainPlayerInput(sys) {
     var timer = 0;
     var roundNumber = 1;
     var choices = [1, 1, 1, 1, 1, 1];
+    function register(func) {
+        return function (s) {
+            var v = JSON.parse(s);
+            func(v);
+        };
+    }
     sys.messages = new APGSubgameMessageHandler({
         timeUpdate: function (round, time) {
             timer = time;
@@ -760,6 +781,15 @@ function MainPlayerInput(sys) {
         getParmCount: function () { return choices.length; },
         getParm: function (id) { return choices[id]; }
     });
+    sys.messages.inputs = {
+        time: register(function (p) {
+            timer = p.time;
+            roundNumber = p.round;
+            if (timer < 6) {
+                warningSound.play('', 0, 1 - (timer * 15) / 100);
+            }
+        })
+    };
     var toolTip = "";
     function setToolTip(str) { toolTip = str; }
     var tick = 0, choiceLeft = 50, choiceUp = 118, tabButtons, choiceButtons, bkg = new Image();
@@ -767,6 +797,8 @@ function MainPlayerInput(sys) {
     var labelColor = '#608080';
     var roundLabel, toolTipLabel, nextChoiceLabel;
     var lastRoundUpdate = 0;
+    var tt = 0;
+    var tc2 = 0;
     new ent(sys.w, 0, 0, 'assets/imgs/ClientUI.png', {
         upd: function (e) {
             if (roundNumber != lastRoundUpdate) {

@@ -2,6 +2,11 @@
 cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3','strokeup4.mp3']);
 cacheJSONs(['TestActions.json']);
 
+interface RoundUpdate {
+	round: number;
+	time: number;
+}
+
 function MainPlayerInput(sys: APGSys): void {
 	var fontName: string = "Caveat Brush";
 
@@ -45,6 +50,13 @@ function MainPlayerInput(sys: APGSys): void {
 	var roundNumber: number = 1;
 	var choices: number[] = [1, 1, 1, 1, 1, 1];
 
+	function register<T>(func: (p: T) => void): (string) => void {
+		return function (s: string): void {
+			var v: T = JSON.parse(s);
+			func(v);
+		}
+	}
+
 	sys.messages = new APGSubgameMessageHandler({
 		timeUpdate: (round, time) => {
 			timer = time;
@@ -59,17 +71,14 @@ function MainPlayerInput(sys: APGSys): void {
 		getParm: (id: number) => choices[id]
 	});
 
-/*	function reg( parmTypes:number[], func: any ) {
-		return function(parms: string[]):void {
-			var round: number = parseInt(parms[2]);
-			var time: number = parseInt(parms[1]);
-			func(round, time);
-		};
-	}
-
 	sys.messages.inputs = {
-		time_: reg( [1,1], function (round: number, time: number) { } ),
-	};*/
+		time: register<RoundUpdate>(p => {
+			timer = p.time;
+			roundNumber = p.round;
+			if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
+		})
+	};
+
 
 	var toolTip: string = "";
 	function setToolTip(str: string): void { toolTip = str; }
@@ -79,8 +88,19 @@ function MainPlayerInput(sys: APGSys): void {
 	var roundLabel: enttx, toolTipLabel: enttx, nextChoiceLabel: enttx;
 	var lastRoundUpdate: number = 0;
 
+	var tt = 0;
+	var tc2 = 0;
+
 	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI.png', {
 		upd: e => {
+
+			/*tt++;
+			if (tt > 360) {
+				tc2++;
+				tt = 0;
+				sys.network.debugChat("TimePos###"+JSON.stringify({ t:tc2, x: 5, y: 6 }));
+			}*/
+
 			if (roundNumber != lastRoundUpdate) {
 				roundLabel.text = "Actions for Round " + roundNumber;
 				lastRoundUpdate = roundNumber;

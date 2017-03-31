@@ -6,6 +6,8 @@
 
 		void UpdateTime( int time, int roundNumber );
 
+		void UpdateMsg<T>( string msg, T parms );
+
 		void UpdatePlayer( string key, string updateString );
 
 		void InviteEmptyGame();
