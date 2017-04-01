@@ -4,9 +4,9 @@
 
 		void SendMsg<T>( string msg, T parms );
 
-		void InviteEmptyGame();
-		void InvitePartiallyFullGame();
-		void InviteFullGame();
+		void SendChatText( string msg );
+
+		string LaunchAPGClientURL();
 
 		AudienceSysInterface GetAudienceSys();
 

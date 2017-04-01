@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace APG {
 
@@ -27,14 +28,24 @@ namespace APG {
 		public int[] choices;
 	}
 
-	class APGBasicGameLogic {
+		public class APGBasicGameLogic:MonoBehaviour {
+
+		public TwitchGameLogicChat network;
+
 		int ticksPerSecond = 60;
 		float nextAudienceTimer;
 		float nextAudiencePlayerChoice;
 		int roundNumber = 1;
 		int secondsPerChoice = 20;
 
-		public void Start( IRCNetworkingInterface network, AudienceSysInterface apgSys ) {
+		int maxPlayers = 20;
+
+		AudienceSysInterface apgSys;
+
+		public void Start() {
+
+			apgSys = network.GetAudienceSys();
+
 			nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 			nextAudienceTimer = ticksPerSecond * 10;
 
@@ -50,27 +61,27 @@ namespace APG {
 				} ) );
 
 		}
-		void InviteAudience( IRCNetworkingInterface network, AudiencePlayersSys apgSys, int maxPlayers ) {
+		void InviteAudience() {
 			nextAudienceTimer--;
-			if(apgSys.activePlayers < maxPlayers) {
+			if(apgSys.PlayerCount() < maxPlayers) {
 				if(nextAudienceTimer <= 0) {
-					if(apgSys.activePlayers == 0) {
-						network.InviteEmptyGame();
+					if(apgSys.PlayerCount() == 0) {
+						network.SendChatText("Up to 20 people can play!  Join here: " + network.LaunchAPGClientURL());
 					}
 					else {
-						network.InvitePartiallyFullGame();
+						network.SendChatText("" + apgSys.PlayerCount() + " of " + maxPlayers + " are playing!  Join here: " + network.LaunchAPGClientURL());
 					}
 					nextAudienceTimer = ticksPerSecond * 30;
 				}
 			}
 			else {
 				if(nextAudienceTimer <= 0) {
-					network.InviteFullGame();
+					network.SendChatText("The game is full!  Get in line to play: " + network.LaunchAPGClientURL());
 					nextAudienceTimer = ticksPerSecond * 60;
 				}
 			}
 		}
-		void RunPlayerChoice( IRCNetworkingInterface network, AudiencePlayersSys apgSys ) {
+		void RunPlayerChoice() {
 			nextAudiencePlayerChoice--;
 			if(nextAudiencePlayerChoice <= 0) {
 				nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
@@ -80,9 +91,9 @@ namespace APG {
 
 				network.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
 
-				foreach(var key in apgSys.playerMap.Keys) {
+				/*foreach(var key in apgSys.playerMap.Keys) {
 					//network.UpdatePlayer( key, apgSys.GetPlayerEvents( apgSys.playerMap[key] ).updateClient());
-				}
+				}*/
 			}
 			else if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
 
@@ -90,9 +101,9 @@ namespace APG {
 
 			}
 		}
-		public void Update( IRCNetworkingInterface network, AudiencePlayersSys apgSys, int maxPlayers ) {
-			InviteAudience( network, apgSys, maxPlayers );
-			RunPlayerChoice( network, apgSys );
+		public void Update() {
+			InviteAudience();
+			RunPlayerChoice();
 		}
 	}
 }

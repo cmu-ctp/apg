@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace APG {
+﻿namespace APG {
 
 	public interface AudienceSysInterface {
 

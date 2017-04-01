@@ -70,7 +70,7 @@ namespace APG {
 			playerInput[id] = parms;
 			return true;
 		}
-		public void LogChat( string name, string msg) {
+		public void RecordMostRecentChat( string name, string msg) {
 			chatSys.Log( name, msg, time );
 		}
 		public ChatterInterface Chatters() {

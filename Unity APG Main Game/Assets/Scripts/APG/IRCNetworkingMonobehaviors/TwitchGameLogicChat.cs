@@ -1,9 +1,19 @@
 using UnityEngine;
+using System;
 using System.IO;
 using APG;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+
+[Serializable]
+public class NetworkSettings {
+	public string ChatOauth;
+	public string LogicOauth;
+	public string GameClientID;
+	public string RedirectLink;
+	public string BitlyLink;
+}
 
 [RequireComponent(typeof(TwitchIRCChat))]
 [RequireComponent(typeof(TwitchIRCLogic))]
@@ -21,19 +31,21 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 
 	public string BitlyLink;
 
-	//___________________________________________
+	public string NetworkSettingPath;
 
-	string launchGameLink = "GAME LAUNCHING LINK NOT SET";
+	NetworkSettings settings = null;
+
+	string launchAPGClientURL = "GAME LAUNCHING LINK NOT SET";
 
 	TwitchIRCChat IRCChat;
 	TwitchIRCLogic IRCLogic;
 
-	// Who should be in charge of what?
+	//___________________________________________
+
+	// Who should be in charge of this?
 	AudiencePlayersSys apgSys = new AudiencePlayersSys();
 
-	// This, right here, needs to be much better thought through.
-	APGBasicGameLogic gameLogic = new APGBasicGameLogic();
-	public int maxPlayers = 20;
+	NetworkMessageHandler handlers;
 
 	//___________________________________________
 
@@ -41,44 +53,61 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 		IRCLogic.SendMsg( msg+"###"+JsonUtility.ToJson(parms) );
 	}
 
-	private string DisplayLinks() {
-		return "" + launchGameLink;
+	public void SendChatText( string msg ) {
+		IRCChat.SendMsg( msg );
 	}
 
-	public void InviteEmptyGame() {
-		IRCChat.SendMsg("Up to 20 people can play!  Join here: " + DisplayLinks() );
-	}
-	public void InvitePartiallyFullGame() {
-		IRCChat.SendMsg("" + apgSys.activePlayers + " of " + maxPlayers + " are playing!  Join here: " + DisplayLinks());
-	}
-	public void InviteFullGame() {
-		IRCChat.SendMsg("The game is full!  Get in line to play: " + DisplayLinks());
+	public string LaunchAPGClientURL() {
+		return launchAPGClientURL;
 	}
 
-	//___________________________________________
+	void LoadNetworkSettings() {
+		if( settings != null ) {
+			return;
+		}
 
-	void LoadDebugOauths() {
+		settings = new NetworkSettings {LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = BitlyLink };
+
 		try { 
-			// format of this file, for debugging purposes: logic_channel_oauth chat_channel_oauth
-			var sr = new StreamReader(@"C:\APG\apg_debug_oauths.txt");
+			var sr = new StreamReader(Application.dataPath+"\\"+ NetworkSettingPath);
 			if( sr != null ) {
-				var fileContents = sr.ReadToEnd();
-				var vals = fileContents.Split(new char[] { ' ' });
-				ChatOauth = vals[0];
-				LogicOauth = vals[1];
-				GameClientID = vals[2];
-				RedirectLink = vals[3];
-				launchGameLink = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+RedirectLink+"&scope=user_read+channel_read+chat_login";
-				BitlyLink = vals[4];
+				settings = JsonUtility.FromJson<NetworkSettings>( sr.ReadToEnd() );
 				sr.Close();
 			}
 		}
 		catch { }
+
+		// Debug.Log( JsonUtility.ToJson( settings ) );
+
+		launchAPGClientURL = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
+
+		if( settings.BitlyLink != "" ) {
+			launchAPGClientURL = settings.BitlyLink;
+		}
+
+		Debug.Log( "HTML5 Client is launched for this game and this twitch account with the following URL: " + launchAPGClientURL );
+		Debug.Log( "Paste these specific URLs into Bitly for shortened URLs." );
+
+		if( LogicChannelName == "" ) {
+			#if UNITY_EDITOR
+			EditorUtility.DisplayDialog( "Error!", 
+				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Logic Channel Name isn't set to a valid Twitch Account.  This will be used for network traffic.  Go register for a new account on Twitch if you don't have one.", 
+				"Okay");
+			#endif
+		}
+		if( ChatChannelName == "" ) {
+			#if UNITY_EDITOR
+			EditorUtility.DisplayDialog( "Error!", 
+				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Chat Channel Name isn't set to a valid Twitch Account.  This will be used for inviting players to join the game.  Go register for a new account on Twitch if you don't have one.", 
+				"Okay");
+			#endif
+		}
+
 	}
 	public string GetLogicOauth() {
-		LoadDebugOauths();
+		LoadNetworkSettings();
 
-		if( LogicOauth == "" ) {
+		if( settings.LogicOauth == "" ) {
 			#if UNITY_EDITOR
 			EditorUtility.DisplayDialog( "Error!", 
 				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Logic Oauth isn't set to a valid Oauth.\n\nMake sure you have a separate twitch account for your logic channel, then get an Oauth for your logic channel here:\n\n http://www.twitchapps.com/tmi/ \n\nthen fill in that field.", 
@@ -86,12 +115,12 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 			#endif
 		}
 
-		return LogicOauth;
+		return settings.LogicOauth;
 	}
 	public string GetChatOauth() {
-		LoadDebugOauths();
+		LoadNetworkSettings();
 
-		if( ChatOauth == "" ) {
+		if( settings.ChatOauth == "" ) {
 			#if UNITY_EDITOR
 			EditorUtility.DisplayDialog( "Error!", 
 				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Chat Oauth isn't set to a valid Oauth.\n\nGet an Oauth for your chat channel here:\n\n http://www.twitchapps.com/tmi/ \n\nthen fill in that field.", 
@@ -99,7 +128,7 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 			#endif
 		}
 
-		return ChatOauth;
+		return settings.ChatOauth;
 	}
 
 	void InitIRCChat() {
@@ -110,13 +139,11 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
 			string msgString = msg.Substring(msgIndex + ChatChannelName.Length + 11);
 			string user = msg.Substring(1, msg.IndexOf('!') - 1);
-			apgSys.LogChat( user, msgString );
+			apgSys.RecordMostRecentChat( user, msgString );
 		});
 
 		IRCChat.SendMsg( "*** Chat Channel Initialized ***" );
 	}
-
-	public NetworkMessageHandler handlers;
 
 	void InitIRCLogicChannel() {
 		IRCLogic = this.GetComponent<TwitchIRCLogic>();
@@ -140,41 +167,15 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 		return apgSys;
 	}
 
-	public void SetHandlers( NetworkMessageHandler _handlers ) {
-		handlers = _handlers;
+	public void SetHandlers( NetworkMessageHandler theHandlers ) {
+		handlers = theHandlers;
 	}
 
 	public void Start() {
-		launchGameLink = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+RedirectLink+"&scope=user_read+channel_read+chat_login";
-
-		Debug.Log( "HTML5 Client is launched for this game and this twitch account with the following URL: " + launchGameLink );
-		Debug.Log( "Paste these specific URLs into Bitly for shortened URLs." );
-
-		if( LogicChannelName == "" ) {
-			#if UNITY_EDITOR
-			EditorUtility.DisplayDialog( "Error!", 
-				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Logic Channel Name isn't set to a valid Twitch Account.  This will be used for network traffic.  Go register for a new account on Twitch if you don't have one.", 
-				"Okay");
-			#endif
-		}
-		if( ChatChannelName == "" ) {
-			#if UNITY_EDITOR
-			EditorUtility.DisplayDialog( "Error!", 
-				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Chat Channel Name isn't set to a valid Twitch Account.  This will be used for inviting players to join the game.  Go register for a new account on Twitch if you don't have one.", 
-				"Okay");
-			#endif
-		}
-
-		if( BitlyLink != "" ) {
-			launchGameLink = BitlyLink;
-		}
-
-		gameLogic.Start( this, apgSys );
 		InitIRCChat();
 		InitIRCLogicChannel();
 	}
 	void Update() {
 		apgSys.Update();
-		gameLogic.Update(this, apgSys, maxPlayers );
 	}
 }
