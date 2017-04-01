@@ -11,6 +11,22 @@ namespace APG {
 	public struct EmptyMsg{
 	}
 
+	[Serializable]
+	struct EmptyParms{
+	}
+
+	// join
+	[Serializable]
+	struct ClientJoinParms{
+		public string name;
+	}
+
+	// upd
+	[Serializable]
+	struct SelectionParms {
+		public int[] choices;
+	}
+
 	class APGBasicGameLogic {
 		int ticksPerSecond = 60;
 		float nextAudienceTimer;
@@ -18,9 +34,21 @@ namespace APG {
 		int roundNumber = 1;
 		int secondsPerChoice = 20;
 
-		public void Start() {
+		public void Start( IRCNetworkingInterface network, AudienceSysInterface apgSys ) {
 			nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 			nextAudienceTimer = ticksPerSecond * 10;
+
+			network.SetHandlers( new NetworkMessageHandler()
+				.Add<EmptyParms>( "join", (user, p) => {
+					// need game logic to determine if this player should be allowed to join - need multiple ways to join, too - join in different roles
+					if( apgSys.AddPlayer(user )) {
+						network.SendMsg<ClientJoinParms>("join", new ClientJoinParms { name = user });
+					}
+				} )
+				.Add<SelectionParms>( "upd", (user, p) => {
+					apgSys.SetPlayerInput( user, p.choices );
+				} ) );
+
 		}
 		void InviteAudience( IRCNetworkingInterface network, AudiencePlayersSys apgSys, int maxPlayers ) {
 			nextAudienceTimer--;

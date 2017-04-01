@@ -1,5 +1,5 @@
 var setupParms = {
-    isMobile : true,
+    isMobile: true,
     chatIRCChannelName: "",
     logicIRCChannelName: "",
     playerName: "",
@@ -24,8 +24,8 @@ function CreateTwitchApp() {
     // The following values should be set manually for testing locally.  These values will be overridden by the server when launching from a server.
 
     setupParms.isMobile = true;
+
     var clientID = 'hjgrph2akqwki1617ac5rdq9rqiep0k';
-    var nullNetworking = false;
 
     if (location.hash !== null && location.hash !== "") {
 
@@ -46,38 +46,33 @@ function CreateTwitchApp() {
     // You need to register a new game with Twitch to get your own Client-ID.
     // The Client-ID is public - there is no need to hide it.  It should be a string of 31 alpha-numeric digits.
 
-    if (nullNetworking) {
-        engineParms.chat = null;
-    }
-    else {
-        // Initialize. If we are already logged in, there is no need for the connect button
-        Twitch.init({ clientId: clientID }, function (error, status) {
-            if (status.authenticated || setupParms.skipAuthentication) {
-                Twitch.api({ method: 'user' }, function (error, user) {
+    // Initialize. If we are already logged in, there is no need for the connect button
+    Twitch.init({ clientId: clientID }, function (error, status) {
+        if (status.authenticated || setupParms.skipAuthentication) {
+            Twitch.api({ method: 'user' }, function (error, user) {
 
-                    if (!setupParms.skipAuthentication) {
-                        if (user === null) alert(error);
-                        setupParms.playerName = user.display_name;
-                        setupParms.playerOauth = "oauth:" + Twitch.getToken();
-                    }
+                if (!setupParms.skipAuthentication) {
+                    if (user === null) alert(error);
+                    setupParms.playerName = user.display_name;
+                    setupParms.playerOauth = "oauth:" + Twitch.getToken();
+                }
 
-                    var options = {
-                        options: { debug: true },
-                        connection: { reconnect: true },
-                        identity: { username: setupParms.playerName, password: setupParms.playerOauth },
-                        channels: ["#" + setupParms.logicIRCChannelName]
-                    };
-                    engineParms.chat = new tmi.client(options);
-                    if (engineParms.chatLoadedFunction !== null) {
-                        engineParms.chatLoadedFunction();
-                        engineParms.chatLoadedFunction = null;
-                    }
-                    engineParms.chat.connect().then(function (data) {
-                    }).catch(function (err) { });
-                });
-            }
-        });
-    }
+                var options = {
+                    options: { debug: true },
+                    connection: { reconnect: true },
+                    identity: { username: setupParms.playerName, password: setupParms.playerOauth },
+                    channels: ["#" + setupParms.logicIRCChannelName]
+                };
+                engineParms.chat = new tmi.client(options);
+                if (engineParms.chatLoadedFunction !== null) {
+                    engineParms.chatLoadedFunction();
+                    engineParms.chatLoadedFunction = null;
+                }
+                engineParms.chat.connect().then(function (data) {
+                }).catch(function (err) { });
+            });
+        }
+    });
 }
 CreateTwitchApp();
 

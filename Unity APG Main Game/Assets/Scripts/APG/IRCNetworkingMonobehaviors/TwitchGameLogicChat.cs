@@ -1,25 +1,9 @@
 using UnityEngine;
 using System.IO;
-using System.Collections.Generic;
-using System;
 using APG;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-
-[Serializable]
-struct EmptyParms{
-}
-
-[Serializable]
-struct ClientJoinParms{
-	public string name;
-}
-
-[Serializable]
-struct SelectionParms {
-	public int[] choices;
-}
 
 [RequireComponent(typeof(TwitchIRCChat))]
 [RequireComponent(typeof(TwitchIRCLogic))]
@@ -132,57 +116,19 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 		IRCChat.SendMsg( "*** Chat Channel Initialized ***" );
 	}
 
-	Dictionary<string, Action<string, string>> clientCommands = new Dictionary<string, Action<string, string>>();
+	public NetworkMessageHandler handlers;
 
-	/* Okay.  How do I want to handle this?
-		
-		I have this JSON serialization and deserialization setup.
-		This is handy for sending relatively arbitrary data bundles between the server and client.
-		But what messages should be sent?  And when?  How are they synchronized?
-
-		So, on both the client and server, register a message and then a type, and a function for handling the message?
-	*/
-
-	Action<string, string> Register<T>( Action<string, T> func ) {
-		return ( string user, string s ) => {
-			T parms = JsonUtility.FromJson<T>( s );
-			func( user, parms );
-		};
-	}
-
-	// what messages can come from clients?
 	void InitIRCLogicChannel() {
 		IRCLogic = this.GetComponent<TwitchIRCLogic>();
 		
-
-		clientCommands["join"] = Register<EmptyParms>( (user, p) => {
-			// need game logic to determine if this player should be allowed to join
-			// need multiple ways to join, too - join in different roles
-			if( apgSys.AddPlayer(user )) {
-				SendMsg<ClientJoinParms>("join", new ClientJoinParms { name = user });
-			}
-		} );
-
-		clientCommands["upd"] = Register<SelectionParms>( (user, p) => {
-			apgSys.SetPlayerInput( user, p.choices );
-		} );
-
 		IRCLogic.messageRecievedEvent.AddListener(msg => {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
 			string msgString = msg.Substring(msgIndex + LogicChannelName.Length + 11);
 			string user = msg.Substring(1, msg.IndexOf('!') - 1);
 
-			var jsonMSG = msgString.Split(new string[] { "###" }, StringSplitOptions.None);
-
 			Debug.Log( " " + msgString );
 
-			if( jsonMSG.Length == 2 ) {
-				if( clientCommands.ContainsKey(jsonMSG[0])) {
-					clientCommands[jsonMSG[0]](user, jsonMSG[1]);
-					return;
-				}
-				Debug.Log( "Error!  Unrecognized command in message from " + user + ": " + msgString );
-			}
+			handlers.Run( user, msgString );
 		});
 
 		IRCLogic.SendMsg( "*** Logic Channel Initialized ***" );
@@ -193,6 +139,11 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 	public AudienceSysInterface GetAudienceSys() {
 		return apgSys;
 	}
+
+	public void SetHandlers( NetworkMessageHandler _handlers ) {
+		handlers = _handlers;
+	}
+
 	public void Start() {
 		launchGameLink = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+RedirectLink+"&scope=user_read+channel_read+chat_login";
 
@@ -218,7 +169,7 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 			launchGameLink = BitlyLink;
 		}
 
-		gameLogic.Start();
+		gameLogic.Start( this, apgSys );
 		InitIRCChat();
 		InitIRCLogicChannel();
 	}
