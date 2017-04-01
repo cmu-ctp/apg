@@ -4,7 +4,7 @@ The APGSubgameMessageHandler is a set of functions that the networking system us
 
 class APGSubgameMessageHandler {
 
-	inputs: any = {};
+	private inputs: any = {};
 
 	constructor() {
 		this.inputs = {};

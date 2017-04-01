@@ -1,9 +1,9 @@
 var setupParms = {
     isMobile : true,
-    chatIRCChannelName: "ludolab",
-    logicIRCChannelName: "ludolab_",
-    playerName: "ludolab",
-    playerOauth: "oauth:elryl5m1teab00df6zsbsxk8xhzl99",
+    chatIRCChannelName: "",
+    logicIRCChannelName: "",
+    playerName: "",
+    playerOauth: "",
     skipAuthentication: true
 };
 
