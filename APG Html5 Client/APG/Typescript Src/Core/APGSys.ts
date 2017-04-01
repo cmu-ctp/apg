@@ -1,30 +1,26 @@
 ﻿class APGSys {
 
-	messages: APGSubgameMessageHandler;
+	handlers: APGSubgameMessageHandler;
 
 	g: Phaser.Game;
 
 	w: Phaser.World;
 
+	playerName: string;
+
 	JSONAssets: { any };
 
-	network: NetworkInterface;
+	private network: IRCNetwork;
 
 	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any) {
-		console.log("making apgsys");
 		this.g = g;
 		this.w = g.world;
 		this.JSONAssets = JSONAssets;
-		this.network = APGSys.makeNetworking(g.world, logicIRCChannelName, playerName, chat, () => this.messages);
+		this.playerName = playerName;
+		this.network = new IRCNetwork(() => this.handlers, playerName, logicIRCChannelName, chat, this.w);
 	}
 
-	private static makeNetworking(w: Phaser.World, logicIRCChannelName: string, playerName: string, chat: tmiClient, messages: () => APGSubgameMessageHandler): NetworkInterface {
-		console.log("starting up " + chat);
-		if (chat == null) {
-			ConsoleOutput.debugWarn("Chat is null - defaulting to null networking.");
-			return new NullNetwork(messages, w);
-		}
-
-		return new IRCNetwork(messages, playerName, logicIRCChannelName, chat, w);
+	sendMessageToServer<T>(msgName: string, parmsForMessageToServer: T): void {
+		this.network.sendMessageToServer(msgName, parmsForMessageToServer);
 	}
 }

@@ -63,12 +63,12 @@ public class AudiencePlayerSys {
 			var nameColor = new Color( rd.f(0,.5f), rd.f(0,.5f), rd.f(0,.5f), 1 );
 
 
-			var label = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=nameColor };
-			var parms = new List<int> { 0, 0, 0, 0, 0, 0, 0 };
+			var label = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="null", textColor=nameColor };
+			var parms = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 			var posx = (k<10) ? -11 + 9*(k/10f) : 11 - 9*((k-10)/10f);
 			playerEvents.RegisterHandler(new AudiencePlayerEventsHandler {
-				onJoin = name => { label.text = name; inUse = true;},
-				onInput = inputs => parms = inputs,
+				onJoin = name => { label.text = name; inUse = true; Debug.Log( "Got join" ); },
+				onInput = inputs => { parms = inputs; Debug.Log( "Got input of " + inputs ); },
 				updateClient = () => ""
 			});
 			var goalz = .8f + rd.f(0, 1.5f);
@@ -93,7 +93,7 @@ public class AudiencePlayerSys {
 				update = e => {
 					if(e.health <= 0) return;
 
-					if( parms == null || parms.Count < 4 ) {
+					if( parms == null || parms.Length < 4 ) {
 						return;
 					}
 					tick++;

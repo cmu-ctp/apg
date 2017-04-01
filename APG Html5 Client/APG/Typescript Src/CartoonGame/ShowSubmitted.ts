@@ -5,7 +5,7 @@ function ShowSubmitted(sys: APGSys, getRoundNumber: () => number): void {
 	var inputUsed: boolean = false;
 	var clickSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
 
-	sys.messages = new APGSubgameMessageHandler({});
+	sys.handlers = new APGSubgameMessageHandler();
 
 	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI.png', {
 		upd: e => {

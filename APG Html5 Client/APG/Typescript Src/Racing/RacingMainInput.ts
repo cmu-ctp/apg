@@ -31,8 +31,7 @@ function RacingInput(sys: APGSys): void {
 
 	var carSet: number = 3;
 
-	sys.messages = new APGSubgameMessageHandler({
-	});
+	sys.handlers = new APGSubgameMessageHandler();
 
 	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118;
 	var lastRoundUpdate: number = 0;

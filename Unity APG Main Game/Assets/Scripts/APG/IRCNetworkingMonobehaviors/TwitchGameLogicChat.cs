@@ -7,6 +7,20 @@ using APG;
 using UnityEditor;
 #endif
 
+[Serializable]
+struct EmptyParms{
+}
+
+[Serializable]
+struct ClientJoinParms{
+	public string name;
+}
+
+[Serializable]
+struct SelectionParms {
+	public int[] choices;
+}
+
 [RequireComponent(typeof(TwitchIRCChat))]
 [RequireComponent(typeof(TwitchIRCLogic))]
 public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
@@ -39,21 +53,10 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 
 	//___________________________________________
 
-	public void RequestPlayersUpdate() {
-		IRCLogic.SendMsg("s");
-	}
-	public void UpdateTime( int time, int roundNumber ) {
-		IRCLogic.SendMsg( "t " + time + " " + roundNumber );
-	}
-
-	public void UpdateMsg<T>( string msg, T parms ) {
+	public void SendMsg<T>( string msg, T parms ) {
 		IRCLogic.SendMsg( msg+"###"+JsonUtility.ToJson(parms) );
 	}
 
-	public void UpdatePlayer( string key, string updateString ) {
-		IRCLogic.SendMsg("u "+key+" "+updateString);
-	}
-	
 	private string DisplayLinks() {
 		return "" + launchGameLink;
 	}
@@ -115,33 +118,6 @@ public class TwitchGameLogicChat:MonoBehaviour, IRCNetworkingInterface {
 		return ChatOauth;
 	}
 
-[Serializable]
-public struct TimePos
-{
-    public int t;
-    public int x;
-    public int y;
-}
-
-	/*
-
-[Serializable]
-public class MyClass
-{
-    public int level;
-    public float timeElapsed;
-    public string playerName;
-}
-
-MyClass myObject = new MyClass();
-myObject.level = 1;
-myObject.timeElapsed = 47.5f;
-myObject.playerName = "Dr Charles Francis";
-
-string json = JsonUtility.ToJson(myObject);
-
-	 */
-
 	void InitIRCChat() {
 		IRCChat = this.GetComponent<TwitchIRCChat>();
 		//IRC.SendCommand("CAP REQ :twitch.tv/tags"); //register for additional data such as emote-ids, name color etc.
@@ -156,7 +132,7 @@ string json = JsonUtility.ToJson(myObject);
 		IRCChat.SendMsg( "*** Chat Channel Initialized ***" );
 	}
 
-	Dictionary<string, Action<string, string[]>> clientCommands = new Dictionary<string, Action<string, string[]>>();
+	Dictionary<string, Action<string, string>> clientCommands = new Dictionary<string, Action<string, string>>();
 
 	/* Okay.  How do I want to handle this?
 		
@@ -167,58 +143,47 @@ string json = JsonUtility.ToJson(myObject);
 		So, on both the client and server, register a message and then a type, and a function for handling the message?
 	*/
 
+	Action<string, string> Register<T>( Action<string, T> func ) {
+		return ( string user, string s ) => {
+			T parms = JsonUtility.FromJson<T>( s );
+			func( user, parms );
+		};
+	}
+
 	// what messages can come from clients?
 	void InitIRCLogicChannel() {
 		IRCLogic = this.GetComponent<TwitchIRCLogic>();
 		
+
+		clientCommands["join"] = Register<EmptyParms>( (user, p) => {
+			// need game logic to determine if this player should be allowed to join
+			// need multiple ways to join, too - join in different roles
+			if( apgSys.AddPlayer(user )) {
+				SendMsg<ClientJoinParms>("join", new ClientJoinParms { name = user });
+			}
+		} );
+
+		clientCommands["upd"] = Register<SelectionParms>( (user, p) => {
+			apgSys.SetPlayerInput( user, p.choices );
+		} );
+
 		IRCLogic.messageRecievedEvent.AddListener(msg => {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
 			string msgString = msg.Substring(msgIndex + LogicChannelName.Length + 11);
 			string user = msg.Substring(1, msg.IndexOf('!') - 1);
 
-			// myObject = JsonUtility.FromJson<MyClass>(json);
-			
 			var jsonMSG = msgString.Split(new string[] { "###" }, StringSplitOptions.None);
-
-			if( jsonMSG.Length == 2 ) {
-				if( jsonMSG[0] == "TimePos" ) {
-					var myPos = JsonUtility.FromJson<TimePos>(jsonMSG[1]);
-					Debug.Log( " " + myPos.x + " " + myPos.y );
-				}
-			}
 
 			Debug.Log( " " + msgString );
 
-			var fullMsg = msgString.Split(new char[] { ' ' });
-			/*if(clientCommands.ContainsKey(fullMsg[0]) == true) {
-				clientCommands[fullMsg[0]](user, fullMsg );
-			}*/
-
-			if(fullMsg[0] == "join") {
-				// need game logic to determine if this player should be allowed to join
-				// need multiple ways to join, too - join in different roles
-				if( apgSys.AddPlayer(user ))IRCLogic.SendMsg("join "+user);
+			if( jsonMSG.Length == 2 ) {
+				if( clientCommands.ContainsKey(jsonMSG[0])) {
+					clientCommands[jsonMSG[0]](user, jsonMSG[1]);
+					return;
+				}
+				Debug.Log( "Error!  Unrecognized command in message from " + user + ": " + msgString );
 			}
-			if(fullMsg[0] == "upd") {
-				// need a better way to handle updates - different kinds of update types?  json-esque?
-				var parms = new List<int>();
-				for(var k = 1; k < fullMsg.Length; k++) parms.Add(Int32.Parse(fullMsg[k]));
-				apgSys.SetPlayerInput( user, parms );
-			}
-			// register these as a dictionary instead?
-			// need a way add a custom handler for unrecognized messages
 		});
-
-		/*clientCommands["join"] = (user, fullMsg) =>{
-			// need game logic to determine if this player should be allowed to join
-			// need multiple ways to join, too - join in different roles
-			if( apgSys.AddPlayer( user ))IRCLogic.SendMsg("join "+user);
-		};
-		clientCommands["upd"] = (user, fullMsg) => {
-			var parms = new List<int>();
-			for(var k = 1; k < fullMsg.Length; k++) parms.Add(Int32.Parse(fullMsg[k]));
-			apgSys.SetPlayerInput( user, parms );
-		};*/
 
 		IRCLogic.SendMsg( "*** Logic Channel Initialized ***" );
 	}

@@ -7,7 +7,7 @@ namespace APG {
 
 		public Action<string> onJoin = playerName => { };
 
-		public Action<List<int>> onInput = inputList => { };
+		public Action<int[]> onInput = inputList => { };
 
 		public Func<string> updateClient = () => "";
 	}

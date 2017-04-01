@@ -7,6 +7,9 @@ namespace APG {
 		public int round;
 		public int time;
 	}
+	[Serializable]
+	public struct EmptyMsg{
+	}
 
 	class APGBasicGameLogic {
 		int ticksPerSecond = 60;
@@ -44,22 +47,18 @@ namespace APG {
 			if(nextAudiencePlayerChoice <= 0) {
 				nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 				// update game state
-				network.RequestPlayersUpdate();
+				network.SendMsg("submit", new EmptyMsg());
 				roundNumber++;
 
-				//network.UpdateTime( (int)(nextAudiencePlayerChoice/60), roundNumber);
-				network.UpdateMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+				network.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
 
 				foreach(var key in apgSys.playerMap.Keys) {
-					network.UpdatePlayer( key, apgSys.GetPlayerEvents( apgSys.playerMap[key] ).updateClient());
+					//network.UpdatePlayer( key, apgSys.GetPlayerEvents( apgSys.playerMap[key] ).updateClient());
 				}
-				//apgSys.onUpdate()
 			}
 			else if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
-				//apgSys.onUpdate()
 
-				//network.UpdateTime( (int)(nextAudiencePlayerChoice/60), roundNumber);
-				network.UpdateMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+				network.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
 
 			}
 		}

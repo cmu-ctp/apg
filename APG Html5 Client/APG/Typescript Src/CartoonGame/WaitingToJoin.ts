@@ -2,10 +2,13 @@
 cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 
+interface EmptyParms{
+}
+
 function WaitingToJoin(sys: APGSys): void {
 	var clickSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
 
-	sys.messages = new APGSubgameMessageHandler({});
+	sys.handlers = new APGSubgameMessageHandler();
 	var inputUsed: boolean = false, endSubgame: boolean = false;
 
 	new ent(sys.g.world, 0, 0, 'assets/imgs/ClientUI.png', {
@@ -19,7 +22,7 @@ function WaitingToJoin(sys: APGSys): void {
 				inputUsed = true;
 				clickSound.play();
 				WaitingForJoinAcknowledement(sys);
-				sys.network.join();
+				sys.sendMessageToServer<EmptyParms>("join", {});
 				endSubgame = true;
 			}
 		}

@@ -7,6 +7,13 @@ interface RoundUpdate {
 	time: number;
 }
 
+interface EmptyParms {
+}
+
+interface SelectionParms {
+	choices: number[];
+}
+
 function MainPlayerInput(sys: APGSys): void {
 	var fontName: string = "Caveat Brush";
 
@@ -50,35 +57,15 @@ function MainPlayerInput(sys: APGSys): void {
 	var roundNumber: number = 1;
 	var choices: number[] = [1, 1, 1, 1, 1, 1];
 
-	function register<T>(func: (p: T) => void): (string) => void {
-		return function (s: string): void {
-			var v: T = JSON.parse(s);
-			func(v);
-		}
-	}
-
-	sys.messages = new APGSubgameMessageHandler({
-		timeUpdate: (round, time) => {
-			timer = time;
-			roundNumber = round;
-			if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
-		},
-		startSubmitInput: () => {
-			ShowSubmitted(sys, () => roundNumber);
-			endOfRoundSound.play();
-		},
-		getParmCount: () => choices.length,
-		getParm: (id: number) => choices[id]
-	});
-
-	sys.messages.inputs = {
-		time: register<RoundUpdate>(p => {
+	sys.handlers = new APGSubgameMessageHandler()
+		.add<RoundUpdate>( "time", p => {
 			timer = p.time;
 			roundNumber = p.round;
 			if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
 		})
-	};
-
+		.add<SelectionParms>( "submit", p => {
+			sys.sendMessageToServer<SelectionParms>("upd", { choices: choices });
+		});
 
 	var toolTip: string = "";
 	function setToolTip(str: string): void { toolTip = str; }
@@ -88,19 +75,8 @@ function MainPlayerInput(sys: APGSys): void {
 	var roundLabel: enttx, toolTipLabel: enttx, nextChoiceLabel: enttx;
 	var lastRoundUpdate: number = 0;
 
-	var tt = 0;
-	var tc2 = 0;
-
 	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI.png', {
 		upd: e => {
-
-			/*tt++;
-			if (tt > 360) {
-				tc2++;
-				tt = 0;
-				sys.network.debugChat("TimePos###"+JSON.stringify({ t:tc2, x: 5, y: 6 }));
-			}*/
-
 			if (roundNumber != lastRoundUpdate) {
 				roundLabel.text = "Actions for Round " + roundNumber;
 				lastRoundUpdate = roundNumber;

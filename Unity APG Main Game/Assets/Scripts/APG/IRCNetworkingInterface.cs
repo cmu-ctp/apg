@@ -2,13 +2,7 @@
 
 	public interface IRCNetworkingInterface {
 
-		void RequestPlayersUpdate();
-
-		void UpdateTime( int time, int roundNumber );
-
-		void UpdateMsg<T>( string msg, T parms );
-
-		void UpdatePlayer( string key, string updateString );
+		void SendMsg<T>( string msg, T parms );
 
 		void InviteEmptyGame();
 

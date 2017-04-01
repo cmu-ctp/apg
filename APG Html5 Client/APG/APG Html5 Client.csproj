@@ -35,11 +35,9 @@
     <TypeScriptCompile Include="Typescript Src\CartoonGame\ButtonCollection.ts" />
     <TypeScriptCompile Include="Typescript Src\Debug\ConsoleOutput.ts" />
     <TypeScriptCompile Include="Typescript Src\Libraries\jquery.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Network\IRCNetwork.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\IRCNetwork.ts" />
     <TypeScriptCompile Include="Typescript Src\Libraries\p2.d.ts" />
     <TypeScriptCompile Include="Typescript Src\Libraries\phaser.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Network\NetworkInterface.ts" />
-    <TypeScriptCompile Include="Typescript Src\Network\NullNetwork.ts" />
     <TypeScriptCompile Include="Typescript Src\Phaser\Scroller.ts" />
     <TypeScriptCompile Include="Typescript Src\Libraries\pixi.comments.d.ts" />
     <TypeScriptCompile Include="Typescript Src\Racing\RacingMainInput.ts" />

@@ -1,4 +1,11 @@
-﻿class IRCNetwork implements NetworkInterface {
+﻿interface tmiClient {
+	// These functions are actually returning promises.  Not sure how to express that in TS's type system.
+	connect(): any;
+	say(channel: string, message: string): any;
+	on(evt: string, exec: Function): any;
+}
+
+class IRCNetwork{
 
 // Server Messages:
 // Join acknowledge
@@ -16,8 +23,7 @@
 	private lastMessageTime: number = 0;
 	private messageQueue: string[] = [];
 
-	constructor(messages: () => APGSubgameMessageHandler, player: string, logicChannelName: string, chat: tmiClient, w: Phaser.World ) {
-		var waitingForJoinAcknowledgement: boolean = true;
+	constructor(getHandlers: () => APGSubgameMessageHandler, player: string, logicChannelName: string, chat: tmiClient, w: Phaser.World ) {
 		this.channelName = '#'+logicChannelName;
 
 		var src: IRCNetwork = this;
@@ -31,57 +37,21 @@
 			if (debugLogIncomingIRCChat) {
 				ConsoleOutput.debugLog(channel + " " + userstate.username + " " + message, "network");
 			}
-			
+
 			if (userstate.username == logicChannelName) {
-
-				var msgs = messages();
-
-				var m1 = message.split("###");
-				if (m1.length == 2) {
-					if (msgs.inputs[m1[0]] != undefined) {
-						msgs.inputs[m1[0]](m1[1]);
-					}
-					return;
-				}
-
-				var msg = message.split(' ');
-
-				if (msg[0] == 'join') {
-					var joinName = msg[1];
-					if (waitingForJoinAcknowledgement && joinName == player) {
-						waitingForJoinAcknowledgement = false;
-						messages().onJoin();
-					}
-				} 
-				else if (msg[0] == 't') {
-					messages().timeUpdate(parseInt(msg[2]), parseInt(msg[1]));
-				}
-				else if (msg[0] == 's') {
-					var msgs: APGSubgameMessageHandler = messages();
-
-					msgs.startSubmitInput();
-
-					var choiceMsg: string = "upd ";
-					for (var k: number = 0; k < msgs.getParmCount(); k++)choiceMsg += " " + msgs.getParm(k);
-
-					src.writeToChat(choiceMsg);
-				}
-				else if (msg[0] == 'u') {
-					//alert(" *" + channel + "* " + userstate.username + " ::: " + message);
-				}
+				getHandlers().run( message );
 			}
 			else {
-				// var m: MessageHandler = messages();
 			}
 		});
 		this.chat = chat;
 	}
 
-	join(): void { this.writeToChat("join"); }
+	sendMessageToServer<T>(msg: string, parms: T): void {
+		this.writeToChat(msg+"###" + JSON.stringify( parms ));
+	}
 
-	debugChat(s: string): void { this.writeToChat(s); }
-
-	writeToChat(s: string): void {
+	private writeToChat(s: string): void {
 
 		if (this.lastMessageTime > 0) {
 			if (this.messageQueue.length > maxBufferedIRCWrites) {
@@ -99,7 +69,7 @@
 		this.lastMessageTime = IRCWriteDelayInSeconds * ticksPerSecond;
 	}
 
-	update(): void {
+	private update(): void {
 		this.lastMessageTime--;
 
 		if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {

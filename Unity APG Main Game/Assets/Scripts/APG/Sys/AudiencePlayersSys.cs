@@ -8,7 +8,7 @@ namespace APG {
 
 		List<string> playerNames = new List<string>();
 
-		List<List<int>> playerInput = new List<List<int>>();
+		List<int[]> playerInput = new List<int[]>();
 
 		AudiencePlayerEventsHandler nullEvents = new AudiencePlayerEventsHandler();
 
@@ -45,7 +45,7 @@ namespace APG {
 			if( !ValidPlayer( playerNumber ) )return "";
 			return playerNames[playerNumber];
 		}
-		public List<int> PlayerInput( int playerNumber ) {
+		public int[] PlayerInput( int playerNumber ) {
 			if( !ValidPlayer( playerNumber ) )return null;
 			return playerInput[playerNumber];
 		}
@@ -54,12 +54,12 @@ namespace APG {
 
 			GetPlayerEvents( activePlayers ).onJoin(playerName);
 			playerNames.Add( playerName );
-			playerInput.Add( new List<int>() );
+			playerInput.Add( new int[6] );
 			playerMap[playerName] = activePlayers;
 			activePlayers++;
 			return true;
 		}
-		public bool SetPlayerInput( string user, List<int> parms ) {
+		public bool SetPlayerInput( string user, int[] parms ) {
 			if(playerMap.ContainsKey(user) == false) return false;
 
 			var id = playerMap[user];

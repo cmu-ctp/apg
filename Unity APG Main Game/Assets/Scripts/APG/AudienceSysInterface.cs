@@ -10,11 +10,11 @@ namespace APG {
 
 		string PlayerName( int playerNumber );
 
-		List<int> PlayerInput( int playerNumber );
+		int[] PlayerInput( int playerNumber );
 
 		bool AddPlayer( string playerName );
 
-		bool SetPlayerInput( string playerName, List<int> input );
+		bool SetPlayerInput( string playerName, int[] input );
 
 		ChatterInterface Chatters();
 	}

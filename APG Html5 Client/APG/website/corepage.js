@@ -1,9 +1,9 @@
 var setupParms = {
     isMobile : true,
-    chatIRCChannelName: "",
-    logicIRCChannelName: "",
-    playerName: "",
-    playerOauth: "",
+    chatIRCChannelName: "ludolab",
+    logicIRCChannelName: "ludolab_",
+    playerName: "ludolab",
+    playerOauth: "oauth:elryl5m1teab00df6zsbsxk8xhzl99",
     skipAuthentication: true
 };
 
@@ -27,7 +27,7 @@ function CreateTwitchApp() {
     var clientID = 'hjgrph2akqwki1617ac5rdq9rqiep0k';
     var nullNetworking = false;
 
-    if (location.hash != null && location.hash != "") {
+    if (location.hash !== null && location.hash !== "") {
 
         setupParms.skipAuthentication = false;
 
@@ -54,10 +54,9 @@ function CreateTwitchApp() {
         Twitch.init({ clientId: clientID }, function (error, status) {
             if (status.authenticated || setupParms.skipAuthentication) {
                 Twitch.api({ method: 'user' }, function (error, user) {
-                    if (setupParms.skipAuthentication) {
-                    }
-                    else {
-                        if (user == null) alert(error);
+
+                    if (!setupParms.skipAuthentication) {
+                        if (user === null) alert(error);
                         setupParms.playerName = user.display_name;
                         setupParms.playerOauth = "oauth:" + Twitch.getToken();
                     }
@@ -69,7 +68,7 @@ function CreateTwitchApp() {
                         channels: ["#" + setupParms.logicIRCChannelName]
                     };
                     engineParms.chat = new tmi.client(options);
-                    if (engineParms.chatLoadedFunction != null) {
+                    if (engineParms.chatLoadedFunction !== null) {
                         engineParms.chatLoadedFunction();
                         engineParms.chatLoadedFunction = null;
                     }
@@ -102,7 +101,7 @@ function onLoadEnd() {
         iframe.setAttribute("height", "488");
         document.getElementById("TwitchChat").appendChild(iframe);
 
-        var iframe = document.createElement('iframe');
+        iframe = document.createElement('iframe');
         iframe.setAttribute("allowfullscreen", "true");
         iframe.setAttribute("src", "http://player.twitch.tv/?channel=" + setupParms.chatIRCChannelName);
         iframe.setAttribute("width", "800");

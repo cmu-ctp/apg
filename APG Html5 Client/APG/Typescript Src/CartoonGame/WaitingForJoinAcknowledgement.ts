@@ -1,17 +1,24 @@
 ﻿cacheImages('assets/imgs', ['ClientUI.png']);
 cacheSounds('assets/snds/fx', ['strokeup4.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
+
+interface ClientJoinParms{
+	name:string;
+}
+
 function WaitingForJoinAcknowledement(sys: APGSys): void {
 	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
 	var endSubgame: boolean = false, timeOut: number = 0;
-	sys.messages = new APGSubgameMessageHandler({
-		onJoin: () => {
+
+	sys.handlers = new APGSubgameMessageHandler()
+		.add<ClientJoinParms>( "join", p => {
+			if (p.name != sys.playerName) return;
+
 			endSubgame = true;
 			endOfRoundSound.play();
 			MainPlayerInput(sys);
-			return true;
-		}
-	});
+		});
+
 	new ent(sys.w, 60, 0, 'assets/imgs/ClientUI.png', {
 		alpha: 0,
 		upd: e => {
