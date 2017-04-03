@@ -44,6 +44,10 @@ using UnityEngine;
 	Easier way to test input, on both the server and the client?
 	Keeping network messages in sync better?
 
+	Need to make it clear I'm loading on the HTML5 client at the beginning of the process.
+
+	Maybe don't make phaser be in charge of big update loop.
+
  */
 
 namespace APG {

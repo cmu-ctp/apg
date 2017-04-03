@@ -21,6 +21,10 @@
 		this.network = new IRCNetwork(() => this.handlers, playerName, logicIRCChannelName, chat, this.w);
 	}
 
+	update(): void {
+		this.network.update();
+	}
+
 	sendMessageToServer<T>(msgName: string, parmsForMessageToServer: T): void {
 		this.network.sendMessageToServer(msgName, parmsForMessageToServer);
 	}

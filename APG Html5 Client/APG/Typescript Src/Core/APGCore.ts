@@ -94,7 +94,7 @@ function cacheJSONs(fileNames:string[]): void {
 ______________________________________________________________________________________________*/
 
 
-function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any, onLoadEnd ) {
+function ApgSetup(isMobile:boolean, gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any, onLoadEnd ) {
 
 	if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
 		ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", "  + gameHeight +".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
@@ -166,30 +166,54 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 			create: () => {
 				game.input.mouse.capture = true;
 				if (phaserGoogleWebFontList == undefined || phaserGoogleWebFontList.length == 0) {
-					launchGame();
+					initLaunchGame();
 				}
 			}
 		});
 
 		WebFontConfig = {
 			//  'active' means all requested fonts have finished loading.  We need a delay after loading to give browser time to get sorted for fonts, for some reason.
-			active: function () { game.time.events.add(Phaser.Timer.SECOND, launchGame, this); },
+			active: function () { game.time.events.add(Phaser.Timer.SECOND, initLaunchGame, this); },
 			google: {
 				families: phaserGoogleWebFontList
 			}
 		};
 
-		function launchGame() {
+		function initLaunchGame() {
 			if (engineParms.chat == null) {
-				engineParms.chatLoadedFunction = () => {
-					onLoadEnd();
-					StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets));
-				}
+				engineParms.chatLoadedFunction = launchGame;
 			}
 			else {
-				onLoadEnd();
-				StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets));
+				launchGame();
 			}
+		}
+
+		function launchGame() {
+			onLoadEnd();
+			var apg: APGSys = new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets);
+			var showingLandscapeWarning = false;
+			setInterval(function () {
+				if (isMobile) {
+					var width = window.innerWidth || document.body.clientWidth;
+					var height = window.innerHeight || document.body.clientHeight;
+					if (height > width) {
+						if (!showingLandscapeWarning) {
+							showingLandscapeWarning = true;
+							document.getElementById("landscapeWarning").style.display = '';
+							document.getElementById(APGInputWidgetDivName).style.display = 'none';
+						}
+					}
+					else {
+						if (showingLandscapeWarning) {
+							showingLandscapeWarning = false;
+							document.getElementById("landscapeWarning").style.display = 'none';
+							document.getElementById(APGInputWidgetDivName).style.display = '';
+						}
+					}
+				}
+				apg.update();
+			}, 1000 / 60);
+			StartGame( apg );
 		}
 
 		function goFull(): void {

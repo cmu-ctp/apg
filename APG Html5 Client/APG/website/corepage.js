@@ -91,6 +91,10 @@ var updateFunction = setInterval(function () {
 // This is the only script referenced by the web page.
 
 function onLoadEnd() {
+
+    document.getElementById("landscapeWarning").style.display = 'none';
+    document.getElementById("landscapeWarning").textContent = 'This game only works in landscape mode.  Please reposition your phone or tablet.';
+
     function addTwitchIFrames() {
 
         if (setupParms.isMobile) {
@@ -127,7 +131,7 @@ function onLoadEnd() {
     }
 
     document.getElementById(phaserDivName).style.display = 'none';
-    ApgSetup(400, 300, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
+    ApgSetup(setupParms.isMobile, 400, 300, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
         clearInterval(updateFunction);
         document.getElementById('loadLabel').style.display = 'none';
         document.getElementById(phaserDivName).style.display = '';

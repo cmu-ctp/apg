@@ -119,6 +119,9 @@ var APGSys = (function () {
         this.playerName = playerName;
         this.network = new IRCNetwork(function () { return _this.handlers; }, playerName, logicIRCChannelName, chat, this.w);
     }
+    APGSys.prototype.update = function () {
+        this.network.update();
+    };
     APGSys.prototype.sendMessageToServer = function (msgName, parmsForMessageToServer) {
         this.network.sendMessageToServer(msgName, parmsForMessageToServer);
     };
@@ -186,7 +189,7 @@ function cacheJSONs(fileNames) {
         jsonAssetCacheNameList.push(fileNames[k]);
     }
 }
-function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, APGInputWidgetDivName, allowFullScreen, engineParms) {
+function ApgSetup(isMobile, gameWidth, gameHeight, logicIRCChannelName, playerName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd) {
     if (gameWidth === void 0) { gameWidth = 400; }
     if (gameHeight === void 0) { gameHeight = 300; }
     if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
@@ -247,23 +250,50 @@ function ApgSetup(gameWidth, gameHeight, logicIRCChannelName, playerName, APGInp
             create: function () {
                 game.input.mouse.capture = true;
                 if (phaserGoogleWebFontList == undefined || phaserGoogleWebFontList.length == 0) {
-                    launchGame();
+                    initLaunchGame();
                 }
             }
         });
         WebFontConfig = {
-            active: function () { game.time.events.add(Phaser.Timer.SECOND, launchGame, this); },
+            active: function () { game.time.events.add(Phaser.Timer.SECOND, initLaunchGame, this); },
             google: {
                 families: phaserGoogleWebFontList
             }
         };
-        function launchGame() {
+        function initLaunchGame() {
             if (engineParms.chat == null) {
-                engineParms.chatLoadedFunction = function () { return StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets)); };
+                engineParms.chatLoadedFunction = launchGame;
             }
             else {
-                StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets));
+                launchGame();
             }
+        }
+        function launchGame() {
+            onLoadEnd();
+            var apg = new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets);
+            var showingLandscapeWarning = false;
+            setInterval(function () {
+                if (isMobile) {
+                    var width = window.innerWidth || document.body.clientWidth;
+                    var height = window.innerHeight || document.body.clientHeight;
+                    if (height > width) {
+                        if (!showingLandscapeWarning) {
+                            showingLandscapeWarning = true;
+                            document.getElementById("landscapeWarning").style.display = '';
+                            document.getElementById(APGInputWidgetDivName).style.display = 'none';
+                        }
+                    }
+                    else {
+                        if (showingLandscapeWarning) {
+                            showingLandscapeWarning = false;
+                            document.getElementById("landscapeWarning").style.display = 'none';
+                            document.getElementById(APGInputWidgetDivName).style.display = '';
+                        }
+                    }
+                }
+                apg.update();
+            }, 1000 / 60);
+            StartGame(apg);
         }
         function goFull() {
             game.scale.pageAlignHorizontally = true;
@@ -446,7 +476,6 @@ var IRCNetwork = (function () {
         this.messageQueue = [];
         this.channelName = '#' + logicChannelName;
         var src = this;
-        new ent(w, 0, 0, '', { upd: function (e) { src.update(); } });
         chat.on("chat", function (channel, userstate, message, self) {
             if (self)
                 return;

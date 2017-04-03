@@ -28,8 +28,6 @@ class IRCNetwork{
 
 		var src: IRCNetwork = this;
 
-		new ent(w, 0, 0, '', { upd: e => { src.update(); } });
-
 		chat.on("chat", function (channel: string, userstate: any, message: string, self: boolean): void {
 
 			if (self) return;
@@ -69,7 +67,7 @@ class IRCNetwork{
 		this.lastMessageTime = IRCWriteDelayInSeconds * ticksPerSecond;
 	}
 
-	private update(): void {
+	update(): void {
 		this.lastMessageTime--;
 
 		if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {

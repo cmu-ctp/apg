@@ -157,7 +157,7 @@ public class TwitchGameLogicChat:MonoBehaviour {
 	void Awake() {
 		Debug.Log( "Starting GameLogicChat");
 
-		apg = new AudiencePlayersSys( SendMessage, SendChatText, LaunchAPGClientURL );
+		apg = new AudiencePlayersSys( SendMsg, SendChatText, LaunchAPGClientURL );
 
 		LoadNetworkSettings();
 
