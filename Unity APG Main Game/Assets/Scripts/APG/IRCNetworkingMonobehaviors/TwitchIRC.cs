@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(TwitchGameLogicChat))]
@@ -17,10 +18,11 @@ public class TwitchIRC:MonoBehaviour {
 
 	protected TwitchGameLogicChat logic;
 
-	protected virtual string getOauth() { return logic.GetChatOauth(); }
-	protected virtual string getChannelName() { return logic.ChatChannelName; }
+	public Func<string> oauthFunc = null;
+	public Func<string> channelNameFunc = null;
 
 	void StartIRC() {
+
 		System.Net.Sockets.TcpClient sock = new System.Net.Sockets.TcpClient();
 		sock.Connect(server, port);
 		if(!sock.Connected) {
@@ -34,8 +36,8 @@ public class TwitchIRC:MonoBehaviour {
 
 		logic = this.GetComponent<TwitchGameLogicChat>();
 
-		output.WriteLine("PASS " + getOauth());
-		output.WriteLine("NICK " + getChannelName().ToLower());
+		output.WriteLine("PASS " + oauthFunc());
+		output.WriteLine("NICK " + channelNameFunc().ToLower());
 		output.Flush();
 		//output proc
 		outProc = new System.Threading.Thread(() => IRCOutputProcedure(output));
@@ -61,7 +63,7 @@ public class TwitchIRC:MonoBehaviour {
 			}
 			//After server sends 001 command, we can join a channel
 			if(buffer.Split(' ')[1] == "001") {
-				SendCommand("JOIN #" + getChannelName());
+				SendCommand("JOIN #" + channelNameFunc());
 			}
 		}
 	}
@@ -93,16 +95,21 @@ public class TwitchIRC:MonoBehaviour {
 		}
 	}
 	public void SendMsg(string msg) {
-		lock(commandQueue) { commandQueue.Enqueue("PRIVMSG #" + getChannelName() + " :" + msg); }
+		lock(commandQueue) { commandQueue.Enqueue("PRIVMSG #" + channelNameFunc() + " :" + msg); }
 	}
 	public void SendWhisper(string user, string msg) {
 		SendMsg("/w " + user + " " + msg);
 	}
 	//MonoBehaviour Events.
-	void Start() { }
-	void OnEnable() {
+	void Start() {
 		stopThreads = false;
+		Debug.Log( "Starting IRC ");
 		StartIRC();
+	}
+	void OnEnable() {
+		//stopThreads = false;
+		//Debug.Log( "Starting IRC ");
+		//StartIRC();
 	}
 	void OnDisable() {
 		stopThreads = true;

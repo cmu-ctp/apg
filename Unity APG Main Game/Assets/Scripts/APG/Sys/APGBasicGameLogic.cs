@@ -3,32 +3,29 @@ using UnityEngine;
 
 namespace APG {
 
-	[Serializable]
-	public struct RoundUpdate{
-		public int round;
-		public int time;
-	}
-	[Serializable]
-	public struct EmptyMsg{
-	}
+	public class APGBasicGameLogic:MonoBehaviour {
 
-	[Serializable]
-	struct EmptyParms{
-	}
+		[Serializable]
+		struct RoundUpdate{
+			public int round;
+			public int time;
+		}
 
-	// join
-	[Serializable]
-	struct ClientJoinParms{
-		public string name;
-	}
+		[Serializable]
+		struct EmptyParms{
+		}
 
-	// upd
-	[Serializable]
-	struct SelectionParms {
-		public int[] choices;
-	}
+		// join
+		[Serializable]
+		struct ClientJoinParms{
+			public string name;
+		}
 
-		public class APGBasicGameLogic:MonoBehaviour {
+		// upd
+		[Serializable]
+		struct SelectionParms {
+			public int[] choices;
+		}
 
 		public TwitchGameLogicChat network;
 
@@ -40,43 +37,45 @@ namespace APG {
 
 		int maxPlayers = 20;
 
-		AudienceSysInterface apgSys;
+		AudiencePlayersSys apg;
+
+		public PlayerSet players = new PlayerSet();
 
 		public void Start() {
 
-			apgSys = network.GetAudienceSys();
+			apg = network.GetAudienceSys();
 
 			nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 			nextAudienceTimer = ticksPerSecond * 10;
 
-			network.SetHandlers( new NetworkMessageHandler()
+			apg.SetHandlers( new NetworkMessageHandler()
 				.Add<EmptyParms>( "join", (user, p) => {
 					// need game logic to determine if this player should be allowed to join - need multiple ways to join, too - join in different roles
-					if( apgSys.AddPlayer(user )) {
-						network.SendMsg<ClientJoinParms>("join", new ClientJoinParms { name = user });
+					if( players.AddPlayer(user )) {
+						apg.SendMsg("join", new ClientJoinParms { name = user });
 					}
 				} )
 				.Add<SelectionParms>( "upd", (user, p) => {
-					apgSys.SetPlayerInput( user, p.choices );
+					players.SetPlayerInput( user, p.choices );
 				} ) );
 
 		}
 		void InviteAudience() {
 			nextAudienceTimer--;
-			if(apgSys.PlayerCount() < maxPlayers) {
+			if(players.PlayerCount() < maxPlayers) {
 				if(nextAudienceTimer <= 0) {
-					if(apgSys.PlayerCount() == 0) {
-						network.SendChatText("Up to 20 people can play!  Join here: " + network.LaunchAPGClientURL());
+					if(players.PlayerCount() == 0) {
+						apg.SendChatText("Up to 20 people can play!  Join here: " + apg.LaunchAPGClientURL());
 					}
 					else {
-						network.SendChatText("" + apgSys.PlayerCount() + " of " + maxPlayers + " are playing!  Join here: " + network.LaunchAPGClientURL());
+						apg.SendChatText("" + players.PlayerCount() + " of " + maxPlayers + " are playing!  Join here: " + apg.LaunchAPGClientURL());
 					}
 					nextAudienceTimer = ticksPerSecond * 30;
 				}
 			}
 			else {
 				if(nextAudienceTimer <= 0) {
-					network.SendChatText("The game is full!  Get in line to play: " + network.LaunchAPGClientURL());
+					apg.SendChatText("The game is full!  Get in line to play: " + apg.LaunchAPGClientURL());
 					nextAudienceTimer = ticksPerSecond * 60;
 				}
 			}
@@ -86,19 +85,17 @@ namespace APG {
 			if(nextAudiencePlayerChoice <= 0) {
 				nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 				// update game state
-				network.SendMsg("submit", new EmptyMsg());
+				apg.SendMsg("submit");
 				roundNumber++;
 
-				network.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+				apg.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
 
 				/*foreach(var key in apgSys.playerMap.Keys) {
-					//network.UpdatePlayer( key, apgSys.GetPlayerEvents( apgSys.playerMap[key] ).updateClient());
+					//apg.UpdatePlayer( key, apgSys.GetPlayerEvents( apgSys.playerMap[key] ).updateClient());
 				}*/
 			}
 			else if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
-
-				network.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
-
+				apg.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
 			}
 		}
 		public void Update() {

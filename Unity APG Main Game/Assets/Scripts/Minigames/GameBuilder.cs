@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using v3 = UnityEngine.Vector3;
+using APG;
 
 public class GameBuilder:MonoBehaviour {
 	public GameObject basicSpriteObject;
@@ -13,7 +14,9 @@ public class GameBuilder:MonoBehaviour {
 	public Treats treats;
 	public Props props;
 	public Reacts reacts;
+
 	public TwitchGameLogicChat gameLogicChat;
+	public APGBasicGameLogic basicGameLogic;
 
 	FullGame fullGame;
 
@@ -98,7 +101,7 @@ class FullGame {
 		
 		
 		playerSys.Setup(gameSys, assets.players, foeSys, reactSys);
-		audiencePlayerSys.Setup(gameSys, assets.players, foeSys, assets.gameLogicChat.GetAudienceSys(), playerSys);
+		audiencePlayerSys.Setup(gameSys, assets.players, foeSys, assets.basicGameLogic.players, playerSys);
 		assets.backgrounds.Setup(gameSys);
 		InitSpawns();
 

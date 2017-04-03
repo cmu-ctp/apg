@@ -17,7 +17,7 @@ public class AudiencePlayerSys {
 	GameSys gameSys;
 	Players players;
 
-	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys, APG.AudienceSysInterface apgSys, PlayerSys playerSys) {
+	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys, APG.PlayerSet apgSys, PlayerSys playerSys) {
 		gameSys = theGameSys;
 		players = thePlayers;
 
@@ -54,7 +54,7 @@ public class AudiencePlayerSys {
 		};
 	}
 
-	void Buddies(AudienceSysInterface playerEvents, PlayerSys playerSys) {
+	void Buddies(PlayerSet playerEvents, PlayerSys playerSys) {
 		var bsrc = new ent(gameSys) { name="buddySet" };
 		for( var k = 0; k < 20; k++ ) {
 			liveBuddies++;
@@ -66,11 +66,12 @@ public class AudiencePlayerSys {
 			var label = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="null", textColor=nameColor };
 			var parms = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 			var posx = (k<10) ? -11 + 9*(k/10f) : 11 - 9*((k-10)/10f);
+
 			playerEvents.RegisterHandler(new AudiencePlayerEventsHandler {
 				onJoin = name => { label.text = name; inUse = true; Debug.Log( "Got join" ); },
-				onInput = inputs => { parms = inputs; Debug.Log( "Got input of " + inputs ); },
-				updateClient = () => ""
+				onInput = inputs => { parms = inputs; Debug.Log( "Got input of " + inputs ); }
 			});
+
 			var goalz = .8f + rd.f(0, 1.5f);
 			var buddyID = k;
 			var tick = 0;

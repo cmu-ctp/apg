@@ -1,80 +1,48 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
+﻿using System;
 
 namespace APG {
-	public class AudiencePlayersSys : AudienceSysInterface {
-
-		List<AudiencePlayerEventsHandler> playerEvents = new List<AudiencePlayerEventsHandler>();
-
-		List<string> playerNames = new List<string>();
-
-		List<int[]> playerInput = new List<int[]>();
-
-		AudiencePlayerEventsHandler nullEvents = new AudiencePlayerEventsHandler();
-
-		public Dictionary<string, int> playerMap = new Dictionary<string, int>();
-		public int activePlayers = 0;
+	public class AudiencePlayersSys {
 
 		ChatSys chatSys;
+		NetworkMessageHandler handlers;
+		public int time = 0;
 
-		public AudiencePlayersSys() {
+		Action<string, object> sendMsg;
+		Action<string> sendChatText;
+		Func<string> launchAPGClientURL;
+
+		public AudiencePlayersSys ( Action<string, object> theSendMsg, Action<string> theSendChatText, Func<string> theLaunchAPGClientURL ) {
+			sendMsg = theSendMsg;
+			sendChatText = theSendChatText;
+			launchAPGClientURL = theLaunchAPGClientURL;
+
 			chatSys = new ChatSys( this );
 		}
 
-		public int time = 0;
-
-		public void RegisterHandler( AudiencePlayerEventsHandler events ) {
-			playerEvents.Add( events );
+		public void SendMsg( string msg, object parms = null ) {
+			sendMsg( msg, parms );
 		}
-		public int PlayerCount() {
-			return activePlayers;
+		public void SendChatText( string msg ) {
+			sendChatText( msg );
+		}
+		public string LaunchAPGClientURL() {
+			return launchAPGClientURL();
+		}
+		public void SetHandlers( NetworkMessageHandler theHandlers ) {
+			handlers = theHandlers;
+		}
+		public ChatterInterface Chatters() {
+			return chatSys;
+		}
+
+		public void RunHandler( string user, string msgString ) {
+			handlers.Run( user, msgString );
 		}
 		public void Update() {
 			time++;
 		}
-		bool ValidPlayer( int playerNumber ) {
-			if( playerNumber < 0 || playerNumber >= playerEvents.Count || playerEvents[playerNumber] == null )return false;
-			return true;
-		}
-
-		public AudiencePlayerEventsHandler GetPlayerEvents( int playerNumber ) {
-			if( !ValidPlayer( playerNumber ) )return nullEvents;
-			return playerEvents[playerNumber];
-		}
-		public string PlayerName( int playerNumber ) {
-			if( !ValidPlayer( playerNumber ) )return "";
-			return playerNames[playerNumber];
-		}
-		public int[] PlayerInput( int playerNumber ) {
-			if( !ValidPlayer( playerNumber ) )return null;
-			return playerInput[playerNumber];
-		}
-		public bool AddPlayer( string playerName ) {
-			if( playerMap.ContainsKey(playerName) == true)return false;
-
-			GetPlayerEvents( activePlayers ).onJoin(playerName);
-			playerNames.Add( playerName );
-			playerInput.Add( new int[6] );
-			playerMap[playerName] = activePlayers;
-			activePlayers++;
-			return true;
-		}
-		public bool SetPlayerInput( string user, int[] parms ) {
-			if(playerMap.ContainsKey(user) == false) return false;
-
-			var id = playerMap[user];
-			GetPlayerEvents( id ).onInput(parms);
-			if( id < 0 || id >= playerInput.Count ) {
-				Debug.Log( "SetPlayerInput: Player ID is out of range: " + id + " (should be between 0 and " + playerInput.Count + ")" );
-			}
-			playerInput[id] = parms;
-			return true;
-		}
 		public void RecordMostRecentChat( string name, string msg) {
 			chatSys.Log( name, msg, time );
-		}
-		public ChatterInterface Chatters() {
-			return chatSys;
 		}
 	}
 }
