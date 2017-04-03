@@ -101,7 +101,7 @@ class FullGame {
 		
 		
 		playerSys.Setup(gameSys, assets.players, foeSys, reactSys);
-		audiencePlayerSys.Setup(gameSys, assets.players, foeSys, assets.basicGameLogic.players, playerSys);
+		audiencePlayerSys.Setup(gameSys, assets.players, foeSys, assets.basicGameLogic.GetPlayers(), playerSys);
 		assets.backgrounds.Setup(gameSys);
 		InitSpawns();
 

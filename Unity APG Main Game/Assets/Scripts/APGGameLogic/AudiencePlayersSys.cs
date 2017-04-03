@@ -1,7 +1,16 @@
 ﻿using System;
 
 namespace APG {
-	public class AudiencePlayersSys {
+
+	public interface AudienceInterface {
+		void SendMsg( string msg, object parms = null );
+		void SendChatText( string msg );
+		string LaunchAPGClientURL();
+		void SetHandlers( NetworkMessageHandler theHandlers );
+		ChatterInterface Chatters();
+	}
+
+	public class AudiencePlayersSys : AudienceInterface {
 
 		ChatSys chatSys;
 		NetworkMessageHandler handlers;

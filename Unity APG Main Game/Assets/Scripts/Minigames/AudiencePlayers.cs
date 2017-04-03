@@ -17,7 +17,7 @@ public class AudiencePlayerSys {
 	GameSys gameSys;
 	Players players;
 
-	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys, APG.PlayerSet apgSys, PlayerSys playerSys) {
+	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys, PlayerSet apgSys, PlayerSys playerSys) {
 		gameSys = theGameSys;
 		players = thePlayers;
 

@@ -25,7 +25,7 @@ public class TwitchGameLogicChat:MonoBehaviour {
 
 	//___________________________________________
 
-	public AudiencePlayersSys GetAudienceSys() {
+	public AudienceInterface GetAudienceSys() {
 		return apg;
 	}
 

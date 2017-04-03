@@ -1,9 +1,64 @@
 ﻿using System;
 using UnityEngine;
 
+/*
+
+	So what can I pull out here?
+
+	Inviting
+	______
+	Inviter: Everyone gets invited to play.
+	Invite-up-to-max-players.
+
+
+	Player Choice Framework
+	_____________________
+
+
+	Player Joining / Leaving / Being Kicked Framework
+	_________________________________________
+
+
+	Lobby for Team Joining
+	___________________
+
+
+	Teams
+	______
+
+
+	Persistent Accounts
+	________________
+
+
+
+	Also, make html5 client handle screen being turned sideways
+	Find out why fullscreen stopped working
+
+	Look more carefully into whispers
+	Look into twitch special account info stuff
+
+	How to do multiple example projects?
+
+	Some way to make Unity game and HTML5 clients interact without needing to connect to twitch?
+	Easier way to test input, on both the server and the client?
+	Keeping network messages in sync better?
+
+ */
+
 namespace APG {
 
 	public class APGBasicGameLogic:MonoBehaviour {
+
+		public TwitchGameLogicChat network;
+		public int maxPlayers = 20;
+		public int secondsPerChoice = 20;
+
+		// ___________________________________
+
+		public PlayerSet GetPlayers() { return players; }
+
+		// ___________________________________
 
 		[Serializable]
 		struct RoundUpdate{
@@ -27,21 +82,16 @@ namespace APG {
 			public int[] choices;
 		}
 
-		public TwitchGameLogicChat network;
-
 		int ticksPerSecond = 60;
 		float nextAudienceTimer;
 		float nextAudiencePlayerChoice;
 		int roundNumber = 1;
-		int secondsPerChoice = 20;
+		
+		AudienceInterface apg;
 
-		int maxPlayers = 20;
+		PlayerSet players = new PlayerSet();
 
-		AudiencePlayersSys apg;
-
-		public PlayerSet players = new PlayerSet();
-
-		public void Start() {
+		void Start() {
 
 			apg = network.GetAudienceSys();
 
@@ -80,6 +130,7 @@ namespace APG {
 				}
 			}
 		}
+
 		void RunPlayerChoice() {
 			nextAudiencePlayerChoice--;
 			if(nextAudiencePlayerChoice <= 0) {
@@ -98,7 +149,7 @@ namespace APG {
 				apg.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
 			}
 		}
-		public void Update() {
+		void Update() {
 			InviteAudience();
 			RunPlayerChoice();
 		}

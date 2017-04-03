@@ -5,11 +5,11 @@ namespace APG {
 	public class ChatSys : ChatterInterface {
 		List<Chatter> chatters = new List<Chatter>();
 		Dictionary<string, int> chatterID = new Dictionary<string, int>();
-		AudiencePlayersSys apgSys;
+		AudiencePlayersSys apg;
 		Action<string, string> customMsgEventFunction = (name, message) => { };
 
 		public ChatSys( AudiencePlayersSys src ) {
-			apgSys = src;
+			apg = src;
 		}
 
 		public int Count() {
@@ -37,7 +37,7 @@ namespace APG {
 
 			for( var k = 0; k < chatters.Count; k++ ) {
 				var chatter = chatters[k];
-				if( apgSys.time - chatter.time < maxLifeTime ){
+				if( apg.time - chatter.time < maxLifeTime ){
 					newChatterID[chatter.name] = newChatters.Count;
 					newChatters.Add(chatter);
 				}
