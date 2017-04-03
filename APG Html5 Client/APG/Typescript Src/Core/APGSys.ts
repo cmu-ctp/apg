@@ -13,6 +13,7 @@
 	private network: IRCNetwork;
 
 	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any) {
+
 		this.g = g;
 		this.w = g.world;
 		this.JSONAssets = JSONAssets;

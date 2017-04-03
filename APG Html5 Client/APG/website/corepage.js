@@ -76,10 +76,23 @@ function CreateTwitchApp() {
 }
 CreateTwitchApp();
 
+var tick = 0;
+var updateFunction = setInterval(function () {
+    tick++;
+    
+    var s = "Please wait while the game loads.";
+    for( var k = 0; k < tick; k++ ){
+        s += '.';
+    }
+    document.getElementById('loadLabel').textContent = s;
+    
+}, 1000 / 6);
+
 // This is the only script referenced by the web page.
 
 function onLoadEnd() {
     function addTwitchIFrames() {
+
         if (setupParms.isMobile) {
             $('.browser').removeClass();
             return;
@@ -113,5 +126,10 @@ function onLoadEnd() {
         phaserDivName = "APGInputWidgetMobile";
     }
 
-    ApgSetup(400, 300, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms);
+    document.getElementById(phaserDivName).style.display = 'none';
+    ApgSetup(400, 300, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
+        clearInterval(updateFunction);
+        document.getElementById('loadLabel').style.display = 'none';
+        document.getElementById(phaserDivName).style.display = '';
+    });
 }

@@ -94,7 +94,7 @@ function cacheJSONs(fileNames:string[]): void {
 ______________________________________________________________________________________________*/
 
 
-function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any ) {
+function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any, onLoadEnd ) {
 
 	if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
 		ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", "  + gameHeight +".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
@@ -181,9 +181,13 @@ function ApgSetup(gameWidth: number = 400, gameHeight: number = 300, logicIRCCha
 
 		function launchGame() {
 			if (engineParms.chat == null) {
-				engineParms.chatLoadedFunction = () => StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets));
+				engineParms.chatLoadedFunction = () => {
+					onLoadEnd();
+					StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets));
+				}
 			}
 			else {
+				onLoadEnd();
 				StartGame(new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets));
 			}
 		}
