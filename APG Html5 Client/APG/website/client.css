@@ -10,20 +10,35 @@ body {
 }
 
 .container {
-    width: 1200px;
+    width: 1610px;
     height: auto;
     overflow: hidden;
 }
 
 .rightPanel {
+    width: 1210px;
+    float: right;
+    background: #FFFFFF;
+}
+.leftPanel {
+    float: left;
+    background: #e8f6fe;
+    width: 400px;
+    overflow: hidden;
+}
+.containerInner {
+    width: 1210px;
+    height: auto;
+    overflow: hidden;
+}
+.rightPanelInner {
     width: 400px;
     float: right;
     background: #FFFFFF;
 }
-
-.leftPanel {
-    float: none;
+.leftPanelInner {
+    float: left;
     background: #e8f6fe;
-    width: auto;
+    width: 800px;
     overflow: hidden;
 }

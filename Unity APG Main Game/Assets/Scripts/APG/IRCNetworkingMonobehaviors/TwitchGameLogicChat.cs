@@ -6,7 +6,6 @@ using APG;
 using UnityEditor;
 #endif
 
-
 [RequireComponent(typeof(TwitchIRCChat))]
 [RequireComponent(typeof(TwitchIRCLogic))]
 public class TwitchGameLogicChat:MonoBehaviour {
@@ -31,7 +30,6 @@ public class TwitchGameLogicChat:MonoBehaviour {
 
 	//___________________________________________
 
-
 	[Serializable]
 	struct EmptyMsg{
 	}
@@ -44,7 +42,7 @@ public class TwitchGameLogicChat:MonoBehaviour {
 		public string RedirectLink;
 		public string BitlyLink;
 	}
-
+	
 	//___________________________________________
 
 	NetworkSettings settings = null;
@@ -58,6 +56,10 @@ public class TwitchGameLogicChat:MonoBehaviour {
 
 	AudiencePlayersSys apg;
 
+	int time = 0;
+
+	IRCNetworkRecorder recorder = new IRCNetworkRecorder();
+
 	//___________________________________________
 
 
@@ -69,13 +71,12 @@ public class TwitchGameLogicChat:MonoBehaviour {
 		settings = new NetworkSettings {LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = BitlyLink };
 
 		try { 
-			var sr = new StreamReader(Application.dataPath+"\\"+ NetworkSettingPath);
-			if( sr != null ) {
+			using (StreamReader sr = new StreamReader(Application.dataPath+"\\"+ NetworkSettingPath)){
 				settings = JsonUtility.FromJson<NetworkSettings>( sr.ReadToEnd() );
-				sr.Close();
-			}
+            }
 		}
-		catch { }
+		catch {
+		}
 
 		// Debug.Log( JsonUtility.ToJson( settings ) );
 
@@ -136,28 +137,34 @@ public class TwitchGameLogicChat:MonoBehaviour {
 			Debug.Log( " " + msgString );
 
 			apg.RunHandler( user, msgString );
+
+			recorder.WriteFromClientMsg( time, user, msgString );
 		});
 
 		IRCLogic.SendMsg( "*** Logic Channel Initialized ***" );
 	}
 
-	void SendMsg( string msg, object parms ) {
+	public void SendMsg( string msg, object parms ) {
 		if( parms == null )parms = emptyMsg;
-		IRCLogic.SendMsg( msg+"###"+JsonUtility.ToJson(parms) );
+
+		var s = msg+"###"+JsonUtility.ToJson(parms);
+
+		IRCLogic.SendMsg( s );
+		recorder.WriteToClientMsg( time, "server", s );
 	}
 
-	void SendChatText( string msg ) {
+	public void SendChatText( string msg ) {
 		IRCChat.SendMsg( msg );
 	}
 
-	string LaunchAPGClientURL() {
+	public string LaunchAPGClientURL() {
 		return launchAPGClientURL;
 	}
 
 	void Awake() {
 		Debug.Log( "Starting GameLogicChat");
 
-		apg = new AudiencePlayersSys( SendMsg, SendChatText, LaunchAPGClientURL );
+		apg = new AudiencePlayersSys( this, recorder );
 
 		LoadNetworkSettings();
 
@@ -175,6 +182,7 @@ public class TwitchGameLogicChat:MonoBehaviour {
 		InitIRCLogicChannel();
 	}
 	void Update() {
+		time++;
 		apg.Update();
 	}
 }

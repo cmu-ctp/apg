@@ -13,14 +13,14 @@
   {
     "name": "Action", 
       "choices":[
-		    { "name":"None", "tip":"Zeero" },
-		    { "name":"Build", "tip":"One One " },
-		    { "name":"Harvest", "tip":"Two" },
-		    { "name":"Activate", "tip":"Three" },
-		    { "name":"Defend", "tip":"Four" },
-        {"name": "Charge Up","tip": "Five"},
-        {"name": "Assist","tip": "Five"},
-        {"name": "Hide","tip": "Five"}
+		    { "name":"Defend", "tip":"Protect yourself and all players standing near you.  You will all take less damage." },
+		    { "name":"Build", "tip":"Build or repair the building you're at.  This can upgrade buildings." },
+		    { "name":"Harvest", "tip":"Extract resources from the building you're at.  What is extracted depends on the building type.  Buildings have limits on how many players can harvest from them per turn." },
+		    { "name":"Activate", "tip":"Use the special ability of the building you're at.  Depending on the building, this might require that it is built and charged." },
+        {"name": "Charge Up","tip": "Increases the charge of the ability you're at, so it can be activated."},
+        {"name": "Assist","tip": "Aid other nearby players who are harvesting, building, or activating near you."},
+        {"name": "Hide","tip": "Hide in a cowardly fashion.  This will protect you from damage but doesn't help anyone else."},
+        {"name": "Give","tip": "Trade one of your items to a friend."}
       ]},
   {
     "name": "Stance",

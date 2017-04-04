@@ -108,7 +108,7 @@ var enttx = (function (_super) {
     return enttx;
 }(Phaser.Text));
 function StartGame(sys) {
-    WaitingToJoin(sys);
+    MainPlayerInput(sys);
 }
 var APGSys = (function () {
     function APGSys(g, logicIRCChannelName, playerName, chat, JSONAssets) {
@@ -717,7 +717,7 @@ var APGSubgameMessageHandler = (function () {
     };
     return APGSubgameMessageHandler;
 }());
-cacheImages('assets/imgs', ['ClientUI.png']);
+cacheImages('assets/imgs', ['ClientUI2.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
 cacheJSONs(['TestActions.json']);
 function MainPlayerInput(sys) {
@@ -771,11 +771,11 @@ function MainPlayerInput(sys) {
     var toolTip = "";
     function setToolTip(str) { toolTip = str; }
     var tick = 0, choiceLeft = 50, choiceUp = 118, tabButtons, choiceButtons, bkg = new Image();
-    bkg.src = 'ClientUI.png';
+    bkg.src = 'ClientUI2.png';
     var labelColor = '#608080';
     var roundLabel, toolTipLabel, nextChoiceLabel;
     var lastRoundUpdate = 0;
-    new ent(sys.w, 0, 0, 'assets/imgs/ClientUI.png', {
+    new ent(sys.w, 0, 0, 'assets/imgs/ClientUI2.png', {
         upd: function (e) {
             if (roundNumber != lastRoundUpdate) {
                 roundLabel.text = "Actions for Round " + roundNumber;
@@ -789,19 +789,19 @@ function MainPlayerInput(sys) {
         }
     });
     roundLabel = new enttx(sys.w, 120, 30, "Actions for Round ", { font: '28px ' + fontName, fill: '#688' });
-    toolTipLabel = new enttx(sys.w, choiceLeft + 80, 118, "ToolTip", { font: '10px ' + fontName, fill: '#688' });
+    toolTipLabel = new enttx(sys.w, choiceLeft + 80, 108, "ToolTip", { font: '14px ' + fontName, fill: '#233', wordWrap: true, wordWrapWidth: 230 });
     nextChoiceLabel = new enttx(sys.w, 120, 260, "Actions Selected in", { font: '14px ' + fontName, fill: '#688' });
     tabButtons = addActionSet(setToolTip);
     choiceButtons = addActions(choices, setToolTip);
 }
-cacheImages('assets/imgs', ['ClientUI.png']);
+cacheImages('assets/imgs', ['ClientUI2.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 function ShowSubmitted(sys, getRoundNumber) {
     var inputUsed = false;
     var clickSound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
     sys.handlers = new APGSubgameMessageHandler();
-    new ent(sys.w, 0, 0, 'assets/imgs/ClientUI.png', {
+    new ent(sys.w, 0, 0, 'assets/imgs/ClientUI2.png', {
         upd: function (e) {
             if (sys.g.input.activePointer.isDown && !inputUsed) {
                 inputUsed = true;
@@ -812,7 +812,7 @@ function ShowSubmitted(sys, getRoundNumber) {
     });
     new enttx(sys.w, 60, 50 + 20, "Chosen For Round " + getRoundNumber() + ":", { font: '16px Caveat Brush', fill: '#222' });
 }
-cacheImages('assets/imgs', ['ClientUI.png']);
+cacheImages('assets/imgs', ['ClientUI2.png']);
 cacheSounds('assets/snds/fx', ['strokeup4.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 function WaitingForJoinAcknowledement(sys) {
@@ -826,7 +826,7 @@ function WaitingForJoinAcknowledement(sys) {
         endOfRoundSound.play();
         MainPlayerInput(sys);
     });
-    new ent(sys.w, 60, 0, 'assets/imgs/ClientUI.png', {
+    new ent(sys.w, 60, 0, 'assets/imgs/ClientUI2.png', {
         alpha: 0,
         upd: function (e) {
             timeOut++;
@@ -861,14 +861,14 @@ function WaitingForJoinAcknowledement(sys) {
         }
     });
 }
-cacheImages('assets/imgs', ['ClientUI.png']);
+cacheImages('assets/imgs', ['ClientUI2.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 function WaitingToJoin(sys) {
     var clickSound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
     sys.handlers = new APGSubgameMessageHandler();
     var inputUsed = false, endSubgame = false;
-    new ent(sys.g.world, 0, 0, 'assets/imgs/ClientUI.png', {
+    new ent(sys.g.world, 0, 0, 'assets/imgs/ClientUI2.png', {
         upd: function (e) {
             if (endSubgame) {
                 e.x = e.x * .7 + .3 * -30;

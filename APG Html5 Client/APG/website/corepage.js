@@ -4,7 +4,8 @@ var setupParms = {
     logicIRCChannelName: "",
     playerName: "",
     playerOauth: "",
-    skipAuthentication: true
+    skipAuthentication: false,
+    isDebug:false
 };
 
 var engineParms = {
@@ -22,8 +23,6 @@ function CreateTwitchApp() {
     }
 
     // The following values should be set manually for testing locally.  These values will be overridden by the server when launching from a server.
-
-    setupParms.isMobile = true;
 
     var clientID = 'hjgrph2akqwki1617ac5rdq9rqiep0k';
 
@@ -76,17 +75,25 @@ function CreateTwitchApp() {
 }
 CreateTwitchApp();
 
-var tick = 0;
-var updateFunction = setInterval(function () {
-    tick++;
-    
-    var s = "Please wait while the game loads.";
-    for( var k = 0; k < tick; k++ ){
-        s += '.';
-    }
-    document.getElementById('loadLabel').textContent = s;
-    
-}, 1000 / 6);
+var preloaderFunction = null;
+
+function AddPreloader() {
+    var tick = 0;
+    var preloaderFunction = setInterval(function () {
+        tick++;
+
+        var s = "Please wait while the game loads.";
+        for (var k = 0; k < tick; k++) {
+            s += '.';
+        }
+        document.getElementById('loadLabel').textContent = s;
+
+    }, 1000 / 6);
+}
+
+if (setupParms.isDebug == false) {
+    AddPreloader();
+}
 
 // This is the only script referenced by the web page.
 
@@ -97,7 +104,7 @@ function onLoadEnd() {
 
     function addTwitchIFrames() {
 
-        if (setupParms.isMobile) {
+        if (setupParms.isMobile || setupParms.isDebug ) {
             $('.browser').removeClass();
             return;
         }
@@ -110,7 +117,7 @@ function onLoadEnd() {
         iframe.setAttribute("id", "chat_embed");
         iframe.setAttribute("src", "http://www.twitch.tv/" + setupParms.chatIRCChannelName + "/chat");
         iframe.setAttribute("width", "400");
-        iframe.setAttribute("height", "488");
+        iframe.setAttribute("height", "720");
         document.getElementById("TwitchChat").appendChild(iframe);
 
         iframe = document.createElement('iframe');
@@ -125,14 +132,20 @@ function onLoadEnd() {
     var isFullScreen = false;
     var phaserDivName = "APGInputWidget";
 
-    if (setupParms.isMobile) {
-        isFullScreen = true;
+    if (setupParms.isMobile || setupParms.isDebug) {
         phaserDivName = "APGInputWidgetMobile";
     }
 
+    if (setupParms.isMobile) {
+        isFullScreen = true;
+    }
+
     document.getElementById(phaserDivName).style.display = 'none';
-    ApgSetup(setupParms.isMobile, 400, 300, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
-        clearInterval(updateFunction);
+    ApgSetup(setupParms.isMobile, 400, 720, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
+        if (preloaderFunction != null) {
+            clearInterval(preloaderFunction);
+            preloaderFunction = null;
+        }
         document.getElementById('loadLabel').style.display = 'none';
         document.getElementById(phaserDivName).style.display = '';
     });

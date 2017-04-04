@@ -32,11 +32,13 @@ using UnityEngine;
 
 
 
-	Also, make html5 client handle screen being turned sideways
-	Find out why fullscreen stopped working
+	Also, make html5 client handle screen being turned sideways (1/2)
+	Find out why fullscreen stopped working (?)
 
 	Look more carefully into whispers
 	Look into twitch special account info stuff
+
+	IRC Packing messages on server
 
 	How to do multiple example projects?
 
@@ -44,9 +46,24 @@ using UnityEngine;
 	Easier way to test input, on both the server and the client?
 	Keeping network messages in sync better?
 
-	Need to make it clear I'm loading on the HTML5 client at the beginning of the process.
+	Swapping music.
 
-	Maybe don't make phaser be in charge of big update loop.
+	Whispers?
+
+	Would be fun to have lots of quirky special one-off actions for audience players.
+
+	What else do audience players need to see:
+	Stats
+	Other player stats
+	Hints and Game Rules
+	Surprising / funny things
+	Teams queued up
+
+	Other player category roles (in a fractal way)?
+
+	Would be cool to have different player classes that have different impacts (to be selected when forming a team)
+
+	Screen for turn effects
 
  */
 
@@ -82,7 +99,7 @@ namespace APG {
 
 		// upd
 		[Serializable]
-		struct SelectionParms {
+		public struct SelectionParms {
 			public int[] choices;
 		}
 
@@ -106,7 +123,7 @@ namespace APG {
 				.Add<EmptyParms>( "join", (user, p) => {
 					// need game logic to determine if this player should be allowed to join - need multiple ways to join, too - join in different roles
 					if( players.AddPlayer(user )) {
-						apg.SendMsg("join", new ClientJoinParms { name = user });
+						apg.WriteToClients("join", new ClientJoinParms { name = user });
 					}
 				} )
 				.Add<SelectionParms>( "upd", (user, p) => {
@@ -119,17 +136,17 @@ namespace APG {
 			if(players.PlayerCount() < maxPlayers) {
 				if(nextAudienceTimer <= 0) {
 					if(players.PlayerCount() == 0) {
-						apg.SendChatText("Up to 20 people can play!  Join here: " + apg.LaunchAPGClientURL());
+						apg.WriteToChat("Up to 20 people can play!  Join here: " + apg.LaunchAPGClientURL());
 					}
 					else {
-						apg.SendChatText("" + players.PlayerCount() + " of " + maxPlayers + " are playing!  Join here: " + apg.LaunchAPGClientURL());
+						apg.WriteToChat("" + players.PlayerCount() + " of " + maxPlayers + " are playing!  Join here: " + apg.LaunchAPGClientURL());
 					}
 					nextAudienceTimer = ticksPerSecond * 30;
 				}
 			}
 			else {
 				if(nextAudienceTimer <= 0) {
-					apg.SendChatText("The game is full!  Get in line to play: " + apg.LaunchAPGClientURL());
+					apg.WriteToChat("The game is full!  Get in line to play: " + apg.LaunchAPGClientURL());
 					nextAudienceTimer = ticksPerSecond * 60;
 				}
 			}
@@ -140,17 +157,17 @@ namespace APG {
 			if(nextAudiencePlayerChoice <= 0) {
 				nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 				// update game state
-				apg.SendMsg("submit");
+				apg.WriteToClients("submit");
 				roundNumber++;
 
-				apg.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
 
 				/*foreach(var key in apgSys.playerMap.Keys) {
 					//apg.UpdatePlayer( key, apgSys.GetPlayerEvents( apgSys.playerMap[key] ).updateClient());
 				}*/
 			}
 			else if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
-				apg.SendMsg( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
 			}
 		}
 		void Update() {

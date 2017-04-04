@@ -1,4 +1,4 @@
-﻿cacheImages('assets/imgs', ['ClientUI.png']);
+﻿cacheImages('assets/imgs', ['ClientUI2.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3','strokeup4.mp3']);
 cacheJSONs(['TestActions.json']);
 
@@ -70,12 +70,12 @@ function MainPlayerInput(sys: APGSys): void {
 	var toolTip: string = "";
 	function setToolTip(str: string): void { toolTip = str; }
 
-	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118, tabButtons: ButtonCollection, choiceButtons: ButtonCollection[], bkg = new Image(); bkg.src = 'ClientUI.png';
+	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118, tabButtons: ButtonCollection, choiceButtons: ButtonCollection[], bkg = new Image(); bkg.src = 'ClientUI2.png';
 	var labelColor: string = '#608080';
 	var roundLabel: enttx, toolTipLabel: enttx, nextChoiceLabel: enttx;
 	var lastRoundUpdate: number = 0;
 
-	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI.png', {
+	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI2.png', {
 		upd: e => {
 			if (roundNumber != lastRoundUpdate) {
 				roundLabel.text = "Actions for Round " + roundNumber;
@@ -88,7 +88,7 @@ function MainPlayerInput(sys: APGSys): void {
 		}
 	});
 	roundLabel = new enttx(sys.w, 120, 30, "Actions for Round ", { font: '28px ' + fontName, fill: '#688' });
-	toolTipLabel = new enttx(sys.w, choiceLeft + 80, 118, "ToolTip", { font: '10px ' + fontName, fill: '#688' });
+	toolTipLabel = new enttx(sys.w, choiceLeft + 80, 108, "ToolTip", { font: '14px ' + fontName, fill: '#233', wordWrap: true, wordWrapWidth: 230 });
 	nextChoiceLabel = new enttx(sys.w, 120, 260, "Actions Selected in", { font: '14px ' + fontName, fill: '#688' });
 	tabButtons = addActionSet(setToolTip);
 	choiceButtons = addActions(choices, setToolTip);

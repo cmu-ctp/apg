@@ -1,4 +1,4 @@
-﻿cacheImages('assets/imgs', ['ClientUI.png']);
+﻿cacheImages('assets/imgs', ['ClientUI2.png']);
 cacheSounds('assets/snds/fx', ['strokeup4.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 
@@ -19,7 +19,7 @@ function WaitingForJoinAcknowledement(sys: APGSys): void {
 			MainPlayerInput(sys);
 		});
 
-	new ent(sys.w, 60, 0, 'assets/imgs/ClientUI.png', {
+	new ent(sys.w, 60, 0, 'assets/imgs/ClientUI2.png', {
 		alpha: 0,
 		upd: e => {
 			timeOut++;

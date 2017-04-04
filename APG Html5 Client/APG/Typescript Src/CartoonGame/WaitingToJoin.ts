@@ -1,4 +1,4 @@
-﻿cacheImages('assets/imgs', ['ClientUI.png']);
+﻿cacheImages('assets/imgs', ['ClientUI2.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 
@@ -11,7 +11,7 @@ function WaitingToJoin(sys: APGSys): void {
 	sys.handlers = new APGSubgameMessageHandler();
 	var inputUsed: boolean = false, endSubgame: boolean = false;
 
-	new ent(sys.g.world, 0, 0, 'assets/imgs/ClientUI.png', {
+	new ent(sys.g.world, 0, 0, 'assets/imgs/ClientUI2.png', {
 		upd: e => {
 			if (endSubgame) {
 				e.x = e.x * .7 + .3 * -30;
