@@ -63,5 +63,15 @@ namespace APG {
 			playerInput[id] = parms;
 			return true;
 		}
+		public void RoundUpdate() {
+			for( var k = 0; k < playerNames.Count; k++ ) {
+				playerEvents[k].onRoundEnd();
+			}
+		}
+		public void UpdatePlayersToClients( AudienceInterface apg ) {
+			for( var k = 0; k < playerNames.Count; k++ ) {
+				playerEvents[k].updateToClient( apg, playerNames[k] );
+			}
+		}
 	}
 }

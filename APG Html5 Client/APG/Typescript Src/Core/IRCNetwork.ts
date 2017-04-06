@@ -37,7 +37,10 @@ class IRCNetwork{
 			}
 
 			if (userstate.username == logicChannelName) {
-				getHandlers().run( message );
+				var msgTemp:string[] = message.split("%%");
+				for (var k = 0; k < msgTemp.length; k++) {
+					getHandlers().run(msgTemp[k]);
+				}
 			}
 			else {
 			}
@@ -48,6 +51,10 @@ class IRCNetwork{
 	sendMessageToServer<T>(msg: string, parms: T): void {
 		this.writeToChat(msg+"###" + JSON.stringify( parms ));
 	}
+
+	// Twitch refuses duplicate IRC Chat messages, which makes sense for chat, but is a problem for network updates.
+	// This field toggles between appending one or two spaces to our message to avoid this filter.
+	toggleSpace: boolean = false;
 
 	private writeToChat(s: string): void {
 
@@ -60,7 +67,8 @@ class IRCNetwork{
 			return;
 		}
 
-		this.chat.say(this.channelName, s);
+		this.toggleSpace = !this.toggleSpace;
+		this.chat.say(this.channelName, s + (this.toggleSpace ? ' ' : '  '));
 		if (debugLogOutgoingIRCChat) {
 			ConsoleOutput.debugLog(s, "network");
 		}
@@ -74,7 +82,8 @@ class IRCNetwork{
 
 			var delayedMessage = this.messageQueue.shift();
 
-			this.chat.say(this.channelName, delayedMessage );
+			this.toggleSpace = !this.toggleSpace;
+			this.chat.say(this.channelName, delayedMessage + (this.toggleSpace ? ' ':'  ' ) );
 			if (debugLogOutgoingIRCChat) {
 				ConsoleOutput.debugLog(delayedMessage, "network");
 			}

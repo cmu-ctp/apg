@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 using v3 = UnityEngine.Vector3;
 using APG;
@@ -19,6 +20,7 @@ public class AudiencePlayerSys {
 	void RunDebug(PlayerSet playerSet, AudienceInterface apg) {
 		var names = new string[] { "Taki", "Fin", "Castral Fex", "FireTiger", "Ribaeld", "Big Tong", "Gatekeeper", "KittyKat", "Purifier", "Flaer", "Soothsayer13", "xxxBarryxxx", "PlasterPant", "Kokirei", "Fighter", "Seer", "Paninea", "Graethei", "Magesty", "Revolution" };
 		for(var k = 0; k < 20; k++) playerSet.AddPlayer( names[k] );
+		//for(var k = 0; k < 10; k++) playerSet.AddPlayer( names[k] );
 		var tick=0;
 		new ent( gameSys ) {
 			update = e => {
@@ -62,6 +64,13 @@ public class AudiencePlayerSys {
 		};
 	}
 
+	[Serializable]
+	struct PlayerUpdate{
+		public string nm;
+		public int hp;
+		public int money;
+	}
+
 	void Buddies(PlayerSet playerEvents, PlayerSys playerSys) {
 		var bsrc = new ent(gameSys) { name="buddySet" };
 		for( var k = 0; k < 20; k++ ) {
@@ -72,20 +81,28 @@ public class AudiencePlayerSys {
 
 
 			var label = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=nameColor };
+			var labelBack = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=new Color(0,0,0,1), children = new List<ent> { label }};
+			label.pos = new v3(-.5f,.5f,-.01f);
 			var parms = new int[] { 0, 0, 0, 0, 0, 0, 0 };
+			var bufferedParms = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 			var posx = (k<10) ? -11 + 9*(k/10f) : 11 - 9*((k-10)/10f);
 
+			ent pl = null;
+
 			playerEvents.RegisterHandler(new AudiencePlayerEventsHandler {
-				onJoin = name => { label.text = name; inUse = true;  },
-				onInput = inputs => { parms = inputs;  }
+				onJoin = name => { label.text = name; labelBack.text = name; inUse = true; },
+				onInput = inputs => { bufferedParms = inputs; },
+				onRoundEnd = () => parms = bufferedParms,
+				updateToClient = ( apg, userName ) => apg.WriteToClients( "pl", new PlayerUpdate { nm = userName, hp = pl.health, money=0 } )
 			});
 
-			var goalz = .8f + rd.f(0, 1.5f);
+			//var goalz = .8f + rd.f(0, 1.5f);
+			var goalz = rd.f(.7f);
 			var buddyID = k;
 			var tick = 0;
 			var spd = 0f;
-			new ent(gameSys) {
-				sprite = rd.Sprite(players.friends), pos = new v3(posx, -6, goalz), scale = .3f * 4.5f, health = 3, children = new List<ent> { label }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt,
+			pl = new ent(gameSys) {
+				sprite = rd.Sprite(players.friends), pos = new v3(posx, -5, goalz), scale = .3f * 4.5f, health = 3, children = new List<ent> { labelBack }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt,
 					name = "buddy"+k, inGrid=true, parent = bsrc,
 				onHurt = (e, src, dmg) => {
 					e.health--;
@@ -112,27 +129,26 @@ public class AudiencePlayerSys {
 
 					if(parms[(int)BuddyChoice.MoveTo] != (int)BuddyMoveTo.StayPut) {
 						var goalposx = (-13 + 12 * (parms[(int)BuddyChoice.MoveTo]/6f)) * ((buddyID < 10) ? 1 : -1);
-						var goal = new v3(goalposx, -6, goalz);
+						var goal = new v3(goalposx, -5f, goalz);
 						var immediateGoal = e.pos * .99f + .01f * goal;
 						var dir = goal-e.pos;
 						e.flipped = ( dir.x < 0 ) ? true:false;
 						if(dir.magnitude > .4f) {
-							nm.ease( ref spd, .017f, .05f );
+							nm.ease( ref spd, .017f * 3, .07f );
 						}
 						else if(dir.magnitude < .3f) {
 							nm.ease( ref spd, 0, .05f );
 						}
 						e.MoveBy(dir.normalized * spd );
 						if(dir.magnitude > .1f) {
-							//e.MoveBy(immediateGoal - e.pos);
 							e.ang = spd * Mathf.Cos( tick * .1f );
 						}
 						else {
-
 						}
 					}
 				}
 			};
+			labelBack.pos = new v3(0,-.2f, -.2f );
 		}
 	}
 }

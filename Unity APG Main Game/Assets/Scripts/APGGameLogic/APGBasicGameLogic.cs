@@ -74,6 +74,7 @@ namespace APG {
 		public TwitchGameLogicChat network;
 		public int maxPlayers = 20;
 		public int secondsPerChoice = 20;
+		public int secondsAfterLockedInChoice = 7;
 
 		// ___________________________________
 
@@ -104,9 +105,12 @@ namespace APG {
 		}
 
 		int ticksPerSecond = 60;
-		float nextAudienceTimer;
-		float nextAudiencePlayerChoice;
+		float nextChatInviteTime;
+		int nextAudiencePlayerChoice;
+		int endOfRoundTimer;
 		int roundNumber = 1;
+		int pausedTimer = 0;
+		int startActionTimer;
 		
 		AudienceInterface apg;
 
@@ -117,7 +121,13 @@ namespace APG {
 			apg = network.GetAudienceSys();
 
 			nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
-			nextAudienceTimer = ticksPerSecond * 10;
+			endOfRoundTimer = ticksPerSecond * secondsAfterLockedInChoice;
+			startActionTimer = ticksPerSecond * 2;
+			pausedTimer = ticksPerSecond * 8;
+
+			timerUpdater = PlayersEnterChoicesTimer;
+
+			nextChatInviteTime = ticksPerSecond * 10;
 
 			apg.SetHandlers( new NetworkMessageHandler()
 				.Add<EmptyParms>( "join", (user, p) => {
@@ -132,47 +142,93 @@ namespace APG {
 
 		}
 		void InviteAudience() {
-			nextAudienceTimer--;
+			nextChatInviteTime--;
 			if(players.PlayerCount() < maxPlayers) {
-				if(nextAudienceTimer <= 0) {
+				if(nextChatInviteTime <= 0) {
 					if(players.PlayerCount() == 0) {
 						apg.WriteToChat("Up to 20 people can play!  Join here: " + apg.LaunchAPGClientURL());
 					}
 					else {
 						apg.WriteToChat("" + players.PlayerCount() + " of " + maxPlayers + " are playing!  Join here: " + apg.LaunchAPGClientURL());
 					}
-					nextAudienceTimer = ticksPerSecond * 30;
+					nextChatInviteTime = ticksPerSecond * 30;
 				}
 			}
 			else {
-				if(nextAudienceTimer <= 0) {
+				if(nextChatInviteTime <= 0) {
 					apg.WriteToChat("The game is full!  Get in line to play: " + apg.LaunchAPGClientURL());
-					nextAudienceTimer = ticksPerSecond * 60;
+					nextChatInviteTime = ticksPerSecond * 60;
 				}
 			}
 		}
 
-		void RunPlayerChoice() {
-			nextAudiencePlayerChoice--;
-			if(nextAudiencePlayerChoice <= 0) {
+		public int GetRoundTime() {
+			return endOfRoundTimer + nextAudiencePlayerChoice + startActionTimer;
+		}
+
+		public float BetweenRoundPauseRatio() {
+			if( timerUpdater != PausedTimer ) {
+				return 0;
+			}
+
+			return pausedTimer/(ticksPerSecond * 8f );
+		}
+
+		Action timerUpdater;
+
+		void PausedTimer() {
+			pausedTimer--;
+			if( pausedTimer == 0 ) {
+				endOfRoundTimer = ticksPerSecond * secondsAfterLockedInChoice;
 				nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
-				// update game state
+				startActionTimer = ticksPerSecond * 2;
+				pausedTimer = ticksPerSecond * 8;
+
+				timerUpdater = PlayersEnterChoicesTimer;
+			}
+		}
+
+		void StartActionTimer() {
+			startActionTimer--;
+			if( startActionTimer == 0 ) {
+
+				// Run some sort of between round thinker here.
+
+				timerUpdater = PausedTimer;
+			}
+		}
+
+		void CollectPlayerChoicesTimer() {
+			endOfRoundTimer--;
+			if( endOfRoundTimer == 0 ) {
+				players.UpdatePlayersToClients( apg );
+				players.RoundUpdate();
+
+				timerUpdater = StartActionTimer;
+			}
+		}
+
+		void PlayersEnterChoicesTimer() {
+			nextAudiencePlayerChoice--;
+
+			if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
+				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+			}
+
+			if( nextAudiencePlayerChoice == 0 ) {
 				apg.WriteToClients("submit");
 				roundNumber++;
 
 				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
 
-				/*foreach(var key in apgSys.playerMap.Keys) {
-					//apg.UpdatePlayer( key, apgSys.GetPlayerEvents( apgSys.playerMap[key] ).updateClient());
-				}*/
-			}
-			else if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
-				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+				timerUpdater = CollectPlayerChoicesTimer;
 			}
 		}
+
 		void Update() {
 			InviteAudience();
-			RunPlayerChoice();
+			// FIXME - this isn't handling framerate drops correctly.
+			timerUpdater();
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using v3 = UnityEngine.Vector3;
 using APG;
 
@@ -50,47 +51,56 @@ class FullGame {
 
 	void InitSpawns() {
 
-		//spawnSys.Add(5, treatSys.balloonGridAll );
-		//spawnSys.Add(1, treatSys.balloonClusterBottom);
-		//spawnSys.Add(0, foeSys.beardGuy);
-		/*spawnSys.Add(3, treatSys.balloonGridRight);
-		spawnSys.Add(12, treatSys.balloonGridLeft );
-		spawnSys.Add(20, treatSys.balloonGridCenter );
-		spawnSys.Add(30, treatSys.balloonGridAll );*/
+		var turnEnd= new SpawnEntry { icon = assets.incomingWaveHUD.phaseDivider, spawn = () => { }, message="", scale=5 };
+		for( var k = 1; k < 10; k++ )spawnSys.Add(45*k, turnEnd );
 
-		spawnSys.Add(6, treatSys.balloonClusterLeft);
-		spawnSys.Add(12, treatSys.balloonClusterRight);
-		spawnSys.Add(18, treatSys.balloonClusterBottomLeft);
+		var smallPositive = new SpawnEntry[] { treatSys.balloonClusterLeft, treatSys.balloonClusterBottomLeft, treatSys.balloonClusterRight, treatSys.balloonClusterBottomRight };
+		var smallPositiveUnbiased = new SpawnEntry[] { treatSys.balloonClusterBottom };
+		var bigPositive = new SpawnEntry[] { treatSys.balloonGridLeft, treatSys.balloonGridRight };
+		var bigPositiveUnbiased = new SpawnEntry[] { treatSys.balloonGridAll, treatSys.balloonGridCenter };
 
-		spawnSys.Add(20, foeSys.beardGuy);
+		var normalFoes = new SpawnEntry[] { foeSys.beardGuy, foeSys.microwaveGuy, foeSys.mustacheGuy, foeSys.plantGuy, foeSys.trashGuy };
 
-		spawnSys.Add(24, treatSys.balloonClusterBottom);
-		spawnSys.Add(30, treatSys.balloonClusterBottomRight);
+		Func<SpawnEntry[], SpawnEntry> rs = choices => choices[ rd.i(0, choices.Length) ];
 
-		spawnSys.Add(46, treatSys.balloonClusterLeft);
-		spawnSys.Add(52, treatSys.balloonClusterRight);
+		Action<SpawnEntry[], int, int> addTwo = (choices, time, timeAdd) => {
+			var id= rd.i(0,choices.Length);
+			var id2=(id + choices.Length/2)%choices.Length;
+			spawnSys.Add(time, choices[id]);
+			spawnSys.Add(time+timeAdd, choices[id2]);
+		};
 
-		spawnSys.Add(60, foeSys.plantGuy);
+		addTwo( smallPositive, 6, 6 );
+		spawnSys.Add(18, rs(smallPositiveUnbiased));
 
-		spawnSys.Add(68, treatSys.balloonClusterBottomLeft);
+		spawnSys.Add(20, rs(normalFoes));
 
+		addTwo( smallPositive, 24, 6 );
 
-		//spawnSys.Add(60, () => { }, boulder);
-		spawnSys.Add(80, foeSys.trashGuy);
+		addTwo( smallPositive, 46, 6 );
 
-		spawnSys.Add(100, treatSys.balloonGridAll );
+		spawnSys.Add(60, rs(normalFoes));
 
-		spawnSys.Add(120, foeSys.beardGuy);
-		//spawnSys.Add(120, () => { }, boulder);
-		spawnSys.Add(160, foeSys.mustacheGuy);
+		spawnSys.Add(68, rs(smallPositiveUnbiased));
 
-		//spawnSys.Add(180, () => { }, boulder);
-		//spawnSys.Add(200, foeSys.microwaveGuy);
-		//spawnSys.Add(240, () => { }, boulder);
+		spawnSys.Add(80, rs(normalFoes));
+
+		spawnSys.Add(100, rs(bigPositiveUnbiased));
+
+		spawnSys.Add(120, rs(normalFoes));
+
+		addTwo( bigPositive, 140, 6 );
+
+		spawnSys.Add(160, rs(normalFoes));
+
 		//spawnSys.Add(300, () => { }, boulder);
 
 		spawnSys.Sort();
 	}
+
+	v3[] buildingPos;
+
+	float baseCameraZ;
 
 	public void Init( MonoBehaviour src ) {
 		gameSys = new GameSys(assets.basicSpriteObject, src.transform);
@@ -102,17 +112,19 @@ class FullGame {
 		
 		playerSys.Setup(gameSys, assets.players, foeSys, reactSys);
 		audiencePlayerSys.Setup(gameSys, assets.players, foeSys, assets.basicGameLogic.GetPlayers(), playerSys, assets.gameLogicChat.GetAudienceSys() );
-		assets.backgrounds.Setup(gameSys);
+		buildingPos = assets.backgrounds.Setup(gameSys);
 		InitSpawns();
 
 		waveHUD = new WaveHUD( gameSys, assets.incomingWaveHUD, src, spawnSys );
 	}
 
+	v3 lastLookAtPos = new v3(0,0,0);
+	v3 lastLookFromPos = new v3(0,0,0);
+
 	public void RunUpdate( Transform transform ) {
 		tick++;
 		foeSys.tick = tick;
 
-		spawnSys.Update((int)tick);
 
 		v3 lookPos;
 		if(playerSys.player2Ent == null) {
@@ -123,8 +135,32 @@ class FullGame {
 		}
 		lookPos.y -= 10f;
 
-		transform.LookAt(new v3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));
-		transform.position = new v3(lookPos.x * .03f, lookPos.y * .03f, transform.position.z);
+		var pauseRatio = assets.basicGameLogic.BetweenRoundPauseRatio();
+
+		if( pauseRatio > 0 ) {
+			var id = (int)( pauseRatio * buildingPos.Length );
+			if( id < 0 )id = 0;
+			if( id >= buildingPos.Length )id = buildingPos.Length-1;
+			var newLookPos = buildingPos[ id ];
+
+			newLookPos.y -= 10f;
+
+			nm.ease( ref lastLookAtPos, newLookPos, .3f );
+			lookPos = lastLookAtPos;
+
+			nm.ease( ref lastLookFromPos, new v3(lookPos.x * .1f, lookPos.y * .1f, -8), .2f );
+
+			transform.LookAt(new v3(transform.position.x * .9f + .1f * lookPos.x, transform.position.y * .9f + .1f * lookPos.y, lookPos.z));
+			transform.position = lastLookFromPos;
+		}
+		else {
+			lastLookAtPos = lookPos;
+
+			nm.ease( ref lastLookFromPos, new v3(lookPos.x * .03f, lookPos.y * .03f, -10), .3f );
+
+			transform.LookAt(new v3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));
+			transform.position = lastLookFromPos;
+		}
 
 		if( Input.GetKey(KeyCode.Escape) ) {
 			if( !pauseLatch ) {
@@ -134,7 +170,11 @@ class FullGame {
 		}
 		else pauseLatch = false;
 
-		gameSys.Update( isPaused );
+		gameSys.Update( isPaused || pauseRatio > 0 );
+
+		if(!isPaused && pauseRatio == 0 ) {
+			spawnSys.Update((int)tick);
+		}
 
 		assets.ground.transform.position = new Vector3(transform.position.x, transform.position.y - 6, assets.ground.transform.position.z);
 		assets.sky.transform.position = new Vector3(transform.position.x, transform.position.y, assets.sky.transform.position.z);

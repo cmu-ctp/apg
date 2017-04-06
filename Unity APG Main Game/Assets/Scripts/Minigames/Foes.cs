@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 using v3 = UnityEngine.Vector3;
 
 public class Foes:MonoBehaviour {
@@ -11,6 +10,12 @@ public class Foes:MonoBehaviour {
 
 public class FoeSys {
 	public float tick = 0;
+
+	const int shotEntPoolSize = 100;
+	FixedEntPool shotEntPool;
+
+	const int foeEntPoolSize = 30;
+	FixedEntPool foeEntPool;
 
 	Foes foes;
 	GameSys gameSys;
@@ -27,6 +32,9 @@ public class FoeSys {
 		trashGuy= new SpawnEntry { icon = foes.foeTrash, spawn = () => TrashGuy() };
 		microwaveGuy= new SpawnEntry { icon = foes.foeMicrowave, spawn = () => MicrowaveGuy() };
 		mustacheGuy= new SpawnEntry { icon = foes.foeMustache, spawn = () => MustacheGuy() };
+
+		foeEntPool = new FixedEntPool( gameSys, foeEntPoolSize, "foes", true );
+		shotEntPool = new FixedEntPool( gameSys, shotEntPoolSize, "shots", true );
 	}
 
 	void React(v3 pos, Sprite msg) {
@@ -37,7 +45,7 @@ public class FoeSys {
 	public void MakeShot(v3 pos, int j, ent src, Sprite[] sprites) {
 		var offset = rd.Ang(); var rotateSpeed = rd.f(.02f, .04f) * 80; var vel = new v3(j * .05f, -.04f, 0); var strength = 1; var lastHit = 0f; var bounceNum = 0;
 		var isPlayerAttack = false;
-		new ent(gameSys) {
+		new PoolEnt(shotEntPool) {
 			sprite = rd.Sprite(sprites), pos = pos, scale = rd.f(.3f, .4f)*1.5f, name = "shot", inGrid=true,
 			update = e => {
 				e.ang = tick * rotateSpeed + offset;
@@ -85,7 +93,7 @@ public class FoeSys {
 			var angAnim = new DualWave(4, .025f);
 			var shakeAmount = 0f; var shootDelay = 0; 
 			var sprites = (k == 0) ? foes.shoes : foes.socks;
-			new ent(gameSys) {
+			new PoolEnt(foeEntPool) {
 				sprite = (k == 0 ? foes.beardguy : foes.beardguy2), pos = new v3(rd.f(40), rd.f(-4, -7), rd.f(80, 100)), scale = 1f, name = "beardguy", inGrid=true,
 				update = e => {
 					if(tick - startTime > 60 * 30) {
@@ -133,7 +141,7 @@ public class FoeSys {
 			float horizontal = rd.f(15), vertOffset = rd.f(2, 6), zDepth = rd.f(20, 50), tickOffset = rd.f(0, 500);
 			var doShoot = true;
 			var angAnim = new DualWave(12, .025f);
-			new ent(gameSys) {
+			new PoolEnt(foeEntPool) {
 				sprite = foes.plantguy, pos = new v3(rd.f(40), rd.f(-4, -7), rd.f(80, 100)), scale = 1f, flipped=rd.Test(.5f), name = "plantguy",
 				update = e => {
 					if(tick - startTime > 60 * 40) {
@@ -161,7 +169,7 @@ public class FoeSys {
 			float horizontal = rd.f(15), vertOffset = rd.f(2, 6), zDepth = rd.f(20, 50), tickOffset = rd.f(0, 500);
 			var doShoot = true;
 			var angAnim = new DualWave(12, .025f);
-			new ent(gameSys) {
+			new PoolEnt(foeEntPool) {
 				sprite = foes.foeTrash, pos = new v3(rd.f(40), rd.f(-4, -7), rd.f(80, 100)), scale = .5f, flipped=rd.Test(.5f), name = "trashguy",
 				update = e => {
 					if(tick - startTime > 60 * 40) {
@@ -189,7 +197,7 @@ public class FoeSys {
 			float horizontal = rd.f(15), vertOffset = rd.f(2, 6), zDepth = rd.f(20, 50), tickOffset = rd.f(0, 500);
 			var doShoot = true;
 			var angAnim = new DualWave(12, .025f);
-			new ent(gameSys) {
+			new PoolEnt(foeEntPool) {
 				sprite = foes.foeMicrowave, pos = new v3(rd.f(40), rd.f(-4, -7), rd.f(80, 100)), scale = 1f, flipped=rd.Test(.5f), name = "microwaveguy",
 				update = e => {
 					if(tick - startTime > 60 * 40) {
@@ -217,7 +225,7 @@ public class FoeSys {
 			float horizontal = rd.f(15), vertOffset = rd.f(2, 6), zDepth = rd.f(20, 50), tickOffset = rd.f(0, 500);
 			var doShoot = true;
 			var angAnim = new DualWave(12, .025f);
-			new ent(gameSys) {
+			new PoolEnt(foeEntPool) {
 				sprite = foes.foeMustache, pos = new v3(rd.f(40), rd.f(-4, -7), rd.f(80, 100)), scale = 1f, flipped=rd.Test(.5f),name = "mustacheguy",
 				update = e => {
 					if(tick - startTime > 60 * 40) {

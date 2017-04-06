@@ -15,6 +15,10 @@ public class TreatSys {
 	GameSys gameSys;
 	Treats theTreats;
 	ReactSys reactSys;
+
+	const int entPoolSize = 300;
+	FixedEntPool entPool;
+
 	public TreatSys(Treats treats, GameSys theGameSys, ReactSys theReactSys) {
 		gameSys = theGameSys;
 		theTreats = treats;
@@ -30,6 +34,8 @@ public class TreatSys {
 		balloonGridCenter= new SpawnEntry { icon = treats.balloons[0], iconYOffset=0, spawn = () => BalloonGrid(-3, 3 ), message="A bevy of balloons is presently showing up!" };
 		balloonGridRight= new SpawnEntry { icon = treats.balloons[0], iconYOffset=.8f, spawn = () => BalloonGrid( 6, 10), message="A throng of balloons ascends on the right!" };
 		balloonGridAll= new SpawnEntry { icon = treats.balloons[0], iconYOffset=0, spawn = () => BalloonGrid( -11, 12 ), message="A MASSIVE balloon armada approaches!" };
+
+		entPool = new FixedEntPool( gameSys, entPoolSize, "treats", true );
 	}
 
 	// Events:
@@ -43,8 +49,8 @@ public class TreatSys {
 
 	void BasicTreat( v3 pos ) {
 			var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6);
-			new ent(gameSys) {
-				sprite = theTreats.goodies, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(1)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true,
+			new PoolEnt( entPool ) {
+				sprite = theTreats.goodies, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true,
 				update = e => {
 					e.pos += new v3( 0,vel, 0);
 					vel -= .005f;
@@ -63,8 +69,8 @@ public class TreatSys {
 		for( var k = 0; k < 5; k++ ) {
 			v3 scaledVel = vel * rd.f(1,1.3f), push=new v3(0,0,0);
 			float bob = rd.f( .002f, .004f ), bobt = rd.f( .8f, 1.2f ), tick = rd.Ang(), lastPush = 0.0f, goalScale = .3f;
-			new ent(gameSys) {
-				sprite = rd.Sprite( theTreats.balloons ), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(1)), scale = .3f, flipped=rd.Test(.5f), name="balloon", inGrid=true,
+			new PoolEnt( entPool ) {
+				sprite = rd.Sprite( theTreats.balloons ), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.7f)), scale = .3f, flipped=rd.Test(.5f), name="balloon", inGrid=true,
 				update = e => {
 					tick+=.01f;
 					e.pos += scaledVel + new v3( bob*Mathf.Sin( bobt * tick * 1.23f + 3.1f ), bob*Mathf.Cos( bobt * tick ), 0 );
@@ -77,6 +83,7 @@ public class TreatSys {
 				breathTouch = (e, user, info) => {
 					if( tick - lastPush < .05f )return;
 					var pushDir = (e.pos - user.pushCenter).normalized;
+					pushDir.y = 0;
 					pushDir.z = 0;
 					push += pushDir * info.strength*.05f;
 					lastPush = tick;
@@ -90,8 +97,8 @@ public class TreatSys {
 				},
 				playerTouch = (e, user, info) => {
 					var pushDir = (e.pos - user.pushCenter).normalized;
+					pushDir.y = 0;
 					pushDir.z = 0;
-					pushDir.y *= .1f;
 					push += pushDir * .01f;
 				}
 			};
@@ -104,7 +111,7 @@ public class TreatSys {
 				float bob = rd.f( .002f, .004f ), tick = rd.Ang(), goalScale = .3f;
 				v3 home = new v3(k,k2,0);
 				float offset = rd.Ang(), rotateRange = rd.f(.1f, .2f) * 80, rotateSpeed = rd.f(.02f, .04f), delay = rd.i(0,15) + 20 + 2*k, leaveDelay = delay + 60*12;
-				new ent(gameSys) {
+				new PoolEnt( entPool ) {
 					sprite = rd.Sprite( theTreats.balloons ), pos = new v3((leftBound+rightBound)/2f, -7, 0), scale = rd.f(.19f, .21f), flipped=rd.Test(.5f), name="balloon", inGrid=true,
 					update = e => {
 						delay--;
@@ -145,7 +152,7 @@ public class TreatSys {
 			for( var k2 = -6; k2 < 7; k2++ ) {
 				float lastTouch = 0.0f;
 				v3 home = new v3(k,k2,0);
-				new ent(gameSys) {
+				new PoolEnt( entPool ) {
 					sprite = rd.Sprite( theTreats.balloons ), pos = new v3(k, k2, 0), scale = .2f, flipped=rd.Test(.5f), name="balloon", inGrid=true,
 					update = e => {
 						lastTouch--;

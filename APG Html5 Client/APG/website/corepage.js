@@ -4,8 +4,8 @@ var setupParms = {
     logicIRCChannelName: "",
     playerName: "",
     playerOauth: "",
-    skipAuthentication: false,
-    isDebug:false
+    skipAuthentication: true,
+    isDebug: true
 };
 
 var engineParms = {
@@ -91,7 +91,7 @@ function AddPreloader() {
     }, 1000 / 6);
 }
 
-if (setupParms.isDebug == false) {
+if (setupParms.isDebug === false) {
     AddPreloader();
 }
 
@@ -99,8 +99,8 @@ if (setupParms.isDebug == false) {
 
 function onLoadEnd() {
 
-    document.getElementById("landscapeWarning").style.display = 'none';
-    document.getElementById("landscapeWarning").textContent = 'This game only works in landscape mode.  Please reposition your phone or tablet.';
+    document.getElementById("orientationWarning").style.display = 'none';
+    document.getElementById("orientationWarning").textContent = 'This game only works in landscape mode.  Please reposition your phone or tablet.';
 
     function addTwitchIFrames() {
 
@@ -142,7 +142,7 @@ function onLoadEnd() {
 
     document.getElementById(phaserDivName).style.display = 'none';
     ApgSetup(setupParms.isMobile, 400, 720, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
-        if (preloaderFunction != null) {
+        if (preloaderFunction !== null) {
             clearInterval(preloaderFunction);
             preloaderFunction = null;
         }

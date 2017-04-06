@@ -20,7 +20,8 @@ class APGSubgameMessageHandler {
 	}
 
 	run(message: string): boolean {
-		var msgTemp = message.split("###");
+
+		var msgTemp:string[] = message.split("###");
 		if (msgTemp.length != 2) {
 			ConsoleOutput.debugError("Bad Network Message: " + message, "network");
 			return false;

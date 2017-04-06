@@ -1,4 +1,7 @@
-﻿public class EntLink {
+﻿using System;
+
+[Serializable]
+public class EntLink {
 	public ent e = null;
 	public EntLink prev = null;
 	public EntLink next = null;

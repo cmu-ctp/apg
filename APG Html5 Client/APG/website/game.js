@@ -108,7 +108,7 @@ var enttx = (function (_super) {
     return enttx;
 }(Phaser.Text));
 function StartGame(sys) {
-    MainPlayerInput(sys);
+    WaitingToJoin(sys);
 }
 var APGSys = (function () {
     function APGSys(g, logicIRCChannelName, playerName, chat, JSONAssets) {
@@ -271,22 +271,22 @@ function ApgSetup(isMobile, gameWidth, gameHeight, logicIRCChannelName, playerNa
         function launchGame() {
             onLoadEnd();
             var apg = new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets);
-            var showingLandscapeWarning = false;
+            var showingOrientationWarning = false;
             setInterval(function () {
                 if (isMobile) {
                     var width = window.innerWidth || document.body.clientWidth;
                     var height = window.innerHeight || document.body.clientHeight;
-                    if (height > width) {
-                        if (!showingLandscapeWarning) {
-                            showingLandscapeWarning = true;
-                            document.getElementById("landscapeWarning").style.display = '';
+                    if (height < width) {
+                        if (!showingOrientationWarning) {
+                            showingOrientationWarning = true;
+                            document.getElementById("orientationWarning").style.display = '';
                             document.getElementById(APGInputWidgetDivName).style.display = 'none';
                         }
                     }
                     else {
-                        if (showingLandscapeWarning) {
-                            showingLandscapeWarning = false;
-                            document.getElementById("landscapeWarning").style.display = 'none';
+                        if (showingOrientationWarning) {
+                            showingOrientationWarning = false;
+                            document.getElementById("orientationWarning").style.display = 'none';
                             document.getElementById(APGInputWidgetDivName).style.display = '';
                         }
                     }
@@ -296,12 +296,9 @@ function ApgSetup(isMobile, gameWidth, gameHeight, logicIRCChannelName, playerNa
             StartGame(apg);
         }
         function goFull() {
-            game.scale.pageAlignHorizontally = true;
-            game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
             if (game.scale.isFullScreen) {
             }
             else {
-                game.scale.startFullScreen(true);
             }
         }
     }
@@ -474,6 +471,7 @@ var IRCNetwork = (function () {
     function IRCNetwork(getHandlers, player, logicChannelName, chat, w) {
         this.lastMessageTime = 0;
         this.messageQueue = [];
+        this.toggleSpace = false;
         this.channelName = '#' + logicChannelName;
         var src = this;
         chat.on("chat", function (channel, userstate, message, self) {
@@ -483,7 +481,10 @@ var IRCNetwork = (function () {
                 ConsoleOutput.debugLog(channel + " " + userstate.username + " " + message, "network");
             }
             if (userstate.username == logicChannelName) {
-                getHandlers().run(message);
+                var msgTemp = message.split("%%");
+                for (var k = 0; k < msgTemp.length; k++) {
+                    getHandlers().run(msgTemp[k]);
+                }
             }
             else {
             }
@@ -502,7 +503,8 @@ var IRCNetwork = (function () {
             this.messageQueue.push(s);
             return;
         }
-        this.chat.say(this.channelName, s);
+        this.toggleSpace = !this.toggleSpace;
+        this.chat.say(this.channelName, s + (this.toggleSpace ? ' ' : '  '));
         if (debugLogOutgoingIRCChat) {
             ConsoleOutput.debugLog(s, "network");
         }
@@ -512,7 +514,8 @@ var IRCNetwork = (function () {
         this.lastMessageTime--;
         if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {
             var delayedMessage = this.messageQueue.shift();
-            this.chat.say(this.channelName, delayedMessage);
+            this.toggleSpace = !this.toggleSpace;
+            this.chat.say(this.channelName, delayedMessage + (this.toggleSpace ? ' ' : '  '));
             if (debugLogOutgoingIRCChat) {
                 ConsoleOutput.debugLog(delayedMessage, "network");
             }
@@ -757,6 +760,7 @@ function MainPlayerInput(sys) {
     var timer = 0;
     var roundNumber = 1;
     var choices = [1, 1, 1, 1, 1, 1];
+    var myStats = { nm: "", hp: 3, money: 0 };
     sys.handlers = new APGSubgameMessageHandler()
         .add("time", function (p) {
         timer = p.time;
@@ -764,6 +768,11 @@ function MainPlayerInput(sys) {
         if (timer < 6) {
             warningSound.play('', 0, 1 - (timer * 15) / 100);
         }
+    })
+        .add("pl", function (p) {
+        if (p.nm != sys.playerName)
+            return;
+        myStats = p;
     })
         .add("submit", function (p) {
         sys.sendMessageToServer("upd", { choices: choices });

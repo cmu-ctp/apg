@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.IO;
+using System.Text;
 using APG;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -144,12 +145,27 @@ public class TwitchGameLogicChat:MonoBehaviour {
 		IRCLogic.SendMsg( "*** Logic Channel Initialized ***" );
 	}
 
+	static readonly int maxIRCMsgLength = 512;
+	static readonly int splitterLength = "%%".Length;
+	StringBuilder bufferedCommands = new StringBuilder( maxIRCMsgLength + 1 );
+
 	public void SendMsg( string msg, object parms ) {
 		if( parms == null )parms = emptyMsg;
 
 		var s = msg+"###"+JsonUtility.ToJson(parms);
 
-		IRCLogic.SendMsg( s );
+		if( bufferedCommands.Length + splitterLength + s.Length > maxIRCMsgLength ) {
+			IRCLogic.SendMsg( bufferedCommands.ToString() );
+			bufferedCommands.Length = 0;
+			bufferedCommands.Append( s );
+		}
+		else if( bufferedCommands.Length > 0 ) {
+			bufferedCommands.Append( "%%" ).Append( s );
+		}
+		else {
+			bufferedCommands.Append( s );
+		}
+		
 		recorder.WriteToClientMsg( time, "server", s );
 	}
 
@@ -183,6 +199,10 @@ public class TwitchGameLogicChat:MonoBehaviour {
 	}
 	void Update() {
 		time++;
+		if( bufferedCommands.Length > 0 ) {
+			IRCLogic.SendMsg( bufferedCommands.ToString() );
+			bufferedCommands.Length = 0;
+		}
 		apg.Update();
 	}
 }

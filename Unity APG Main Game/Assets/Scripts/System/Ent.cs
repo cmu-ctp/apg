@@ -9,16 +9,18 @@ public struct TouchInfo {
 	public ent src;
 }
 
+// All of the Serializable / SerialField annotations  are purely for debugging - it makes them visible and inspectable in the UnityEditor at runtime.
+[Serializable]
 public class ent {
-	GameSys gameSys;
-	GameObject src;
+	[SerializeField] GameSys gameSys;
+	[SerializeField] GameObject src;
 
-	Transform trans;
-	SpriteRenderer spr;
-	TextMesh tx = null;
+	[SerializeField] Transform trans;
+	[SerializeField] SpriteRenderer spr;
+	[SerializeField] TextMesh tx = null;
 
-	EntLink updLink;
-	EntLink gridLink;
+	[SerializeField] EntLink updLink;
+	[SerializeField] EntLink gridLink;
 
 	public ent textLabel = null;
 
@@ -32,11 +34,14 @@ public class ent {
 	public Action<ent, ent, TouchInfo> playerTouch;
 	public Action<ent, ent, TouchInfo> buddyTouch;
 
-	Action<ent> _update;
-	bool removed = false;
-	bool usingGrid = false;
-
+	[SerializeField] Action<ent> _update;
+	[SerializeField] bool removed = false;
+	[SerializeField] bool usingGrid = false;
 	public bool ignorePause;
+
+	public ent poolNext = null;
+	[SerializeField] bool poolActive = false;
+	public FixedEntPool pool = null;
 
 	public Action<ent> update {
 		get { return _update; }
@@ -53,13 +58,33 @@ public class ent {
 		set { if(value == true) { usingGrid = true; gridLink.Link(gameSys.GridLink(pos)); } else { usingGrid = false; gridLink.Unlink(); } }
 	}
 	public void remove() {
+		if( removed ) {
+			// print error message
+			return;
+		}
+		// fixme - deal with parenting stuff
 		removed = true;
 		update = null;
 		gridLink.Unlink();
-		gridLink = null;
-		updLink = null;
-		// fixme - deal with parenting stuff
-		UnityEngine.Object.Destroy(src);
+
+		if( pool != null ) {
+			active = false;
+			pool.Reclaim( this );
+		}
+		else {
+			gridLink = null;
+			updLink = null;
+			UnityEngine.Object.Destroy(src);
+		}
+	}
+	public void poolRespawn() {
+		// This is stateful, so we need reset stateful attributes.  Design consideration - making this more generic and comprehensive makes it easier to use but less performant.  Are there attributes pool users should be in charge of taking care of?
+		ang = 0;
+		scale = 1;
+		pos = new v3( 0,0,0 );
+		color = new Color(1,1,1,1);
+		active=true;
+		removed = false;
 	}
 	public bool outOfBounds( int xWidth, int yWidth, bool ignoreUp ) {
 		// There is some fudge factor here, so spawned objects can exist off screen in the margins.  Should make this more rigorous though.
@@ -78,6 +103,11 @@ public class ent {
 	}
 	public ent(GameSys sys, GameObject prefab = null) {
 		src = (GameObject)UnityEngine.Object.Instantiate((prefab != null) ? prefab : sys.basePrefab, new v3(0, 0, 0), Quaternion.identity);
+
+		var entHolder = src.GetComponent<EntHolder>();
+		if( entHolder != null ) {
+			entHolder.linkedEnt = this;
+		}
 
 		trans = src.transform;
 		spr = src.GetComponent<SpriteRenderer>();
@@ -106,7 +136,7 @@ public class ent {
 	public Color color { set { spr.color = value; } }
 	public bool flipped { set { spr.flipX = value; } }
 	public string name { set { src.name = value;} }
-	public bool active { set {  src.SetActive( value ); } }
+	public bool active { set {  poolActive = value; src.SetActive( value ); } get { return poolActive; } }
 	public Layers layer {
 		set {
 			string s = "";
@@ -130,33 +160,71 @@ public class ent {
 	public MonoBehaviour parentMono {
 		set { trans.parent = value.transform; }
 	}
-	public List<ent> children { set { foreach(var child in value) { child.trans.parent = trans; child.trans.localPosition = new v3(0, -.2f, -.2f); } } }
+	public List<ent> children { set { foreach(var child in value) { child.trans.parent = trans; child.trans.localPosition = new v3(0, 0, 0); } } }
 
 	public string text { set { tx.text = value;} get { return tx.text; } }
 	public Color textColor { set { tx.color = value;} get { return tx.color; } }
-
 }
 
+[Serializable]
 public class FixedEntPool {
-	int limit;
-	ent[] entSet;
-	int nextToSpawn = 0;
+	[SerializeField] string name;
+	[SerializeField] int size;
+	[SerializeField] bool useFirstFree;
+	[SerializeField] ent[] entSet;
+	[SerializeField] ent allocHead = null;
+	[SerializeField] int nextToSpawn = 0;
+	[SerializeField] ent dummyEnt = null;
 
-	public FixedEntPool( GameSys gameSys, int count ) {
-		limit = count;
-		entSet = new ent[limit];
-		for( var k = 0; k < limit; k++ )entSet[k] = new ent(gameSys );
+	public FixedEntPool( GameSys gameSys, int poolSize, string poolName, bool getFirstFree=false ) {
+		name = poolName;
+		useFirstFree = getFirstFree;
+		size = poolSize;
+		entSet = new ent[size];
+		ent lastEnt = null;
+
+		var src = new ent(gameSys) { name=poolName };
+
+		for( var k = 0; k < size; k++ ) {
+			entSet[k] = new ent(gameSys ) { poolNext = lastEnt, pool = this, active=false, parent=src };
+			lastEnt = entSet[k];
+		}
+		allocHead = entSet[size-1];
+
+		dummyEnt = new ent(gameSys ) { active=false, parent=src, name="dummy" };
 	}
+	public void Reclaim( ent e ) {
+		e.poolNext = allocHead;
+		allocHead = e;
+	}
+
+	// fixme - this allocation is suboptimal.  Better to have a list that objects are explicitly added to when they are deallocated.
 	public ent Alloc() {
-		var e = entSet[nextToSpawn];
-		nextToSpawn = (nextToSpawn+1)%limit;
+		ent e = null;
+		if( useFirstFree ) {
+			e = allocHead;
+			if( e != null ) {
+				allocHead = e.poolNext;
+			}
+			else {
+				Debug.Log("Warning!  FixedEntPool " + name + "is too small: allocating dummy ent" );
+				// put a huge warning up about making the pool larger.
+				e = dummyEnt;
+			}
+		}
+		else { 
+			e = entSet[nextToSpawn];
+			nextToSpawn = (nextToSpawn+1)%size;
+		}
+		e.poolRespawn();
 		return e;
 	}
 }
 
-class ReuseEnt {
+[Serializable]
+class PoolEnt {
 	public ent e;
-	public ReuseEnt( FixedEntPool pool, bool clear = false ) {
+	public PoolEnt( FixedEntPool pool, bool clear = false ) {
 		e = pool.Alloc();
 		// Fixme: Make clear work.
 	}
@@ -167,11 +235,11 @@ class ReuseEnt {
 	public v3 vel {set { e.vel=value;} }
 	public v3 knockback {set { e.knockback=value;} }
 	public Action<ent, ent, int> onHurt { set { e.onHurt = value; } }
-	public Action<ent, ent, TouchInfo> pushedByBreath {set { e.breathTouch=value;} }
+	public Action<ent, ent, TouchInfo> breathTouch {set { e.breathTouch=value;} }
 	public Action<ent, ent, TouchInfo> playerTouch {set { e.playerTouch=value;} }
 	public Action<ent, ent, TouchInfo> buddyTouch {set { e.buddyTouch=value;} }
 	public Action<ent> update {set { e.update = value;}}
-	public bool useGrid {set { e.inGrid = value; }}
+	public bool inGrid {set { e.inGrid = value; }}
 	public bool ignorePause{set { e.ignorePause = value; }}
 	public v3 pos {set { e.pos = value; }}
 	public float scale { set { e.scale=value; } }

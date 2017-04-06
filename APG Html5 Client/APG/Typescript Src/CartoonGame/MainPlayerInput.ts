@@ -14,6 +14,13 @@ interface SelectionParms {
 	choices: number[];
 }
 
+interface PlayerUpdate{
+	nm:string;
+	hp:number;
+	money:number;
+}
+
+
 function MainPlayerInput(sys: APGSys): void {
 	var fontName: string = "Caveat Brush";
 
@@ -56,12 +63,17 @@ function MainPlayerInput(sys: APGSys): void {
 	var timer: number = 0;
 	var roundNumber: number = 1;
 	var choices: number[] = [1, 1, 1, 1, 1, 1];
+	var myStats: PlayerUpdate = { nm: "", hp: 3, money: 0};
 
 	sys.handlers = new APGSubgameMessageHandler()
 		.add<RoundUpdate>( "time", p => {
 			timer = p.time;
 			roundNumber = p.round;
 			if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
+		})
+		.add<PlayerUpdate>("pl", p => {
+			if (p.nm != sys.playerName) return;
+			myStats = p;
 		})
 		.add<SelectionParms>( "submit", p => {
 			sys.sendMessageToServer<SelectionParms>("upd", { choices: choices });

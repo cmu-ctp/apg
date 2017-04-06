@@ -1,17 +1,19 @@
 ﻿using UnityEngine;
 using v3 = UnityEngine.Vector3;
+using System;
 
 public enum Layers { UI, Game, Background }
 
 public enum UseType { PlayerBlowing, PlayerPush, BuddyTouch }
 
+[Serializable]
 public class GameSys {
 	public GameObject basePrefab;
 	public EntLink updaters;
 	public EntLink sysUpdaters;
 	Transform camera;
 
-	float timeRemainder = 0;
+	[SerializeField] float timeRemainder = 0;
 
 	public CollisionGrid grid = new CollisionGrid(30, 30);
 	public GameSys(GameObject corePrefab, Transform cameraTransform) {

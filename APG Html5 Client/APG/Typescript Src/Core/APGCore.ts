@@ -165,6 +165,7 @@ function ApgSetup(isMobile:boolean, gameWidth: number = 400, gameHeight: number 
 			},
 			create: () => {
 				game.input.mouse.capture = true;
+
 				if (phaserGoogleWebFontList == undefined || phaserGoogleWebFontList.length == 0) {
 					initLaunchGame();
 				}
@@ -191,22 +192,22 @@ function ApgSetup(isMobile:boolean, gameWidth: number = 400, gameHeight: number 
 		function launchGame() {
 			onLoadEnd();
 			var apg: APGSys = new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets);
-			var showingLandscapeWarning = false;
+			var showingOrientationWarning = false;
 			setInterval(function () {
 				if (isMobile) {
 					var width = window.innerWidth || document.body.clientWidth;
 					var height = window.innerHeight || document.body.clientHeight;
-					if (height > width) {
-						if (!showingLandscapeWarning) {
-							showingLandscapeWarning = true;
-							document.getElementById("landscapeWarning").style.display = '';
+					if (height < width) {
+						if (!showingOrientationWarning) {
+							showingOrientationWarning = true;
+							document.getElementById("orientationWarning").style.display = '';
 							document.getElementById(APGInputWidgetDivName).style.display = 'none';
 						}
 					}
 					else {
-						if (showingLandscapeWarning) {
-							showingLandscapeWarning = false;
-							document.getElementById("landscapeWarning").style.display = 'none';
+						if (showingOrientationWarning) {
+							showingOrientationWarning = false;
+							document.getElementById("orientationWarning").style.display = 'none';
 							document.getElementById(APGInputWidgetDivName).style.display = '';
 						}
 					}
@@ -217,12 +218,12 @@ function ApgSetup(isMobile:boolean, gameWidth: number = 400, gameHeight: number 
 		}
 
 		function goFull(): void {
-			game.scale.pageAlignHorizontally = true;
-			game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+			//game.scale.pageAlignHorizontally = true;
+			//game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
 			if (game.scale.isFullScreen) {
 			}
 			else {
-				game.scale.startFullScreen(true);
+				//game.scale.startFullScreen(true);
 			}
 		}
 	}

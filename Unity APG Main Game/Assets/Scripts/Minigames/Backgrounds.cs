@@ -5,13 +5,16 @@ public class Backgrounds:MonoBehaviour {
 	public Sprite[] trees, bushes, clouds, buildings;
 
 	GameSys gameSys;
-	public void Setup(GameSys theGameSys) {
+	public v3[] Setup(GameSys theGameSys) {
 		gameSys = theGameSys;
 
 		Clouds();
 		Trees();
 		Bushes();
-		Buildings();
+
+		var lookPositions = Buildings();
+
+		return lookPositions;
 	}
 	void Clouds() {
 		var src = new ent(gameSys) { name="cloudSet" };
@@ -37,7 +40,7 @@ public class Backgrounds:MonoBehaviour {
 		for( var k = 0; k < 300; k++ ) {
 			var zDist = rd.f(7f, 60.0f); var sideScale = zDist / 60.0f;
 			new ent(gameSys) {
-				sprite = rd.Sprite(trees), pos = new v3(rd.f(23) * (1 + sideScale * 2), -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 2, name="tree", parent = src,
+				sprite = rd.Sprite(trees), pos = new v3(rd.f(23) * (1 + sideScale * 2), -5f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 2, name="tree", parent = src,
 			};
 		}
 	}
@@ -45,15 +48,22 @@ public class Backgrounds:MonoBehaviour {
 		var src = new ent(gameSys) { name="bushSet" };
 		for( var k = 0; k < 100; k++ ) {
 			var zDist = rd.f(3f, 27.0f); var sideScale = zDist / 60.0f;
-			new ent(gameSys) { sprite = rd.Sprite(bushes), pos = new v3(rd.f(23) * (1 + sideScale * 2), -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f), name="bush", parent = src };
+			new ent(gameSys) { sprite = rd.Sprite(bushes), pos = new v3(rd.f(23) * (1 + sideScale * 2), -5f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f), name="bush", parent = src };
 		}
 	}
-	void Buildings() {
+	v3[] Buildings() {
+
+		v3[] lookPos = new v3[12];
+
 		var src = new ent(gameSys) { name="buildingSet" };
 		for( var k = 0; k < 6; k++ ) {
 			var zDist = 2.5f; var posx = -12 + 10 * (k/6f);
-			new ent(gameSys) { sprite = buildings[k], pos = new v3(posx, -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 1.7f, name="building", parent = src };
-			new ent(gameSys) { sprite = buildings[k], pos = new v3(-posx, -6f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 1.7f, name="building", parent = src };
+			lookPos[k] = new v3(posx, -5f+rd.f(0, .2f), zDist);
+			lookPos[12-1-k] = new v3(-posx, -5f+rd.f(0, .2f), zDist);
+			new ent(gameSys) { sprite = buildings[k], pos = lookPos[k], scale = rd.f(.3f, .4f) * 1.7f, name="building", parent = src };
+			new ent(gameSys) { sprite = buildings[k], pos = lookPos[12-1-k], scale = rd.f(.3f, .4f) * 1.7f, name="building", parent = src };
 		}
+
+		return lookPos;
 	}
 }
