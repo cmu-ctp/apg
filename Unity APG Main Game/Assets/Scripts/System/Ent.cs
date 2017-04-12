@@ -17,6 +17,7 @@ public class ent {
 
 	[SerializeField] Transform trans;
 	[SerializeField] SpriteRenderer spr;
+	[SerializeField] Renderer ren;
 	[SerializeField] TextMesh tx = null;
 
 	[SerializeField] EntLink updLink;
@@ -29,10 +30,18 @@ public class ent {
 	public v3 vel;
 	public v3 knockback;
 
+	ent shadowEnt;
+	public ent shadow { set { shadowEnt = value; shadowEnt.leader=this; } }
+	public bool isShadow;
+
+	public float val1, val2;
+
 	public Action<ent, ent, int> onHurt = (me, source, damage) => { };
 	public Action<ent, ent, TouchInfo> breathTouch;
 	public Action<ent, ent, TouchInfo> playerTouch;
 	public Action<ent, ent, TouchInfo> buddyTouch;
+
+	[SerializeField] int sortOrder;
 
 	[SerializeField] Action<ent> _update;
 	[SerializeField] bool removed = false;
@@ -76,6 +85,11 @@ public class ent {
 			updLink = null;
 			UnityEngine.Object.Destroy(src);
 		}
+		
+		if( shadowEnt != null ) {
+			shadowEnt.remove();
+			shadowEnt = null;
+		}
 	}
 	public void poolRespawn() {
 		// This is stateful, so we need reset stateful attributes.  Design consideration - making this more generic and comprehensive makes it easier to use but less performant.  Are there attributes pool users should be in charge of taking care of?
@@ -85,6 +99,15 @@ public class ent {
 		color = new Color(1,1,1,1);
 		active=true;
 		removed = false;
+		isShadow = false;
+
+		ignorePause = false;
+		breathTouch = (e, user, info) => { };
+		playerTouch = (e, user, info) => { };
+		buddyTouch = (e, user, info) => { };
+		onHurt = (me, source, damage) => { };
+
+		leader = shadowEnt = null;
 	}
 	public bool outOfBounds( int xWidth, int yWidth, bool ignoreUp ) {
 		// There is some fudge factor here, so spawned objects can exist off screen in the margins.  Should make this more rigorous though.
@@ -111,14 +134,18 @@ public class ent {
 
 		trans = src.transform;
 		spr = src.GetComponent<SpriteRenderer>();
+		ren = src.GetComponent<Renderer>();
 		tx = src.GetComponent<TextMesh>();
 		ignorePause = false;
+		isShadow = false;
 		gameSys = sys;
 		updLink = new EntLink(this);
 		gridLink = new EntLink(this);
 		breathTouch = (e, user, info) => { };
 		playerTouch = (e, user, info) => { };
 		buddyTouch = (e, user, info) => { };
+
+		leader = shadowEnt = null;
 	}
 	public v3 pos {
 		get { return trans.localPosition; }
@@ -128,13 +155,24 @@ public class ent {
 		get { return trans.localPosition- new v3(0,.7f,0); }
 	}
 	public float scale { get { return trans.localScale.x; } set { trans.localScale = new v3(value, value, value); } }
+	public v3 scale3 { get { return trans.localScale; } set { trans.localScale = value; } }
 	public float ang { get { return trans.eulerAngles.z; } set { trans.eulerAngles = new v3(0, 0, value); } }
 	public void MoveBy(v3 moveVector) { if(removed) return; gridLink.Unlink(); trans.Translate(moveVector, Space.World); if(moveVector.z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public void MoveBy(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.Translate(new v3(x, y, z), Space.World); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
+	public void MoveTo(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.position = new v3(x, y, z); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public Sprite sprite { set { if( spr != null)spr.sprite = value; } }
-	public void SortByZ() { if(spr != null )spr.sortingOrder = Math.Min(Math.Max((int)(-trans.position.z * 1024.0f), -32768), 32767); }
-	public Color color { set { spr.color = value; } }
-	public bool flipped { set { spr.flipX = value; } }
+	public void SortByZ() {
+		if(ren != null ) {
+			if( isShadow ) {
+				ren.sortingOrder = sortOrder = -32768;
+			}
+			else {
+				ren.sortingOrder = sortOrder = Math.Min(Math.Max((int)(-trans.position.z * 1024.0f), -32768), 32767); 
+			}
+		}
+	}
+	public Color color { set { if(spr != null )spr.color = value; } }
+	public bool flipped { set { if(spr != null )spr.flipX = value; } get { return spr.flipX; } }
 	public string name { set { src.name = value;} }
 	public bool active { set {  poolActive = value; src.SetActive( value ); } get { return poolActive; } }
 	public Layers layer {
@@ -151,9 +189,10 @@ public class ent {
 					s = "Background";
 					break;
 			}
-			spr.sortingLayerName = s;
+			if(spr != null )spr.sortingLayerName = s;
 		}
 	}
+	// FIXME.  This has been giving me no end of grief.  How should this work?  There's a bunch of stuff that needs to get propagated down through the heirarchy.
 	public ent parent {
 		set { trans.parent = value.src.transform; }
 	}
@@ -176,7 +215,7 @@ public class FixedEntPool {
 	[SerializeField] int nextToSpawn = 0;
 	[SerializeField] ent dummyEnt = null;
 
-	public FixedEntPool( GameSys gameSys, int poolSize, string poolName, bool getFirstFree=false ) {
+	public FixedEntPool( GameSys gameSys, int poolSize, string poolName, bool getFirstFree=false, GameObject prefab = null ) {
 		name = poolName;
 		useFirstFree = getFirstFree;
 		size = poolSize;
@@ -186,12 +225,12 @@ public class FixedEntPool {
 		var src = new ent(gameSys) { name=poolName };
 
 		for( var k = 0; k < size; k++ ) {
-			entSet[k] = new ent(gameSys ) { poolNext = lastEnt, pool = this, active=false, parent=src };
+			entSet[k] = new ent(gameSys, prefab) { poolNext = lastEnt, pool = this, active=false, parent=src };
 			lastEnt = entSet[k];
 		}
 		allocHead = entSet[size-1];
 
-		dummyEnt = new ent(gameSys ) { active=false, parent=src, name="dummy" };
+		dummyEnt = new ent(gameSys, prefab ) { active=false, parent=src, name="dummy" };
 	}
 	public void Reclaim( ent e ) {
 		e.poolNext = allocHead;
@@ -240,6 +279,7 @@ class PoolEnt {
 	public Action<ent, ent, TouchInfo> buddyTouch {set { e.buddyTouch=value;} }
 	public Action<ent> update {set { e.update = value;}}
 	public bool inGrid {set { e.inGrid = value; }}
+	public ent shadow { set { e.shadow= value; } }
 	public bool ignorePause{set { e.ignorePause = value; }}
 	public v3 pos {set { e.pos = value; }}
 	public float scale { set { e.scale=value; } }

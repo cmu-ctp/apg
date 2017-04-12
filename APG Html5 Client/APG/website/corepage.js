@@ -1,11 +1,11 @@
 var setupParms = {
-    isMobile: true,
+    isMobile: false,
+    isDebug: false,
     chatIRCChannelName: "",
     logicIRCChannelName: "",
     playerName: "",
     playerOauth: "",
-    skipAuthentication: true,
-    isDebug: true
+    skipAuthentication: false
 };
 
 var engineParms = {
@@ -15,11 +15,13 @@ var engineParms = {
 
 function CreateTwitchApp() {
 
-    if (/Mobi/.test(navigator.userAgent)) {
-        setupParms.isMobile = true;
-    }
-    else {
-        setupParms.isMobile = false;
+    if (setupParms.isDebug !== true) {
+        if (/Mobi/.test(navigator.userAgent)) {
+            setupParms.isMobile = true;
+        }
+        else {
+            setupParms.isMobile = false;
+        }
     }
 
     // The following values should be set manually for testing locally.  These values will be overridden by the server when launching from a server.
@@ -68,7 +70,9 @@ function CreateTwitchApp() {
                     engineParms.chatLoadedFunction = null;
                 }
                 engineParms.chat.connect().then(function (data) {
-                }).catch(function (err) { });
+                }).catch(function (err) {
+                    console.log("Error: " + err);
+                });
             });
         }
     });
@@ -82,7 +86,7 @@ function AddPreloader() {
     var preloaderFunction = setInterval(function () {
         tick++;
 
-        var s = "Please wait while the game loads.";
+        var s = "Please wait while the audience app loads ";
         for (var k = 0; k < tick; k++) {
             s += '.';
         }
@@ -91,9 +95,53 @@ function AddPreloader() {
     }, 1000 / 6);
 }
 
-if (setupParms.isDebug === false) {
-    AddPreloader();
+AddPreloader();
+
+
+function AddAppReposition() {
+    var mouseDown = false;
+    var startx = 0, starty = 0;
+    var mx = 0, my = 0;
+    var curx = 0, cury = 0;
+    var clickx, clicky;
+    var d = null;
+    var dragging = false;
+    document.onmousedown = function () {
+        if (mouseDown === false) {
+            if (mx > curx && mx < curx + 800 && my > cury && my < cury + 32) {
+                startx = mx;
+                starty = my;
+                clickx = curx;
+                clicky = cury;
+                dragging = true;
+            }
+        }
+        mouseDown = true;
+    };
+    document.onmouseup = function () {
+        dragging = false;
+        mouseDown = false;
+    };
+    document.onmousemove = function (e) {
+        mx = e.clientX;
+        my = e.clientY;
+    };
+    setInterval(function () {
+        if (dragging) {
+            if (d === null) { d = document.getElementById("APGInputWidget"); }
+            d.style.position = "absolute";
+            curx = clickx + (mx - startx);
+            cury = clicky + (my - starty);
+            d.style.left = "" + curx + 'px';
+            d.style.top = "" + cury + 'px';
+        }
+    }, 1000 / 30);
 }
+
+if (!setupParms.isMobile ) {
+    AddAppReposition();
+}
+
 
 // This is the only script referenced by the web page.
 
@@ -104,7 +152,7 @@ function onLoadEnd() {
 
     function addTwitchIFrames() {
 
-        if (setupParms.isMobile || setupParms.isDebug ) {
+        if (setupParms.isMobile ) {
             $('.browser').removeClass();
             return;
         }
@@ -123,8 +171,8 @@ function onLoadEnd() {
         iframe = document.createElement('iframe');
         iframe.setAttribute("allowfullscreen", "true");
         iframe.setAttribute("src", "http://player.twitch.tv/?channel=" + setupParms.chatIRCChannelName);
-        iframe.setAttribute("width", "800");
-        iframe.setAttribute("height", "600");
+        iframe.setAttribute("width", "1024");
+        iframe.setAttribute("height", "768");
         document.getElementById("TwitchVideo").appendChild(iframe);
     }
     addTwitchIFrames();
@@ -132,7 +180,7 @@ function onLoadEnd() {
     var isFullScreen = false;
     var phaserDivName = "APGInputWidget";
 
-    if (setupParms.isMobile || setupParms.isDebug) {
+    if (setupParms.isMobile ) {
         phaserDivName = "APGInputWidgetMobile";
     }
 
@@ -141,7 +189,7 @@ function onLoadEnd() {
     }
 
     document.getElementById(phaserDivName).style.display = 'none';
-    ApgSetup(setupParms.isMobile, 400, 720, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
+    ApgSetup(setupParms.isMobile, 800, 450, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
         if (preloaderFunction !== null) {
             clearInterval(preloaderFunction);
             preloaderFunction = null;

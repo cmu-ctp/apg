@@ -73,5 +73,23 @@ namespace APG {
 				playerEvents[k].updateToClient( apg, playerNames[k] );
 			}
 		}
+		public void SetGoalPositions() {
+			var spots = new List<AudiencePlayerEventsHandler>[12];  // fixme.  Don't hardcode.
+			for( var k = 0; k < 12; k++ ) {
+				spots[k] = new List<AudiencePlayerEventsHandler>();
+			}
+			for( var k = 0; k < playerNames.Count; k++ ) {
+				spots[ playerEvents[k].getGoalBuilding() ].Add( playerEvents[k] );
+			}
+			for( var k = 0; k < spots.Length; k++ ) {
+
+				var goalposx = (-10 + 9 * ((k%6)/6f)) * ((k < 6) ? 1 : -1);
+
+				for( var j = 0; j < spots[k].Count; j++ ) {
+					var rat = 2*(float)j/(spots[k].Count -1 ) - 1;
+					spots[k][j].setGoalX( goalposx + rat * .4f );
+				}
+			}
+		}
 	}
 }

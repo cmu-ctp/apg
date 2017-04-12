@@ -3,7 +3,7 @@ using v3 = UnityEngine.Vector3;
 
 public class Treats:MonoBehaviour {
 	public Sprite[] balloons;
-	public Sprite popMsg;
+	public Sprite popMsg, shadow;
 	public Sprite goodies;
 	public AudioClip[] balloonPop;
 	public AudioClip[] coinSound;
@@ -16,7 +16,7 @@ public class TreatSys {
 	Treats theTreats;
 	ReactSys reactSys;
 
-	const int entPoolSize = 300;
+	const int entPoolSize = 600;
 	FixedEntPool entPool;
 
 	public TreatSys(Treats treats, GameSys theGameSys, ReactSys theReactSys) {
@@ -30,7 +30,7 @@ public class TreatSys {
 		balloonClusterBottom= new SpawnEntry { icon = treats.balloons[0], iconYOffset=0, spawn = () => BalloonCluster(new v3(0,-7,0), new v3(0,.006f,0)), message="Charming balloons are rising from below!" };
 		balloonClusterBottomRight= new SpawnEntry { icon = treats.balloons[0], iconYOffset=-.5f, spawn = () => BalloonCluster(new v3(5,-7,0), new v3(0,.006f,0)), message="Nice balloons are rising from the right!" };
 
-		balloonGridLeft= new SpawnEntry { icon = treats.balloons[0], iconYOffset=-.8f, spawn = () => BalloonGrid(-10, -6), message="A fleet of balloons emerges on the left!" };
+		balloonGridLeft= new SpawnEntry { icon = treats.balloons[0], iconYOffset=-.8f, spawn = () => BalloonGrid(-10, -5), message="A fleet of balloons emerges on the left!" };
 		balloonGridCenter= new SpawnEntry { icon = treats.balloons[0], iconYOffset=0, spawn = () => BalloonGrid(-3, 3 ), message="A bevy of balloons is presently showing up!" };
 		balloonGridRight= new SpawnEntry { icon = treats.balloons[0], iconYOffset=.8f, spawn = () => BalloonGrid( 6, 10), message="A throng of balloons ascends on the right!" };
 		balloonGridAll= new SpawnEntry { icon = treats.balloons[0], iconYOffset=0, spawn = () => BalloonGrid( -11, 12 ), message="A MASSIVE balloon armada approaches!" };
@@ -48,14 +48,25 @@ public class TreatSys {
 	}
 
 	void BasicTreat( v3 pos ) {
-			var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6);
+			var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
 			new PoolEnt( entPool ) {
-				sprite = theTreats.goodies, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true,
+				sprite = theTreats.goodies, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, 1, .4f, 0 ),
 				update = e => {
-					e.pos += new v3( 0,vel, 0);
+					e.pos += new v3( xvel,vel, 0);
 					vel -= .005f;
 					e.ang += spin;
 					e.removeIfOffScreen();
+					if( e.pos.y < -5f && vel < 0 ) {
+						numBounces++;
+						if( firstBounce ) {
+							firstBounce = false;
+							xvel = rd.f(.1f);
+						}
+						vel *= -.4f;
+						if( numBounces > 3 ) {
+							e.remove();
+						}
+					}
 				},
 				buddyTouch = (e, user, info) => {
 					gameSys.Sound(rd.Sound( theTreats.coinSound ), 1);
@@ -70,7 +81,7 @@ public class TreatSys {
 			v3 scaledVel = vel * rd.f(1,1.3f), push=new v3(0,0,0);
 			float bob = rd.f( .002f, .004f ), bobt = rd.f( .8f, 1.2f ), tick = rd.Ang(), lastPush = 0.0f, goalScale = .3f;
 			new PoolEnt( entPool ) {
-				sprite = rd.Sprite( theTreats.balloons ), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.7f)), scale = .3f, flipped=rd.Test(.5f), name="balloon", inGrid=true,
+				sprite = rd.Sprite( theTreats.balloons ), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.7f)), scale = .3f, flipped=rd.Test(.5f), name="balloon", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, .4f, .4f, 0 ),
 				update = e => {
 					tick+=.01f;
 					e.pos += scaledVel + new v3( bob*Mathf.Sin( bobt * tick * 1.23f + 3.1f ), bob*Mathf.Cos( bobt * tick ), 0 );
@@ -87,8 +98,8 @@ public class TreatSys {
 					pushDir.z = 0;
 					push += pushDir * info.strength*.05f;
 					lastPush = tick;
-					goalScale += info.strength * .1f;
-					if( goalScale > .55f ) {
+					goalScale += info.strength * .04f;
+					if( info.strength == 3 || gameSys.gameOver  ) {
 						gameSys.Sound(rd.Sound( theTreats.balloonPop ), 1);
 						BasicTreat( e.pos );
 						reactSys.React( e.pos + new v3(0, 0, -.2f), "Pop!", new Color(.9f, 1f, .7f, 1 ) );
@@ -112,7 +123,7 @@ public class TreatSys {
 				v3 home = new v3(k,k2,0);
 				float offset = rd.Ang(), rotateRange = rd.f(.1f, .2f) * 80, rotateSpeed = rd.f(.02f, .04f), delay = rd.i(0,15) + 20 + 2*k, leaveDelay = delay + 60*12;
 				new PoolEnt( entPool ) {
-					sprite = rd.Sprite( theTreats.balloons ), pos = new v3((leftBound+rightBound)/2f, -7, 0), scale = rd.f(.19f, .21f), flipped=rd.Test(.5f), name="balloon", inGrid=true,
+					sprite = rd.Sprite( theTreats.balloons ), pos = new v3((leftBound+rightBound)/2f, -7, 0), scale = rd.f(.19f, .21f), flipped=rd.Test(.5f), name="balloon", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, .4f, .4f, 0 ),
 					update = e => {
 						delay--;
 						if( delay > 0 )return;

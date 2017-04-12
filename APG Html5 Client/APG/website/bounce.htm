@@ -18,23 +18,23 @@
 </head>
 
 <body onload="onLoadEnd();">
-    <div id="loadLabel">Please wait while the game loads.</div>
-    <div id="orientationWarning"></div>
+    <h1><div id="loadLabel">Please wait while the audience app loads</div></h1>
+    <h1><div id="orientationWarning"></div></h1>
     <div class="mobile">
-        <div id="APGInputWidgetMobile"></div>
+        <center>
+            <div id="APGInputWidgetMobile"></div>
+        </center>
     </div>
     <div class="browser">
         <center>
-            <div class="container">
-                <div class="rightPanel">
-                    <div class="rightPanelInner">
-                        <div id="TwitchChat"></div>
-                    </div>
-                    <div class="leftPanelInner">
-                        <div id="TwitchVideo"></div>
-                    </div>
+            <div id="container">
+                <div class="chat">
+                    <div id="TwitchChat"></div>
                 </div>
-                <div class="leftPanel">
+                <div class="video">
+                    <div id="TwitchVideo"></div>
+                </div>
+                <div class="gameClient">
                     <div id="APGInputWidget"></div>
                 </div>
             </div>

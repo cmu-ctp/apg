@@ -1,4 +1,4 @@
-﻿cacheImages('assets/imgs', ['ClientUI2.png']);
+﻿cacheImages('assets/imgs', ['ClientUI3.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 function ShowSubmitted(sys: APGSys, getRoundNumber: () => number): void {
@@ -7,7 +7,7 @@ function ShowSubmitted(sys: APGSys, getRoundNumber: () => number): void {
 
 	sys.handlers = new APGSubgameMessageHandler();
 
-	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI2.png', {
+	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI3.png', {
 		upd: e => {
 			if (sys.g.input.activePointer.isDown && !inputUsed) {
 				inputUsed = true;

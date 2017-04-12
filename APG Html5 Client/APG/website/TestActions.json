@@ -1,8 +1,8 @@
 {"all":[
   {
-    "name": "MoveTo",
+    "name": "Move",
     "choices": [
-      {"name": "Stay Put","tip": ""},
+      {"name": "Stay Put","tip": "Don't move!"},
       {"name": "Foundry","tip": ""},
       {"name": "Hospital","tip": ""},
       {"name": "Bank","tip": ""},
@@ -13,36 +13,47 @@
   {
     "name": "Action", 
       "choices":[
-		    { "name":"Defend", "tip":"Protect yourself and all players standing near you.  You will all take less damage." },
-		    { "name":"Build", "tip":"Build or repair the building you're at.  This can upgrade buildings." },
-		    { "name":"Harvest", "tip":"Extract resources from the building you're at.  What is extracted depends on the building type.  Buildings have limits on how many players can harvest from them per turn." },
-		    { "name":"Activate", "tip":"Use the special ability of the building you're at.  Depending on the building, this might require that it is built and charged." },
-        {"name": "Charge Up","tip": "Increases the charge of the ability you're at, so it can be activated."},
-        {"name": "Assist","tip": "Aid other nearby players who are harvesting, building, or activating near you."},
+		    { "name":"Defend", "tip":"Protect yourself and all players standing at the same building as you.  You will all take less damage.  Only on player can do this per building." },
+		    { "name":"Build", "tip":"Build or repair the building you're at.  This can upgrade buildings.  No more than 2 players can do this at a building each turn." },
+		    { "name":"Harvest", "tip":"Extract resources from the building you're at.  What is extracted depends on the building type.  Buildings have limits on how many players can harvest from them per turn.  No more than 3 players can do this at a building each turn." },
+		    { "name":"Activate", "tip":"Use the special ability of the building you're at.  Depending on the building, this might require that it is built and charged.  This might require more than one player to work, depending on the kind of building." },
+        {"name": "Assist","tip": "Aid other players who are harvesting, building, or activating at the same building as you.  Only on player can do this per building."},
         {"name": "Hide","tip": "Hide in a cowardly fashion.  This will protect you from damage but doesn't help anyone else."},
-        {"name": "Give","tip": "Trade one of your items to a friend."}
+        {"name": "Mystery Action!","tip": "Do something odd.  No telling what will happen if you do..."}
       ]},
   {
     "name": "Stance",
     "choices": [
-      {"name": "Industrious","tip": ""},
-      {"name": "Reckless","tip": ""},
-      {"name": "Defensive","tip": ""},
-      {"name": "Soothing","tip": ""},
-      {"name": "Acquisitive","tip": ""},
-      {"name": "Helpful","tip": ""}
+      {"name": "Industrious","tip": "Boosts the building and harvesting effectiveness of everyone at the same building as you."},
+      {"name": "Aggressive","tip": "Increases the activating effectiveness of everyone at the same building as you."},
+      {"name": "Defensive","tip": "Improves the defense of everyone at the same building as you."},
+      {"name": "Soothing","tip": "Boosts the effective of healing for everyone at the same building as you."},
+      {"name": "Acquisitive","tip": "Increases the amount of resources people get from treats they collect for everyone at the same building as you."},
+      {"name": "Stylish","tip": "Improves the effectiveness of equipment for the turn for everyone at the same building as you."}
     ]
   },
   {
     "name": "Items",
     "choices": [
-      {"name": "None","tip": ""}
+      {"name": "Not Done Yet","tip": ""}
     ]
   },
   {
     "name": "Equip",
     "choices": [
-      {"name": "None","tip": ""}
+      {"name": "Not Done Yet","tip": ""}
+    ]
+  },
+ {
+    "name": "Team",
+    "choices": [
+      {"name": "Not Done Yet","tip": ""}
+    ]
+  },
+ {
+    "name": "Hints",
+    "choices": [
+      {"name": "Not Done Yet","tip": ""}
     ]
   }
-]}
+ ]}

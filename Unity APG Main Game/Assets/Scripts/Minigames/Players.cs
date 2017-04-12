@@ -6,8 +6,9 @@ using v3 = UnityEngine.Vector3;
 public class Players:MonoBehaviour {
 	public GameObject textName;
 	public Sprite[] clouds, friends;
-	public Sprite player, angel;
+	public Sprite player, angel, shadow, player1, player2, angel1, angel2;
 	public Sprite owMsg, ughMsg, thudMsg;
+	public Sprite[] stances;
 	public AudioClip blowSound, bumpSound, hurtSound, dieSound;
 } 
 
@@ -24,9 +25,9 @@ public class PlayerSys {
 		players = thePlayers;
 		reactSys = theReactSys;
 
-		Player(0, foeSys);
-		//Player(1, foeSys);
-		//Player(2, foeSys);
+		//Player(0, foeSys);
+		Player(1, foeSys);
+		Player(2, foeSys);
 	}
 
 	public void MakeBreath( ent owner, List<Action<v3, float, float, float>> blow, List<Action<v3, float, float, float>> inhale, List<Action<v3, float, float, float>> inhaleBig ) {
@@ -94,14 +95,14 @@ public class PlayerSys {
 		float tick = 0.0f, rot = 0.0f, useDownTime = 0f;
 		var useDown = false;
 		KeyCode left, right, up, down, use;
-		Sprite pic = players.player;
-		left = KeyCode.LeftArrow; right = KeyCode.RightArrow; up = KeyCode.UpArrow; down = KeyCode.DownArrow; use = KeyCode.RightShift;
+		Sprite pic = players.player1;
+		left = KeyCode.LeftArrow; right = KeyCode.RightArrow; up = KeyCode.UpArrow; down = KeyCode.DownArrow; use = KeyCode.Space;
 		//left = KeyCode.Keypad1; right = KeyCode.Keypad3; up = KeyCode.Keypad5; down = KeyCode.Keypad2; use = KeyCode.Return;
 		var startingX = 0f;
 		if( id == 0 ) { use = KeyCode.Space; }
 		//else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.LeftShift; startingX = -5f; }
-		else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.Space; startingX = -5f; }
-		else {  pic = players.friends[0]; startingX = 5f;}
+		else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.LeftShift; startingX = -5f; }
+		else {  pic = players.player2; startingX = 5f;}
 
 		var blow = new List<Action<v3, float, float, float>>();
 		var inhale = new List<Action<v3, float, float, float>>();
@@ -112,21 +113,67 @@ public class PlayerSys {
 		var lastAimDir = new v3( 0, 0, 0 );
 
 		var pl = new ent(gameSys) {
-			sprite = pic, pos = nm.v3x( startingX ), scale = 1.5f, flipped=(id == 2) ? true : false, vel = new v3(0, 0, 0), knockback = new v3(0, 0, 0), name="player"+id, inGrid=true,
+			sprite = pic, pos = nm.v3x( startingX ), scale = 1.5f, flipped=(id == 2) ? true : false, vel = new v3(0, 0, 0), knockback = new v3(0, 0, 0), name="player"+id, inGrid=true, shadow=gameSys.Shadow(players.shadow, null, 1, 1, 0 ),
 			update = e => {
 				tick++;
-				if(Input.GetKey(left)) {
+
+				bool joyStickLeft = false, joystickRight = false, joystickUp = false, joystickDown = false, joystickButton = false;
+				if( id == 1 || id == 0 ) {
+					if( Input.GetButton("Fire1") ) {
+						joystickButton = true;
+					}
+
+					if( Input.GetAxis("Vertical" ) > 0.4f ) {
+						joystickUp = true;
+					}
+					if( Input.GetAxis("Vertical" ) < -0.4f ) {
+						joystickDown = true;
+					}
+
+					if( Input.GetAxis("Horizontal" ) > 0.4f ) {
+						joystickRight = true;
+					}
+					if( Input.GetAxis("Horizontal" ) < -0.4f ) {
+						joyStickLeft = true;
+					}
+				}
+				if( id == 2 ) {
+					if( Input.GetButton("Fire2") ) {
+						joystickButton = true;
+					}
+
+					if( Input.GetAxis("Vertical2" ) > 0.4f ) {
+						joystickUp = true;
+					}
+					if( Input.GetAxis("Vertical2" ) < -0.4f ) {
+						joystickDown = true;
+					}
+
+					if( Input.GetAxis("Horizontal2" ) > 0.4f ) {
+						joystickRight = true;
+					}
+					if( Input.GetAxis("Horizontal2" ) < -0.4f ) {
+						joyStickLeft = true;
+					}
+				}
+
+				if( gameSys.gameOver ) {
+					e.MoveBy(0, 0, .01f * Mathf.Cos(tick * .04f));
+					return;
+				}
+
+				if(Input.GetKey(left) || joyStickLeft ) { 
 					e.flipped = true;
 					nm.ease(ref e.vel.x, -1.0f, .3f);
 				}
-				else if(Input.GetKey(right)) {
+				else if(Input.GetKey(right) || joystickRight ) {
 					e.flipped = false;
 					nm.ease(ref e.vel.x, 1.0f, .3f);
 				}
 				else nm.ease(ref e.vel.x, 0, .15f); ;
 
-				if(Input.GetKey(up)) { nm.ease(ref e.vel.y, 1.0f, .3f); }
-				else if(Input.GetKey(down)) { nm.ease(ref e.vel.y, -1.0f, .3f); }
+				if(Input.GetKey(up) || joystickUp ) { nm.ease(ref e.vel.y, 1.0f, .3f); }
+				else if(Input.GetKey(down) || joystickDown) { nm.ease(ref e.vel.y, -1.0f, .3f); }
 				else nm.ease(ref e.vel.y, 0, .15f);
 
 				rot = e.vel.x * 360 / Mathf.PI;
@@ -135,7 +182,7 @@ public class PlayerSys {
 					lastAimDir = e.vel;
 				}
 
-				if(Input.GetKey(use)) {
+				if(Input.GetKey(use) || joystickButton ) {
 					if(useDown == false) { useDownTime = tick; }
 					if(tick-useDownTime == 135) {
 						foreach(var b in inhaleBig) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
@@ -169,13 +216,18 @@ public class PlayerSys {
 				e.knockback *= .8f;
 				if(Mathf.Abs(e.vel.x) < .001f) e.vel.x = 0;
 				if(Mathf.Abs(e.vel.y) < .001f) e.vel.y = 0;
-				if(e.pos.x < -11.0f && e.vel.x < 0) e.vel.x = 0;
-				if(e.pos.x > 11.0f && e.vel.x > 0) e.vel.x = 0;
-				if(e.pos.y < -6.0f && e.vel.y < 0) e.vel.y = 0;
-				if(e.pos.y > 6.0f && e.vel.y > 0) e.vel.y = 0;
+				if(e.pos.x < -10.25f && e.vel.x < 0) e.vel.x = 0;
+				if(e.pos.x > 10.25f && e.vel.x > 0) e.vel.x = 0;
+				if(e.pos.y < -5.0f && e.vel.y < 0) e.vel.y = 0;
+				if(e.pos.y > 5.5f && e.vel.y > 0) e.vel.y = 0;
 				e.MoveBy(e.vel.x * .15f + e.knockback.x, e.vel.y * .15f+e.knockback.y, .01f * Mathf.Cos(tick * .04f));
+				if( e.pos.y < -5.0f )e.MoveTo(e.pos.x, -5f, e.pos.z);
+				if( e.pos.y > 5.5f )e.MoveTo(e.pos.x, 5.5f, e.pos.z);
+				if( e.pos.x < -10.25f )e.MoveTo(-10.25f, e.pos.y, e.pos.z);
+				if( e.pos.x > 10.25f )e.MoveTo(10.25f, e.pos.y, e.pos.z);
 				e.ang = -rot * .1f;
 				gameSys.grid.Find(e.pos - nm.v3y( .7f ), 1, e, (me, targ) => { targ.playerTouch(targ, me, new TouchInfo {useType= UseType.PlayerPush, strength= 1 });});
+
 			},
 			breathTouch = (e, user, info) => {
 				if( info.src == e )return;

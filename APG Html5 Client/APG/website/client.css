@@ -1,3 +1,7 @@
+h1 {
+  font-size: 3vw;
+}
+
 .hidden {
     display: none;
 }
@@ -10,35 +14,34 @@ body {
 }
 
 .container {
-    width: 1610px;
+    width: 1230px;
     height: auto;
     overflow: hidden;
 }
 
-.rightPanel {
-    width: 1210px;
-    float: right;
-    background: #FFFFFF;
+.gameClient {
+    background:#0;
+    color:white;
+    width : 800px;
+    height : 450px;
+    position: absolute;
+    transform: translate(0px, 0px);
 }
-.leftPanel {
-    float: left;
-    background: #e8f6fe;
-    width: 400px;
-    overflow: hidden;
+
+.video {
+    background:#0;
+    color:white;
+    width : 1024px;
+    height : 768px;
+    position: absolute;
+    transform: translate(0px, 0px);
 }
-.containerInner {
-    width: 1210px;
-    height: auto;
-    overflow: hidden;
-}
-.rightPanelInner {
-    width: 400px;
-    float: right;
-    background: #FFFFFF;
-}
-.leftPanelInner {
-    float: left;
-    background: #e8f6fe;
-    width: 800px;
-    overflow: hidden;
+
+.chat {
+    background:#0;
+    color:white;
+    width : 400px;
+    height : 720px;
+    position: absolute;
+    transform: translate(1024px, 0px);
 }

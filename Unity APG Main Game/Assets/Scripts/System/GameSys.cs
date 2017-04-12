@@ -13,6 +13,8 @@ public class GameSys {
 	public EntLink sysUpdaters;
 	Transform camera;
 
+	public bool gameOver = false;
+
 	[SerializeField] float timeRemainder = 0;
 
 	public CollisionGrid grid = new CollisionGrid(30, 30);
@@ -24,6 +26,33 @@ public class GameSys {
 	}
 	public void Sound(AudioClip sound, float volume) {
 		AudioSource.PlayClipAtPoint(sound, camera.position, volume);
+	}
+	public ent Shadow( Sprite shadow, FixedEntPool pool, float size, float alpha, float yOffset ) {
+		ent me = null;
+		if( pool == null ) {
+			me = new ent(this);
+		}
+		else {
+			me = new PoolEnt(pool).e;
+		}
+
+		me.sprite = shadow;
+		me.name ="shadow";
+		me.isShadow=true;
+		me.pos = new v3(0,-100,0);// give it a frame to be placed correctly.
+		me.update = e => {
+			e.pos = new v3( e.leader.pos.x, -5 + yOffset, e.leader.pos.z );
+			e.scale = (.5f + (e.leader.pos.y - (-5f))*.03f)*size;
+
+			if( e.leader.pos.y < -5f ) {
+				e.color = new Color(1,1,1, 0 );
+			}
+			else {
+				e.color = new Color(1,1,1, alpha*(.8f-(e.leader.pos.y - (-5f))/20f));
+			}
+			
+		};
+		return me;
 	}
 	public EntLink GridLink(v3 pos) { return grid.GetGrid(pos); }
 	public void Update( bool isPaused ) {

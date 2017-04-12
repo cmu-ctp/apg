@@ -6,6 +6,6 @@ var maxBufferedIRCWrites: number = 5;
 
 var debugErrorsAsAlerts: boolean = false;
 var debugPrintMessages: boolean = false;
-var debugLogIncomingIRCChat: boolean = false;
+var debugLogIncomingIRCChat: boolean = true;
 var debugLogOutgoingIRCChat: boolean = true;
 var debugShowAssetMessages: boolean = false;

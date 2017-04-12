@@ -9,6 +9,9 @@ namespace APG {
 		public Action<int[]> onInput = inputList => { };
 		public Action onRoundEnd = () => { };
 
+		public Func<int> getGoalBuilding = () => 0;
+		public Action<float> setGoalX = x => { };
+
 		public Action<AudienceInterface, string> updateToClient = (apg, userName) => { };
 	}
 }

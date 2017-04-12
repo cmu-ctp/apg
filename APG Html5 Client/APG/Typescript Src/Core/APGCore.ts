@@ -25,9 +25,9 @@ ________________________________________________________________________________
 
 declare var WebFontConfig: Object;
 
-var phaserAssetCacheList: { (loader: Phaser.Loader): void; }[] = [];
-var phaserImageList: string[] = [];
-var phaserSoundList: string[] = [];
+var phaserAssetCacheList: { (loader: Phaser.Loader): void; }[];
+var phaserImageList: string[];
+var phaserSoundList: string[];
 
 function cachePhaserAssets(cacheFunction: (loader: Phaser.Loader) => void): void {
 
@@ -44,7 +44,7 @@ function cacheImages(dir: string, imageList: string[]): void {
 	}
 
 	for (var k = 0; k < imageList.length; k++) {
-		phaserImageList.push(dir + "/" +imageList[k]);
+		phaserImageList.push(dir + "/" + imageList[k]);
 	}
 }
 
@@ -61,7 +61,7 @@ function cacheSounds( dir:string, soundList: string[]): void {
 // Phaser supports a number of font styles with different performance and ease-of-use characteristics.
 // At present, for our prototypes, I am relying exclusively on google's own web fonts, which can be found here: https://fonts.google.com/
 // 
-var phaserGoogleWebFontList: string[] = [];
+var phaserGoogleWebFontList: string[];
 
 function cacheGoogleWebFonts(googleWebFontNames: string[]): void {
 	if (phaserGoogleWebFontList == undefined) {
@@ -73,7 +73,7 @@ function cacheGoogleWebFonts(googleWebFontNames: string[]): void {
 	}
 }
 
-var jsonAssetCacheNameList: string[] = [];
+var jsonAssetCacheNameList: string[];
 
 function cacheJSONs(fileNames:string[]): void {
 
@@ -140,7 +140,14 @@ function ApgSetup(isMobile:boolean, gameWidth: number = 400, gameHeight: number 
 				game.stage.disableVisibilityChange = true;
 
 				if (allowFullScreen) {
-					game.input.onDown.add(goFull, this);
+					game.scale.pageAlignHorizontally = true;
+					game.scale.pageAlignVertically = true;
+					game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+					game.scale.setResizeCallback(gameResized, this);
+					function gameResized(manager: Phaser.ScaleManager, bounds) {
+						var scale = Math.min(window.innerWidth / game.width, window.innerHeight / game.height);
+						manager.setUserScale(scale, scale, 0, 0);
+					}
 				}
 
 				if (phaserAssetCacheList.length == 0) {
@@ -170,7 +177,7 @@ function ApgSetup(isMobile:boolean, gameWidth: number = 400, gameHeight: number 
 					initLaunchGame();
 				}
 			}
-		});
+		}, true );
 
 		WebFontConfig = {
 			//  'active' means all requested fonts have finished loading.  We need a delay after loading to give browser time to get sorted for fonts, for some reason.
@@ -197,7 +204,7 @@ function ApgSetup(isMobile:boolean, gameWidth: number = 400, gameHeight: number 
 				if (isMobile) {
 					var width = window.innerWidth || document.body.clientWidth;
 					var height = window.innerHeight || document.body.clientHeight;
-					if (height < width) {
+					if (height > width) {
 						if (!showingOrientationWarning) {
 							showingOrientationWarning = true;
 							document.getElementById("orientationWarning").style.display = '';
@@ -215,16 +222,6 @@ function ApgSetup(isMobile:boolean, gameWidth: number = 400, gameHeight: number 
 				apg.update();
 			}, 1000 / 60);
 			StartGame( apg );
-		}
-
-		function goFull(): void {
-			//game.scale.pageAlignHorizontally = true;
-			//game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
-			if (game.scale.isFullScreen) {
-			}
-			else {
-				//game.scale.startFullScreen(true);
-			}
 		}
 	}
 }

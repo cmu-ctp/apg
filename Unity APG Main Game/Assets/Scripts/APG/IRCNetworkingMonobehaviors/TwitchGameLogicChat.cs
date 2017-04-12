@@ -46,7 +46,7 @@ public class TwitchGameLogicChat:MonoBehaviour {
 	
 	//___________________________________________
 
-	NetworkSettings settings = null;
+	[SerializeField] NetworkSettings settings = null;
 
 	string launchAPGClientURL = "GAME LAUNCHING LINK NOT SET";
 
@@ -65,10 +65,6 @@ public class TwitchGameLogicChat:MonoBehaviour {
 
 
 	void LoadNetworkSettings() {
-		if( settings != null ) {
-			return;
-		}
-
 		settings = new NetworkSettings {LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = BitlyLink };
 
 		try { 
@@ -79,7 +75,7 @@ public class TwitchGameLogicChat:MonoBehaviour {
 		catch {
 		}
 
-		// Debug.Log( JsonUtility.ToJson( settings ) );
+		//Debug.Log( JsonUtility.ToJson( settings ) );
 
 		launchAPGClientURL = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
 

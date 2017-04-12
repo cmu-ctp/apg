@@ -31,40 +31,6 @@ using UnityEngine;
 	________________
 
 
-
-	Also, make html5 client handle screen being turned sideways (1/2)
-	Find out why fullscreen stopped working (?)
-
-	Look more carefully into whispers
-	Look into twitch special account info stuff
-
-	IRC Packing messages on server
-
-	How to do multiple example projects?
-
-	Some way to make Unity game and HTML5 clients interact without needing to connect to twitch?
-	Easier way to test input, on both the server and the client?
-	Keeping network messages in sync better?
-
-	Swapping music.
-
-	Whispers?
-
-	Would be fun to have lots of quirky special one-off actions for audience players.
-
-	What else do audience players need to see:
-	Stats
-	Other player stats
-	Hints and Game Rules
-	Surprising / funny things
-	Teams queued up
-
-	Other player category roles (in a fractal way)?
-
-	Would be cool to have different player classes that have different impacts (to be selected when forming a team)
-
-	Screen for turn effects
-
  */
 
 namespace APG {
@@ -73,12 +39,22 @@ namespace APG {
 
 		public TwitchGameLogicChat network;
 		public int maxPlayers = 20;
-		public int secondsPerChoice = 20;
+		public int secondsPerChoice = 40;
 		public int secondsAfterLockedInChoice = 7;
+
+		public AudioClip timerCountDown, roundOver, roundStart;
 
 		// ___________________________________
 
 		public PlayerSet GetPlayers() { return players; }
+		
+		public void SetGameSys( GameSys theSys ) {
+			gameSys = theSys;
+		}
+
+		public void SetAudiencePlayers( AudiencePlayerSys audiencePlayerSys ) {
+			buddies = audiencePlayerSys;
+		}
 
 		// ___________________________________
 
@@ -112,9 +88,16 @@ namespace APG {
 		int pausedTimer = 0;
 		int startActionTimer;
 		
+		GameSys gameSys;
+		AudiencePlayerSys buddies;
+
+		Action timerUpdater;
+	
 		AudienceInterface apg;
 
 		PlayerSet players = new PlayerSet();
+
+		public bool waitingForGameToStart = true;
 
 		void Start() {
 
@@ -131,7 +114,7 @@ namespace APG {
 
 			apg.SetHandlers( new NetworkMessageHandler()
 				.Add<EmptyParms>( "join", (user, p) => {
-					// need game logic to determine if this player should be allowed to join - need multiple ways to join, too - join in different roles
+					Debug.Log( "got join!" );
 					if( players.AddPlayer(user )) {
 						apg.WriteToClients("join", new ClientJoinParms { name = user });
 					}
@@ -162,6 +145,10 @@ namespace APG {
 			}
 		}
 
+		public int GetRoundNumber() {
+			return roundNumber;
+		}
+
 		public int GetRoundTime() {
 			return endOfRoundTimer + nextAudiencePlayerChoice + startActionTimer;
 		}
@@ -174,8 +161,6 @@ namespace APG {
 			return pausedTimer/(ticksPerSecond * 8f );
 		}
 
-		Action timerUpdater;
-
 		void PausedTimer() {
 			pausedTimer--;
 			if( pausedTimer == 0 ) {
@@ -183,6 +168,8 @@ namespace APG {
 				nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 				startActionTimer = ticksPerSecond * 2;
 				pausedTimer = ticksPerSecond * 8;
+
+				gameSys.Sound( roundStart, 1 );
 
 				timerUpdater = PlayersEnterChoicesTimer;
 			}
@@ -193,6 +180,7 @@ namespace APG {
 			if( startActionTimer == 0 ) {
 
 				// Run some sort of between round thinker here.
+				gameSys.Sound( roundOver, 1 );
 
 				timerUpdater = PausedTimer;
 			}
@@ -203,6 +191,7 @@ namespace APG {
 			if( endOfRoundTimer == 0 ) {
 				players.UpdatePlayersToClients( apg );
 				players.RoundUpdate();
+				players.SetGoalPositions();
 
 				timerUpdater = StartActionTimer;
 			}
@@ -211,24 +200,37 @@ namespace APG {
 		void PlayersEnterChoicesTimer() {
 			nextAudiencePlayerChoice--;
 
+
 			if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
-				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber+1});
 			}
 
 			if( nextAudiencePlayerChoice == 0 ) {
 				apg.WriteToClients("submit");
 				roundNumber++;
 
-				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber});
+				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber+1});
 
 				timerUpdater = CollectPlayerChoicesTimer;
 			}
 		}
 
 		void Update() {
-			InviteAudience();
-			// FIXME - this isn't handling framerate drops correctly.
-			timerUpdater();
+
+			if( buddies.team1Health == 0 ) {
+				gameSys.gameOver=true;
+			}
+			else if( buddies.team2Health == 0 ) {
+				gameSys.gameOver=true;
+			}
+			else { 
+				InviteAudience();
+				// FIXME - this isn't handling framerate drops correctly.
+				if( !waitingForGameToStart ) {
+					timerUpdater();
+				}
+			}
+			// 
 		}
 	}
 }

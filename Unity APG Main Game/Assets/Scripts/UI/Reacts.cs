@@ -14,6 +14,7 @@ public class ReactSys {
 
 	const int numReacts = 10;
 	FixedEntPool entPool;
+	FixedEntPool textEntPool;
 
 	public void Init( GameSys theGameSys, Reacts theReacts ) {
 		gameSys = theGameSys;
@@ -23,10 +24,14 @@ public class ReactSys {
 
 		entPool = new FixedEntPool( gameSys, numReacts, "reacts" );
 		for( var k = 0; k < numReacts; k++ ) {
-			var label = new ent(gameSys, reacts.textName) { pos = new v3(0, 0, 0), text="" };
-			var labelSrc = new ent(gameSys) { pos = new v3(0, 0, 0), children = new List<ent> { label }, layer = Layers.UI };
-			new PoolEnt( entPool ) { sprite = reacts.shockBkg, name="react", scale = 1, update = null, textLabel = label, children = new List<ent> { labelSrc }, active=false, parent = src };
-			label.pos = new v3(-.2f, 0, -.01f );
+			new PoolEnt( entPool ) { sprite = reacts.shockBkg, name="react", scale = 1, update = null, active=false, parent = src };
+		}
+
+		var tsrc = new ent(gameSys) { name="reactTextSet" };
+
+		textEntPool = new FixedEntPool( gameSys, numReacts, "reactsText", false, reacts.textName );
+		for( var k = 0; k < numReacts; k++ ) {
+			new PoolEnt( textEntPool ) { name="reactText", scale = .06f, update = null, active=false, parent = tsrc, text="" };
 		}
 	}
 
@@ -39,14 +44,23 @@ public class ReactSys {
 	}
 
 	void ReactCore( Sprite spr, v3 pos, string msg, Color color) {
-		var r = new PoolEnt( entPool ) { active= true, sprite = reacts.shockBkg, pos = pos, health = 30,
-		update = e => {
-			e.health--;
-			if(e.health <= 0) {
-				e.active = false;
-				e.remove();
+		new PoolEnt( entPool ) { active= true, sprite = reacts.shockBkg, pos = pos, health = 30,
+			update = e => {
+				e.health--;
+				if(e.health <= 0) {
+					e.active = false;
+					e.remove();
+				}
 			}
-		} };
-		r.e.textLabel.text=msg;
+		};
+		new PoolEnt( textEntPool ) { active= true, text = msg, pos = pos+new v3(.1f,0,-.1f), health = 30, scale = .04f, 
+			update = e => {
+				e.health--;
+				if(e.health <= 0) {
+					e.active = false;
+					e.remove();
+				}
+			}
+		};
 	}
 }

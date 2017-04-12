@@ -28,7 +28,7 @@ class ButtonCollection {
 		var fontName: string = "Caveat Brush";
 
 		function addOption(id: number, str: string, x: number, y: number, toolTip: string): void {
-			let highlighted: boolean = false, highlightVertical: number = size * 3 / 4, highlightHorizontal: number = size * 16 / 40, x1: number = x, x2: number = x + str.length * highlightHorizontal, y1: number = y - highlightVertical, y2: number = y,
+			let highlighted: boolean = false, highlightVertical: number = size * 3 / 4, highlightHorizontal: number = size * 16 / 40, x1: number = x, x2: number = x + str.length * highlightHorizontal, y1: number = y - highlightVertical, y2: number = y+10,
 				mul: number = 1, spd: number = .07 + .26 * Math.random(), lastHighlight: boolean = false, inputUsed:boolean = false;
 
 			if (id == 0) {
@@ -38,13 +38,13 @@ class ButtonCollection {
 				fy2 = y2;
 			}
 
-			var textColor = { font: '20px ' + fontName, fill: '#222' };
+			var textColor = { font: '18px ' + fontName, fill: '#222' };
 			new enttx(sys.w, 60, 50 + 20, str, textColor, {
 				upd: e => {
 					mul = mul * (1 - spd) + spd * (updateActive ? 1 : 0);
 
-					e.x = x + 10 * (1 - mul);
-					e.y = y -14 + 20 * (1 - mul);
+					e.x = x + 10 * 1.5 * (1 - mul);
+					e.y = y - 14 * 1.5 + 20 * 1.5 * (1 - mul);
 					e.alpha = mul;
 					e.scx = e.scy = size * mul * .05;
 

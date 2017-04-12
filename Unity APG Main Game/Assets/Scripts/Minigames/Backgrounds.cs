@@ -3,6 +3,7 @@ using v3 = UnityEngine.Vector3;
 
 public class Backgrounds:MonoBehaviour {
 	public Sprite[] trees, bushes, clouds, buildings;
+	public Sprite flag1, flag2;
 
 	GameSys gameSys;
 	public v3[] Setup(GameSys theGameSys) {
@@ -13,6 +14,8 @@ public class Backgrounds:MonoBehaviour {
 		Bushes();
 
 		var lookPositions = Buildings();
+
+		Flags();
 
 		return lookPositions;
 	}
@@ -65,5 +68,14 @@ public class Backgrounds:MonoBehaviour {
 		}
 
 		return lookPos;
+	}
+	void Flags() {
+		var src = new ent(gameSys) { name="flagSet" };
+		new ent(gameSys) { sprite = flag1, pos=new Vector3( -1.5f, -5f, -3f ), scale = .3f, name="flags", parent = src };
+		new ent(gameSys) { sprite = flag1, pos=new Vector3( -1.5f, -5f, 3f ), scale = .3f, name="flags", parent = src };
+
+		new ent(gameSys) { sprite = flag2, pos=new Vector3( 1.5f, -5f, -3f ), scale = .3f, name="flags", parent = src };
+		new ent(gameSys) { sprite = flag2, pos=new Vector3( 1.5f, -5f, 3f ), scale = .3f, name="flags", parent = src };
+
 	}
 }
