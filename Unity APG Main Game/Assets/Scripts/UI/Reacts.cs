@@ -53,7 +53,7 @@ public class ReactSys {
 				}
 			}
 		};
-		new PoolEnt( textEntPool ) { active= true, text = msg, pos = pos+new v3(.1f,0,-.1f), health = 30, scale = .04f, 
+		new PoolEnt( textEntPool ) { active= true, text = msg, pos = pos+new v3(-.1f,.1f,-.1f), health = 30, scale = .03f, 
 			update = e => {
 				e.health--;
 				if(e.health <= 0) {

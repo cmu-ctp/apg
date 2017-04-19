@@ -149,7 +149,7 @@ public class FoeSys {
 	}
 	void PlantGuy() {
 		var startTime = tick;
-		for( var k = 0; k < 5; k++ ) {
+		for( var k = 0; k < 4; k++ ) {
 			var goal = new v3(0, 4, 30);
 			float horizontal = rd.f(15), vertOffset = rd.f(2, 6), tickOffset = rd.f(0, 300);
 			var horizontalDir = rd.Test(.5f) ? 1:-1;
@@ -176,10 +176,10 @@ public class FoeSys {
 					}
 					if( !inBack ) {
 						shotTimer++;
-						if( shotTimer > 370 ) {
+						if( shotTimer > 470 ) {
 							e.ang = rd.f(-.5f, .5f );
 						}
-						if( shotTimer > 400 ) {
+						if( shotTimer > 500 ) {
 							MakeShot(new v3(e.pos.x, e.pos.y, playerSys.playerEnt.pos.z), 0, e, sprites, .1f);
 							shotTimer=0;
 						}

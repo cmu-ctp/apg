@@ -1,7 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using v3 = UnityEngine.Vector3;
 
 namespace APG {
+
+	public struct PlayerEndOfRoundInfo {
+		public v3 pos;
+		public string name;
+		public Color nameColor;
+		public Color stanceColor;
+		public Color actionColor;
+		public Sprite stanceIcon;
+		public string stanceName;
+		public string actionName;
+	}
 
 	public class PlayerSet {
 		/*
@@ -73,6 +85,15 @@ namespace APG {
 				playerEvents[k].updateToClient( apg, playerNames[k] );
 			}
 		}
+		public List<PlayerEndOfRoundInfo> GetEndOfRoundInfo() {
+			List<PlayerEndOfRoundInfo> infos = new List<PlayerEndOfRoundInfo>();
+			for( var k = 0; k < playerNames.Count; k++ ) {
+				infos.Add( playerEvents[k].getEndOfRoundInfo() );
+			}
+			infos.Sort((x, y) => x.pos.x.CompareTo(y.pos.x));
+			return infos;
+		}
+
 		public void SetGoalPositions() {
 			var spots = new List<AudiencePlayerEventsHandler>[12];  // fixme.  Don't hardcode.
 			for( var k = 0; k < 12; k++ ) {

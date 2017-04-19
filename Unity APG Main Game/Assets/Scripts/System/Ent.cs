@@ -160,7 +160,7 @@ public class ent {
 	public void MoveBy(v3 moveVector) { if(removed) return; gridLink.Unlink(); trans.Translate(moveVector, Space.World); if(moveVector.z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public void MoveBy(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.Translate(new v3(x, y, z), Space.World); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public void MoveTo(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.position = new v3(x, y, z); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
-	public Sprite sprite { set { if( spr != null)spr.sprite = value; } }
+	public Sprite sprite { set { if( spr != null)spr.sprite = value; } get { return spr.sprite; } }
 	public void SortByZ() {
 		if(ren != null ) {
 			if( isShadow ) {
@@ -203,6 +203,7 @@ public class ent {
 
 	public string text { set { tx.text = value;} get { return tx.text; } }
 	public Color textColor { set { tx.color = value;} get { return tx.color; } }
+	public float textAlpha { set { tx.color = new Color( tx.color.r, tx.color.g, tx.color.b, value );} get { return tx.color.a; } }
 }
 
 [Serializable]

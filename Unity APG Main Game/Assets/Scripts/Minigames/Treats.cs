@@ -47,6 +47,8 @@ public class TreatSys {
 		new ent(gameSys) { sprite = msg, name="react", pos = pos, scale = 1, update = e => { delay--; if(delay <= 0) e.remove(); } };
 	}
 
+	string[] treatStyles = new string[] { "Dollars", "Bricks", "Oil", "Veggies", "Wool" };
+
 	void BasicTreat( v3 pos ) {
 			var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
 			new PoolEnt( entPool ) {
@@ -70,14 +72,14 @@ public class TreatSys {
 				},
 				buddyTouch = (e, user, info) => {
 					gameSys.Sound(rd.Sound( theTreats.coinSound ), 1);
-					reactSys.React( e.pos+new v3(0,0,0), "+1 Taco", new Color( .3f,.5f,.8f,1));
+					reactSys.React( e.pos+new v3(0,0,0), "+" + rd.i(2,7)+" " + treatStyles[rd.i(0,treatStyles.Length)], new Color( .3f,.5f,.8f,1));
 					e.remove();
 				}
 			};
 	}
 
 	void BalloonCluster( v3 pos, v3 vel ) {
-		for( var k = 0; k < 5; k++ ) {
+		for( var k = 0; k < 4; k++ ) {
 			v3 scaledVel = vel * rd.f(1,1.3f), push=new v3(0,0,0);
 			float bob = rd.f( .002f, .004f ), bobt = rd.f( .8f, 1.2f ), tick = rd.Ang(), lastPush = 0.0f, goalScale = .3f;
 			new PoolEnt( entPool ) {

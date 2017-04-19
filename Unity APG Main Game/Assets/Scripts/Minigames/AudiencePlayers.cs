@@ -94,7 +94,7 @@ public class AudiencePlayerSys {
 	void RunDebug(PlayerSet playerSet, AudienceInterface apg) {
 		var names = new string[] { "Taki", "Fin", "Castral Fex", "FireTiger", "Ribaeld", "Big Tong", "Gatekeeper", "KittyKat", "Purifier", "Flaer", "Soothsayer13", "xxxBarryxxx", "PlasterPant", "Kokirei", "Fighter", "Seer", "Paninea", "Graethei", "Magesty", "Revolution" };
 		//for(var k = 0; k < 20; k++) playerSet.AddPlayer( names[k] );
-		for(var k = 0; k < 16; k++) playerSet.AddPlayer( names[k] );
+		for(var k = 0; k < 20; k++) playerSet.AddPlayer( names[k] );
 		var tick=0;
 		new ent( gameSys ) {
 			update = e => {
@@ -148,7 +148,10 @@ public class AudiencePlayerSys {
 	void Buddies(PlayerSet playerEvents, PlayerSys playerSys) {
 
 		var actions = new string[]{"Defend", "Build", "Harvest", "Activate", "Assist", "Hide", "???" };
-		var actionsZ = new float[]{-1f, 1f, 1f, 1f, 0f, 1.3f, 0f };
+		var stances = new string[]{"Industrious", "Aggressive", "Defensive", "Soothing", "Acquisitive", "Stylish" };
+		var actionColors = new Color[]{ new Color(.7f,.7f,1f,1f),new Color(1f,1f,.7f,1f),new Color(.7f,1f,.7f,1f),new Color(1f,.7f,.7f,1f),new Color(.7f,1f,1f,1f),new Color(1f,1f,1f,1f),new Color(1f,1f,1f,1f) };
+		var stanceColors = new Color[]{new Color(1f,1f,.7f,1f),new Color(1f,.5f,.5f,1f),new Color(.5f,.5f,1f,1f),new Color(.7f,1f,1f,1f),new Color(.7f,1f,.7f,1f),new Color(.7f,.7f,.7f,1f) };
+		var actionsZ = new float[]{-.5f, .5f, .5f, .5f, 0f, .7f, 0f };
 
 		var bsrc = new ent(gameSys) { name="buddySet" };
 		for( var k2 = 0; k2 < 20; k2++ ) {
@@ -178,17 +181,21 @@ public class AudiencePlayerSys {
 			var buildingGoal = 0;
 			var goalx = 0f;
 			var goalz = rd.f(.7f);
+			var stanceName = "";
+			var actionColor = new Color(1,1,1,1);
+			var stanceColor = new Color(1,1,1,1);
 
 			playerEvents.RegisterHandler(new AudiencePlayerEventsHandler {
 				onJoin = name => {
 					label.text = name;
 					labelBack.text = name;
 					inUse = true;
-					actionLabel.textColor=new Color(0,0,0,.4f);
-					stance.color=new Color(1,1,1,.4f); },
+					actionLabel.textColor=new Color(0,0,0,.8f);
+					stance.color=new Color(1,1,1,.8f); },
 				onInput = inputs => { bufferedParms = inputs; },
 				getGoalBuilding = () => buildingGoal + ( team == 2 ? 6:0 ),
 				setGoalX = x => goalx = x,
+				getEndOfRoundInfo = () => new PlayerEndOfRoundInfo { pos = pl.pos, nameColor = nameColor, name = label.text, actionName = actionLabel.text, stanceIcon = stance.sprite, stanceName=stanceName, stanceColor=stanceColor, actionColor=actionColor },
 				onRoundEnd = () => {
 					parms = bufferedParms;
 					if( parms[(int)BuddyChoice.MoveTo] != (int)BuddyMoveTo.StayPut ){
@@ -196,7 +203,18 @@ public class AudiencePlayerSys {
 					}
 					goalz = actionsZ[parms[(int)BuddyChoice.Action]] +  rd.f(.3f);
 					stance.sprite = players.stances[parms[(int)BuddyChoice.Stance]];
-					actionLabel.text = actions[parms[(int)BuddyChoice.Action]]; },
+					stanceName = stances[parms[(int)BuddyChoice.Stance]];
+					actionLabel.text = actions[parms[(int)BuddyChoice.Action]];
+					stanceColor = stanceColors[parms[(int)BuddyChoice.Stance]];
+					actionColor = actionColors[parms[(int)BuddyChoice.Action]];
+
+					if( pl.health <= 0 ) {
+						stanceName = "Unhappy";
+						actionLabel.text = "Demised";
+						stanceColor = new Color( .5f, 0, 0, .5f );
+						actionColor = new Color( .5f, 0, 0, .5f );
+					}
+				},
 				updateToClient = ( apg, userName ) => apg.WriteToClients( "pl", new PlayerUpdate { nm = userName, hp = pl.health, money=0 } )
 			});
 

@@ -6,10 +6,12 @@ using v3 = UnityEngine.Vector3;
 public class Players:MonoBehaviour {
 	public GameObject textName;
 	public Sprite[] clouds, friends;
-	public Sprite player, angel, shadow, player1, player2, angel1, angel2;
+	public Sprite player, angel, shadow, player1, player2, angel1, angel2, player1flash, player2flash;
 	public Sprite owMsg, ughMsg, thudMsg;
 	public Sprite[] stances;
 	public AudioClip blowSound, bumpSound, hurtSound, dieSound;
+
+	public APG.APGBasicGameLogic basicGameLogic;
 } 
 
 public class PlayerSys {
@@ -25,7 +27,6 @@ public class PlayerSys {
 		players = thePlayers;
 		reactSys = theReactSys;
 
-		//Player(0, foeSys);
 		Player(1, foeSys);
 		Player(2, foeSys);
 	}
@@ -101,8 +102,8 @@ public class PlayerSys {
 		var startingX = 0f;
 		if( id == 0 ) { use = KeyCode.Space; }
 		//else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.LeftShift; startingX = -5f; }
-		else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.LeftShift; startingX = -5f; }
-		else {  pic = players.player2; startingX = 5f;}
+		else if(id == 1) { left = KeyCode.A; right = KeyCode.D; up = KeyCode.W; down = KeyCode.S; use = KeyCode.LeftShift; startingX = -8f; }
+		else {  pic = players.player2; startingX = 8f;}
 
 		var blow = new List<Action<v3, float, float, float>>();
 		var inhale = new List<Action<v3, float, float, float>>();
@@ -191,8 +192,39 @@ public class PlayerSys {
 						foreach(var b in inhale) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
 					}
 					useDown = true;
+
+					if( id == 1 || id == 0 ) {
+						players.basicGameLogic.player1ChargeRatio = (tick-useDownTime)/115f;
+						if( players.basicGameLogic.player1ChargeRatio > 1f ) {
+							players.basicGameLogic.player1ChargeRatio = 1f;
+							if( tick % 45 == 0 ) {
+								//e.sprite = players.player1flash;
+								foreach(var b in inhale) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
+							}
+							//if( tick % 45 == 4 )e.sprite = players.player1;
+						}
+					}
+					else {
+						players.basicGameLogic.player2ChargeRatio = (tick-useDownTime)/115f;
+						if( players.basicGameLogic.player2ChargeRatio > 1f ) {
+							players.basicGameLogic.player2ChargeRatio = 1f;
+							if( tick % 45 == 0 ) {
+								//e.sprite = players.player2flash;
+								foreach(var b in inhale) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
+							}
+							//if( tick % 45 == 4 )e.sprite = players.player2;
+						}
+					}
 				}
 				else {
+
+					/*if( id == 1 || id == 0 ) {
+						if( e.sprite == players.player1flash) e.sprite = players.player1;
+					}
+					else {
+						if( e.sprite == players.player2flash) e.sprite = players.player2;
+					}*/
+
 					if(useDown == true) {
 						gameSys.Sound(players.blowSound, 1);
 						var knockback2 = new v3(-lastAimDir.x, -lastAimDir.y, 0).normalized;
@@ -210,6 +242,14 @@ public class PlayerSys {
 						foreach(var b in blow) b(e.pos, lastAimDir.x, lastAimDir.y, blowStrength);
 
 						e.knockback += knockback2;
+					}
+					else {
+						if( id == 1 || id == 0 ) {
+							players.basicGameLogic.player1ChargeRatio = 0;
+						}
+						else {
+							players.basicGameLogic.player2ChargeRatio = 0;
+						}
 					}
 					useDown = false;
 				}
@@ -244,6 +284,17 @@ public class PlayerSys {
 		};
 
 		MakeBreath( pl, blow, inhale, inhaleBig );
+
+		var halotick = 0;
+		var alpha = 0f;
+		new ent(gameSys) {
+			parent = pl, sprite = (id == 2 ? players.player2flash:players.player1flash ), pos = new v3(0,0,0), scale = 1f, name="playerhalo",
+			update = e => {
+				if( pl.flipped != e.flipped )e.flipped = pl.flipped;
+				halotick++;
+				if(tick-useDownTime > 135)halotick+=3;
+				e.color  = new Color( 1,1,1, .3f+.3f * Mathf.Cos( halotick*.015f ) );
+			} };
 
 		if(id == 2) player2Ent = pl;
 		else playerEnt = pl;
