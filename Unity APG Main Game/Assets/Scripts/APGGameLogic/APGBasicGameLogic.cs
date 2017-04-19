@@ -108,9 +108,23 @@ namespace APG {
 		public float player1ChargeRatio = 0f;
 		public float player2ChargeRatio = 0f;
 
-		void Start() {
+		void PlayerJoin( string user, EmptyParms p ) {
+			if( players.AddPlayer(user )) {
+				apg.WriteToClients("join", new ClientJoinParms { name = user });
+			}
+		}
+		void PlayerUpdate( string user, SelectionParms p ) {
+			players.SetPlayerInput( user, p.choices );
+		}
 
-			apg = network.GetAudienceSys();
+		void MakeHandlers() {
+			var handlers = new NetworkMessageHandler();
+			handlers.Add<EmptyParms>( "join", PlayerJoin );
+			handlers.Add<SelectionParms>( "upd", PlayerUpdate );
+			apg.SetHandlers( handlers );
+		}
+
+		void Start() {
 
 			nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 			endOfRoundTimer = ticksPerSecond * secondsAfterLockedInChoice;
@@ -121,7 +135,11 @@ namespace APG {
 
 			nextChatInviteTime = ticksPerSecond * 10;
 
-			apg.SetHandlers( new NetworkMessageHandler()
+			apg = network.GetAudienceSys();
+
+			MakeHandlers();
+
+/*			apg.SetHandlers( new NetworkMessageHandler()
 				.Add<EmptyParms>( "join", (user, p) => {
 					if( players.AddPlayer(user )) {
 						apg.WriteToClients("join", new ClientJoinParms { name = user });
@@ -129,7 +147,7 @@ namespace APG {
 				} )
 				.Add<SelectionParms>( "upd", (user, p) => {
 					players.SetPlayerInput( user, p.choices );
-				} ) );
+				} ) );*/
 		}
 
 		public void MakeIntroPlaque() {

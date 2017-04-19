@@ -15,6 +15,25 @@ cacheImages('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselecte
 cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
 cacheGoogleWebFonts(['Anton']);
 
+
+
+interface RacingRoundUpdate {
+	round: number;
+	time: number;
+}
+
+interface RacingSelectionParms {
+	choices: number[];
+}
+
+interface RacingPlayerUpdate {
+	nm: string;
+	hp: number;
+	money: number;
+}
+
+
+
 function RacingInput(sys: APGSys): void {
 	enum PlayerChoice {
 		bodyHood = 0, bodySide, bodyTrunk, defense, nitro, offense, case, pistons, plugs, airfreshner, seat, steering, tireBolts, tireBrand, tire
@@ -31,10 +50,28 @@ function RacingInput(sys: APGSys): void {
 
 	var carSet: number = 3;
 
-	sys.handlers = new APGSubgameMessageHandler();
-
 	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118;
 	var lastRoundUpdate: number = 0;
+
+	function Time(roundUpdate: RacingRoundUpdate): void {
+		timer = roundUpdate.time;
+		roundNumber = roundUpdate.round;
+		if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
+	}
+	function PlayerStats(playerUpdate: RacingPlayerUpdate): void {
+		if (playerUpdate.nm != sys.playerName) return;
+		//myStats = p;
+	}
+	function Submit(selectionParms: RacingSelectionParms): void {
+		sys.sendMessageToServer<RacingSelectionParms>("upd", { choices: choices });
+	}
+
+	var handlers: APGSubgameMessageHandler = new APGSubgameMessageHandler();
+	handlers.add<RacingRoundUpdate>("time", Time);
+	handlers.add<RacingPlayerUpdate>("pl", PlayerStats);
+	handlers.add<RacingSelectionParms>("submit", Submit);
+	sys.handlers = handlers;
+
 
 	var bkg: ent = new ent(sys.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
 		upd: e => {
