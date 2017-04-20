@@ -11,16 +11,24 @@ using UnityEditor;
 [RequireComponent(typeof(TwitchIRCLogic))]
 public class TwitchGameLogicChat:MonoBehaviour {
 
+	[Tooltip("")]
 	public string LogicOauth;
+	[Tooltip("Twitch account name for the game network traffice")]
 	public string LogicChannelName;
+	[Tooltip("")]
 	public string ChatOauth;
+	[Tooltip("Twitch account name for the game chat traffic.  This is used to invite audience members to join the game.")]
 	public string ChatChannelName;
 
+	[Tooltip("")]
 	public string GameClientID;
+	[Tooltip("")]
 	public string RedirectLink;
 
+	[Tooltip("")]
 	public string BitlyLink;
 
+	[Tooltip("Name of file to save network settings in, relative Assets folder.  If this file exists, the fields set in the Unity Editor will be ignored.")]
 	public string NetworkSettingPath;
 
 	//___________________________________________
@@ -37,7 +45,9 @@ public class TwitchGameLogicChat:MonoBehaviour {
 
 	[Serializable]
 	class NetworkSettings {
+		public string ChatChannelName;
 		public string ChatOauth;
+		public string LogicChannelName;
 		public string LogicOauth;
 		public string GameClientID;
 		public string RedirectLink;
@@ -65,19 +75,23 @@ public class TwitchGameLogicChat:MonoBehaviour {
 
 
 	void LoadNetworkSettings() {
-		settings = new NetworkSettings {LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = BitlyLink };
+		settings = new NetworkSettings { ChatChannelName = ChatChannelName, LogicChannelName = LogicChannelName, LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = BitlyLink };
+
+		var settingPath = Application.dataPath+"\\"+ NetworkSettingPath;
 
 		try { 
-			using (StreamReader sr = new StreamReader(Application.dataPath+"\\"+ NetworkSettingPath)){
+			using (StreamReader sr = new StreamReader(settingPath)){
 				settings = JsonUtility.FromJson<NetworkSettings>( sr.ReadToEnd() );
             }
 		}
 		catch {
 		}
 
-		//Debug.Log( JsonUtility.ToJson( settings ) );
+		if( !File.Exists( settingPath ) && ( settings.LogicChannelName != "" && settings.ChatChannelName != "" && settings.LogicOauth != "" && settings.ChatOauth != "" )) {
+			File.WriteAllText( settingPath, JsonUtility.ToJson( settings ) );
+		}
 
-		launchAPGClientURL = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+"B+"+ChatChannelName+"+"+LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
+		launchAPGClientURL = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+"B+"+settings.ChatChannelName+"+"+settings.LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
 
 		if( settings.BitlyLink != "" ) {
 			launchAPGClientURL = settings.BitlyLink;
@@ -87,12 +101,12 @@ public class TwitchGameLogicChat:MonoBehaviour {
 		Debug.Log( "Paste these specific URLs into Bitly for shortened URLs." );
 
 		#if UNITY_EDITOR
-		if( LogicChannelName == "" ) {
+		if( settings.LogicChannelName == "" ) {
 			EditorUtility.DisplayDialog( "Error!", 
 				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Logic Channel Name isn't set to a valid Twitch Account.  This will be used for network traffic.  Go register for a new account on Twitch if you don't have one.", 
 				"Okay");
 		}
-		if( ChatChannelName == "" ) {
+		if( settings.ChatChannelName == "" ) {
 			EditorUtility.DisplayDialog( "Error!", 
 				"In the Unity Editor, you included a TwitchGameLogicScriptChat component, but the field Chat Channel Name isn't set to a valid Twitch Account.  This will be used for inviting players to join the game.  Go register for a new account on Twitch if you don't have one.", 
 				"Okay");
@@ -116,7 +130,7 @@ public class TwitchGameLogicChat:MonoBehaviour {
 
 		IRCChat.messageRecievedEvent.AddListener(msg => {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
-			string msgString = msg.Substring(msgIndex + ChatChannelName.Length + 11);
+			string msgString = msg.Substring(msgIndex + settings.ChatChannelName.Length + 11);
 			string user = msg.Substring(1, msg.IndexOf('!') - 1);
 			apg.RecordMostRecentChat( user, msgString );
 		});
@@ -128,7 +142,7 @@ public class TwitchGameLogicChat:MonoBehaviour {
 
 		IRCLogic.messageRecievedEvent.AddListener(msg => {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
-			string msgString = msg.Substring(msgIndex + LogicChannelName.Length + 11);
+			string msgString = msg.Substring(msgIndex + settings.LogicChannelName.Length + 11);
 			string user = msg.Substring(1, msg.IndexOf('!') - 1);
 
 			Debug.Log( " " + msgString );
@@ -182,11 +196,11 @@ public class TwitchGameLogicChat:MonoBehaviour {
 
 		IRCChat = this.GetComponent<TwitchIRCChat>();
 		IRCChat.oauthFunc = () => settings.ChatOauth;
-		IRCChat.channelNameFunc = () => ChatChannelName;
+		IRCChat.channelNameFunc = () => settings.ChatChannelName;
 
 		IRCLogic = this.GetComponent<TwitchIRCLogic>();
 		IRCLogic.oauthFunc = () => settings.LogicOauth;
-		IRCLogic.channelNameFunc = () => LogicChannelName;
+		IRCLogic.channelNameFunc = () => settings.LogicChannelName;
 	}
 
 	void Start() {

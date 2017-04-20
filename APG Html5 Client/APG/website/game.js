@@ -1,312 +1,3 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var ent = (function (_super) {
-    __extends(ent, _super);
-    function ent(t, x, y, key, fields) {
-        _super.call(this, t.game, x, y, key);
-        this.upd = null;
-        if (fields)
-            Object.assign(this, fields);
-        this.exists = true;
-        this.visible = true;
-        this.alive = true;
-        this.z = t.children.length;
-        t.addChild(this);
-        if (t.enableBody) {
-            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
-        }
-        if (t.cursor === null) {
-            t.cursor = this;
-        }
-    }
-    ent.prototype.update = function () { if (this.upd != null)
-        this.upd(this); };
-    Object.defineProperty(ent.prototype, "scalex", {
-        set: function (value) { this.scale.x = value; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ent.prototype, "scaley", {
-        set: function (value) { this.scale.y = value; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ent.prototype, "anchorx", {
-        set: function (value) { this.anchor.x = value; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ent.prototype, "anchory", {
-        set: function (value) { this.anchor.y = value; },
-        enumerable: true,
-        configurable: true
-    });
-    ent.prototype.ix = function (value, speed) { this.x = this.x * (1 - speed) + speed * value; return this; };
-    ent.prototype.iy = function (value, speed) { this.y = this.y * (1 - speed) + speed * value; return this; };
-    ent.prototype.ixy = function (x, y, speed) { this.x = this.x * (1 - speed) + speed * x; this.y = this.y * (1 - speed) + speed * y; return this; };
-    ent.prototype.iscaley = function (value, speed) { this.scale.y = this.scale.y * (1 - speed) + speed * value; return this; };
-    ent.prototype.ialpha = function (value, speed) { this.alpha = this.alpha * (1 - speed) + speed * value; return this; };
-    ent.prototype.irotation = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
-    Object.defineProperty(ent.prototype, "tex", {
-        set: function (value) { this.loadTexture(value); },
-        enumerable: true,
-        configurable: true
-    });
-    return ent;
-}(Phaser.Sprite));
-var enttx = (function (_super) {
-    __extends(enttx, _super);
-    function enttx(t, x, y, text, style, fields) {
-        _super.call(this, t.game, x, y, text, style);
-        this.upd = null;
-        if (fields)
-            Object.assign(this, fields);
-        this.exists = true;
-        this.visible = true;
-        this.alive = true;
-        this.z = t.children.length;
-        t.addChild(this);
-        if (t.enableBody) {
-            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
-        }
-        if (t.cursor === null) {
-            t.cursor = this;
-        }
-    }
-    enttx.prototype.update = function () { if (this.upd != null)
-        this.upd(this); };
-    Object.defineProperty(enttx.prototype, "scx", {
-        set: function (value) { this.scale.x = value; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(enttx.prototype, "scy", {
-        set: function (value) { this.scale.y = value; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(enttx.prototype, "anchorx", {
-        set: function (value) { this.anchor.x = value; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(enttx.prototype, "anchory", {
-        set: function (value) { this.anchor.y = value; },
-        enumerable: true,
-        configurable: true
-    });
-    enttx.prototype.ix = function (value, speed) { this.x = this.x * (1 - speed) + speed * value; return this; };
-    enttx.prototype.iy = function (value, speed) { this.y = this.y * (1 - speed) + speed * value; return this; };
-    enttx.prototype.ixy = function (x, y, speed) { this.x = this.x * (1 - speed) + speed * x; this.y = this.y * (1 - speed) + speed * y; return this; };
-    enttx.prototype.iscx = function (value, speed) { this.scale.x = this.scale.x * (1 - speed) + speed * value; return this; };
-    enttx.prototype.iscy = function (value, speed) { this.scale.y = this.scale.y * (1 - speed) + speed * value; return this; };
-    enttx.prototype.ial = function (value, speed) { this.alpha = this.alpha * (1 - speed) + speed * value; return this; };
-    enttx.prototype.irot = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
-    return enttx;
-}(Phaser.Text));
-function StartGame(apg) {
-    RacingInput(apg);
-}
-var APGSys = (function () {
-    function APGSys(g, logicIRCChannelName, playerName, chat, JSONAssets) {
-        var _this = this;
-        this.g = g;
-        this.w = g.world;
-        this.JSONAssets = JSONAssets;
-        this.playerName = playerName;
-        this.network = new IRCNetwork(function () { return _this.handlers; }, playerName, logicIRCChannelName, chat, this.w);
-    }
-    APGSys.prototype.update = function () {
-        this.network.update();
-    };
-    APGSys.prototype.WriteToServer = function (msgName, parmsForMessageToServer) {
-        this.network.sendMessageToServer(msgName, parmsForMessageToServer);
-    };
-    APGSys.prototype.SetHandlers = function (theHandlers) {
-        this.handlers = theHandlers;
-    };
-    return APGSys;
-}());
-if (typeof Object.assign != 'function') {
-    (function () {
-        Object.assign = function (target) {
-            'use strict';
-            if (target === undefined || target === null) {
-                throw new TypeError('Cannot convert undefined or null to object');
-            }
-            var output = Object(target);
-            for (var index = 1; index < arguments.length; index++) {
-                var source = arguments[index];
-                if (source !== undefined && source !== null)
-                    for (var nextKey in source)
-                        if (source.hasOwnProperty(nextKey))
-                            output[nextKey] = source[nextKey];
-            }
-            return output;
-        };
-    })();
-}
-var phaserAssetCacheList;
-var phaserImageList;
-var phaserSoundList;
-function cachePhaserAssets(cacheFunction) {
-    if (phaserAssetCacheList == undefined) {
-        phaserAssetCacheList = [];
-    }
-    phaserAssetCacheList.push(cacheFunction);
-}
-function cacheImages(dir, imageList) {
-    if (phaserImageList == undefined) {
-        phaserImageList = [];
-    }
-    for (var k = 0; k < imageList.length; k++) {
-        phaserImageList.push(dir + "/" + imageList[k]);
-    }
-}
-function cacheSounds(dir, soundList) {
-    if (phaserSoundList == undefined) {
-        phaserSoundList = [];
-    }
-    for (var k = 0; k < soundList.length; k++) {
-        phaserSoundList.push(dir + "/" + soundList[k]);
-    }
-}
-var phaserGoogleWebFontList;
-function cacheGoogleWebFonts(googleWebFontNames) {
-    if (phaserGoogleWebFontList == undefined) {
-        phaserGoogleWebFontList = [];
-    }
-    for (var k = 0; k < googleWebFontNames.length; k++) {
-        phaserGoogleWebFontList.push(googleWebFontNames[k]);
-    }
-}
-var jsonAssetCacheNameList;
-function cacheJSONs(fileNames) {
-    if (jsonAssetCacheNameList == undefined) {
-        jsonAssetCacheNameList = [];
-    }
-    for (var k = 0; k < fileNames.length; k++) {
-        jsonAssetCacheNameList.push(fileNames[k]);
-    }
-}
-function ApgSetup(isMobile, gameWidth, gameHeight, logicIRCChannelName, playerName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd) {
-    if (gameWidth === void 0) { gameWidth = 400; }
-    if (gameHeight === void 0) { gameHeight = 300; }
-    if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
-        ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", " + gameHeight + ".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
-        return;
-    }
-    if (logicIRCChannelName == undefined || logicIRCChannelName == "") {
-        ConsoleOutput.debugError("ApgSetup: logicIRCChannelName is not set.  The game cannot work without this.  This should be set to the name of a Twitch IRC channel, with no leading #.", "sys");
-        return;
-    }
-    if (playerName == undefined || playerName == "") {
-        ConsoleOutput.debugError("ApgSetup: playerName is not set.  The game cannot work without this.  This should be set to the name of a valid Twitch account.", "sys");
-        return;
-    }
-    if (APGInputWidgetDivName == undefined || APGInputWidgetDivName == "") {
-        ConsoleOutput.debugError("ApgSetup: APGInputWidgetDivName is not set.  The game cannot work without this.  This should be the name of a valid div to contain the PhaserJS canvas.", "sys");
-        return;
-    }
-    var curJSONAsset = 0;
-    var JSONAssets = {};
-    function LoadJSONAsset() {
-        if (curJSONAsset >= jsonAssetCacheNameList.length) {
-            LoadPhaserAssets();
-            return;
-        }
-        $.getJSON(jsonAssetCacheNameList[curJSONAsset], function (data) {
-            JSONAssets[jsonAssetCacheNameList[curJSONAsset]] = data.all;
-            ConsoleOutput.logAsset(jsonAssetCacheNameList[curJSONAsset]);
-            curJSONAsset++;
-            LoadJSONAsset();
-        });
-    }
-    LoadJSONAsset();
-    function LoadPhaserAssets() {
-        var _this = this;
-        var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
-            preload: function () {
-                game.stage.disableVisibilityChange = true;
-                if (allowFullScreen) {
-                    game.scale.pageAlignHorizontally = true;
-                    game.scale.pageAlignVertically = true;
-                    game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
-                    game.scale.setResizeCallback(gameResized, _this);
-                    function gameResized(manager, bounds) {
-                        var scale = Math.min(window.innerWidth / game.width, window.innerHeight / game.height);
-                        manager.setUserScale(scale, scale, 0, 0);
-                    }
-                }
-                if (phaserAssetCacheList.length == 0) {
-                    ConsoleOutput.debugWarn("ApgSetup: phaserAssetCacheList.length is 0, so no assets are being cached.  This is probably an error.", "sys");
-                }
-                for (var k = 0; k < phaserAssetCacheList.length; k++) {
-                    phaserAssetCacheList[k](game.load);
-                }
-                for (var k = 0; k < phaserImageList.length; k++) {
-                    game.load.image(phaserImageList[k], phaserImageList[k]);
-                }
-                for (var k = 0; k < phaserSoundList.length; k++) {
-                    game.load.audio(phaserSoundList[k], phaserSoundList[k]);
-                }
-                if (phaserGoogleWebFontList != undefined && phaserGoogleWebFontList.length > 0) {
-                    game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
-                }
-            },
-            create: function () {
-                game.input.mouse.capture = true;
-                if (phaserGoogleWebFontList == undefined || phaserGoogleWebFontList.length == 0) {
-                    initLaunchGame();
-                }
-            }
-        }, true);
-        WebFontConfig = {
-            active: function () { game.time.events.add(Phaser.Timer.SECOND, initLaunchGame, this); },
-            google: {
-                families: phaserGoogleWebFontList
-            }
-        };
-        function initLaunchGame() {
-            if (engineParms.chat == null) {
-                engineParms.chatLoadedFunction = launchGame;
-            }
-            else {
-                launchGame();
-            }
-        }
-        function launchGame() {
-            onLoadEnd();
-            var apg = new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets);
-            var showingOrientationWarning = false;
-            setInterval(function () {
-                if (isMobile) {
-                    var width = window.innerWidth || document.body.clientWidth;
-                    var height = window.innerHeight || document.body.clientHeight;
-                    if (height > width) {
-                        if (!showingOrientationWarning) {
-                            showingOrientationWarning = true;
-                            document.getElementById("orientationWarning").style.display = '';
-                            document.getElementById(APGInputWidgetDivName).style.display = 'none';
-                        }
-                    }
-                    else {
-                        if (showingOrientationWarning) {
-                            showingOrientationWarning = false;
-                            document.getElementById("orientationWarning").style.display = 'none';
-                            document.getElementById(APGInputWidgetDivName).style.display = '';
-                        }
-                    }
-                }
-                apg.update();
-            }, 1000 / 60);
-            StartGame(apg);
-        }
-    }
-}
 var ActionEntry = (function () {
     function ActionEntry(label, tooltip) {
         this.label = label;
@@ -413,349 +104,6 @@ var ButtonCollection = (function () {
         addSelector();
     }
     return ButtonCollection;
-}());
-var ConsoleOutput = (function () {
-    function ConsoleOutput() {
-    }
-    ConsoleOutput.error = function (s, tag) {
-        if (tag === void 0) { tag = ""; }
-        console.error("Error: " + s);
-        if (debugErrorsAsAlerts) {
-            alert("Error: " + s);
-        }
-    };
-    ConsoleOutput.warn = function (s, tag) {
-        if (tag === void 0) { tag = ""; }
-        console.warn("Warning: " + s);
-    };
-    ConsoleOutput.info = function (s, tag) {
-        if (tag === void 0) { tag = ""; }
-        console.info(s);
-    };
-    ConsoleOutput.log = function (s, tag) {
-        if (tag === void 0) { tag = ""; }
-        console.log(s);
-    };
-    ConsoleOutput.debugError = function (s, tag) {
-        if (tag === void 0) { tag = ""; }
-        if (!debugPrintMessages)
-            return;
-        console.error("Error: " + s);
-        if (debugErrorsAsAlerts) {
-            alert("Error: " + s);
-        }
-    };
-    ConsoleOutput.debugWarn = function (s, tag) {
-        if (tag === void 0) { tag = ""; }
-        if (!debugPrintMessages)
-            return;
-        console.warn("Warning: " + s);
-    };
-    ConsoleOutput.debugInfo = function (s, tag) {
-        if (tag === void 0) { tag = ""; }
-        if (!debugPrintMessages)
-            return;
-        console.info(s);
-    };
-    ConsoleOutput.debugLog = function (s, tag) {
-        if (tag === void 0) { tag = ""; }
-        if (!debugPrintMessages)
-            return;
-        console.log(s);
-    };
-    ConsoleOutput.logAsset = function (s, tag) {
-        if (tag === void 0) { tag = ""; }
-        if (!debugShowAssetMessages)
-            return;
-        console.log("Successfully loaded " + s);
-    };
-    return ConsoleOutput;
-}());
-var IRCNetwork = (function () {
-    function IRCNetwork(getHandlers, player, logicChannelName, chat, w) {
-        this.lastMessageTime = 0;
-        this.messageQueue = [];
-        this.toggleSpace = false;
-        this.channelName = '#' + logicChannelName;
-        var src = this;
-        chat.on("chat", function (channel, userstate, message, self) {
-            if (self)
-                return;
-            if (debugLogIncomingIRCChat) {
-                ConsoleOutput.debugLog(channel + " " + userstate.username + " " + message, "network");
-            }
-            if (userstate.username == logicChannelName) {
-                var msgTemp = message.split("%%");
-                for (var k = 0; k < msgTemp.length; k++) {
-                    getHandlers().Run(msgTemp[k]);
-                }
-            }
-            else {
-            }
-        });
-        this.chat = chat;
-    }
-    IRCNetwork.prototype.sendMessageToServer = function (msg, parms) {
-        this.writeToChat(msg + "###" + JSON.stringify(parms));
-    };
-    IRCNetwork.prototype.writeToChat = function (s) {
-        if (this.lastMessageTime > 0) {
-            if (this.messageQueue.length > maxBufferedIRCWrites) {
-                ConsoleOutput.debugWarn("writeToChat: maxBufferedIRCWrites exceeded.  Too many messages have been queued.  Twitch IRC limits how often clients can post into IRC channels.");
-                return;
-            }
-            this.messageQueue.push(s);
-            return;
-        }
-        this.toggleSpace = !this.toggleSpace;
-        this.chat.say(this.channelName, s + (this.toggleSpace ? ' ' : '  '));
-        if (debugLogOutgoingIRCChat) {
-            ConsoleOutput.debugLog(s, "network");
-        }
-        this.lastMessageTime = IRCWriteDelayInSeconds * ticksPerSecond;
-    };
-    IRCNetwork.prototype.update = function () {
-        this.lastMessageTime--;
-        if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {
-            var delayedMessage = this.messageQueue.shift();
-            this.toggleSpace = !this.toggleSpace;
-            this.chat.say(this.channelName, delayedMessage + (this.toggleSpace ? ' ' : '  '));
-            if (debugLogOutgoingIRCChat) {
-                ConsoleOutput.debugLog(delayedMessage, "network");
-            }
-        }
-    };
-    return IRCNetwork;
-}());
-var Scroller = (function () {
-    function Scroller(g, x, y, windowx, windowy, clearOnScroll) {
-        this.px = 0;
-        this.py = 0;
-        this.x = x;
-        this.y = y;
-        this.windowx = windowx;
-        this.windowy = windowy;
-        this.clearOnScroll = clearOnScroll;
-        this.b = g.make.bitmapData(x, y);
-        this.img = this.b.addToWorld();
-        this.img.x = this.img.y = 0;
-        this.img2 = this.b.addToWorld();
-        this.img.x = x;
-        this.img.y = 0;
-        this.img3 = this.b.addToWorld();
-        this.img.x = 0;
-        this.img.y = y;
-        this.img4 = this.b.addToWorld();
-        this.img.x = x;
-        this.img.y = y;
-        this.b.fill(0, 0, 0, 0);
-    }
-    Scroller.prototype.draw = function (s, x, y, sc) {
-        x += this.px;
-        y += this.py;
-        this.b.draw(s, x, y, s.width * sc, s.height * sc);
-        this.b.draw(s, x - this.x, y, s.width * sc, s.height * sc);
-        this.b.draw(s, x, y - this.y, s.width * sc, s.height * sc);
-        this.b.draw(s, x - this.x, y - this.y, s.width * sc, s.height * sc);
-    };
-    Scroller.prototype.scrollBy = function (x, y) {
-        if (this.clearOnScroll) {
-            var x1, y1, x2, y2;
-            if (y < 0) {
-                x1 = this.px;
-                y1 = this.py + this.windowy + y;
-                x2 = this.px + this.windowx;
-                y2 = this.py + this.windowy;
-                if (x1 > this.x)
-                    x1 -= this.x;
-                if (y1 > this.y)
-                    y1 -= this.y;
-                if (x2 > this.x)
-                    x2 -= this.x;
-                if (y2 > this.y)
-                    y2 -= this.y;
-                if (y1 < y2)
-                    this.b.clear(x1, y1, x2 - x1, y2 - y1);
-                else {
-                    this.b.clear(x1, 0, x2 - x1, y2);
-                    this.b.clear(x1, y1, x2 - x1, this.y - y1);
-                }
-            }
-        }
-        this.px += x;
-        if (this.px < 0)
-            this.px += this.x;
-        if (this.px > this.x)
-            this.px -= this.x;
-        this.py += y;
-        if (this.py < 0)
-            this.py += this.y;
-        if (this.py > this.y)
-            this.py -= this.y;
-        this.doScroll(this.px, this.py);
-    };
-    Scroller.prototype.doScroll = function (x, y) {
-        this.px = x % this.x;
-        if (x < 0)
-            this.px -= this.x;
-        this.py = y % this.y;
-        if (y < 0)
-            this.py -= this.y;
-        this.img.x = -this.px;
-        this.img.y = -this.py;
-        this.img2.x = -this.px + this.x;
-        this.img2.y = -this.py;
-        this.img3.x = -this.px;
-        this.img3.y = -this.py + this.y;
-        this.img4.x = -this.px + this.x;
-        this.img4.y = -this.py + this.y;
-    };
-    return Scroller;
-}());
-var debugAllCarParts = [];
-cachePhaserAssets(function (l) {
-    var assetSets = ["bodyHood", "bodySide", "bodyTrunk", "defense", "nitro", "offense", "case", "pistons", "plugs", "airfreshner", "seat", "steering", "tireBolts", "tireBrand", "tire"];
-    for (var k = 0; k < assetSets.length; k++) {
-        for (var j = 1; j < 4; j++) {
-            l.image("carPart_" + k + "_" + j, "racinggame/" + assetSets[k] + j + ".png");
-            debugAllCarParts.push("carPart_" + k + "_" + j);
-        }
-    }
-});
-cacheImages('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselected.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
-cacheGoogleWebFonts(['Anton']);
-var RacingGame = (function () {
-    function RacingGame(apg) {
-        var _this = this;
-        this.timer = 0;
-        this.choices = [1, 1, 1, 1, 1, 1];
-        this.roundNumber = 1;
-        var PlayerChoice;
-        (function (PlayerChoice) {
-            PlayerChoice[PlayerChoice["bodyHood"] = 0] = "bodyHood";
-            PlayerChoice[PlayerChoice["bodySide"] = 1] = "bodySide";
-            PlayerChoice[PlayerChoice["bodyTrunk"] = 2] = "bodyTrunk";
-            PlayerChoice[PlayerChoice["defense"] = 3] = "defense";
-            PlayerChoice[PlayerChoice["nitro"] = 4] = "nitro";
-            PlayerChoice[PlayerChoice["offense"] = 5] = "offense";
-            PlayerChoice[PlayerChoice["case"] = 6] = "case";
-            PlayerChoice[PlayerChoice["pistons"] = 7] = "pistons";
-            PlayerChoice[PlayerChoice["plugs"] = 8] = "plugs";
-            PlayerChoice[PlayerChoice["airfreshner"] = 9] = "airfreshner";
-            PlayerChoice[PlayerChoice["seat"] = 10] = "seat";
-            PlayerChoice[PlayerChoice["steering"] = 11] = "steering";
-            PlayerChoice[PlayerChoice["tireBolts"] = 12] = "tireBolts";
-            PlayerChoice[PlayerChoice["tireBrand"] = 13] = "tireBrand";
-            PlayerChoice[PlayerChoice["tire"] = 14] = "tire";
-        })(PlayerChoice || (PlayerChoice = {}));
-        var endOfRoundSound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
-        this.warningSound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
-        var carSet = 3;
-        var tick = 0, choiceLeft = 50, choiceUp = 118;
-        var lastRoundUpdate = 0;
-        this.makeHandlers(apg);
-        var bkg = new ent(apg.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
-            scalex: 2, scaley: 2,
-            upd: function (e) {
-                if (_this.roundNumber != lastRoundUpdate) {
-                    lastRoundUpdate = _this.roundNumber;
-                }
-            }
-        });
-        this.addArt(apg, carSet);
-    }
-    RacingGame.prototype.addArt = function (apg, carSet) {
-        var statNames = ["Fuel Cap", "Speed Cap", "Weight", "Suaveness", "Power"];
-        function fnt(sz) {
-            sz *= 2;
-            return '' + sz + 'px Anton';
-        }
-        new enttx(apg.w, 2 * 10, 2 * 10, "CAR PERFORMANCE", { font: fnt(20), fill: '#fff' });
-        for (var k = 0; k < 5; k++) {
-            new enttx(apg.w, 2 * 10, 2 * (48 + (72 - 48) * k), statNames[k] + ":", { font: fnt(16), fill: '#fff' });
-        }
-        new enttx(apg.w, 2 * 12, 2 * 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
-        new enttx(apg.w, 2 * 15, 2 * 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
-        new enttx(apg.w, 2 * 15, 2 * 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
-        new enttx(apg.w, 2 * 152, 2 * 10, "OPTIONS", { font: fnt(20), fill: '#fff' });
-        new ent(apg.w, 2 * 158, 2 * 36, "racinggame/selected.png");
-        new ent(apg.w, 2 * 158, 2 * 92, "racinggame/unselected.png");
-        new ent(apg.w, 2 * 158, 2 * 150, "racinggame/unselected.png");
-        new enttx(apg.w, 2 * 158, 2 * 36, "Featherwate", { font: fnt(16), fill: '#0' });
-        new enttx(apg.w, 2 * 158, 2 * 92, "Unguzzler", { font: fnt(16), fill: '#0' });
-        new enttx(apg.w, 2 * 158, 2 * 150, "Hulkite", { font: fnt(16), fill: '#0' });
-        var picChangeTick = 0;
-        var picFrame = 0;
-        for (var k = 1; k < 4; k++) {
-            new ent(apg.w, 2 * 220, 2 * 40, debugAllCarParts[carSet * 9 + (k - 1) * 3 + 2], { scalex: 1, scaley: 1 });
-        }
-        new enttx(apg.w, 2 * 220, 2 * 178, "-1 Weight, +1 Power", { font: fnt(24), fill: '#fff' });
-    };
-    RacingGame.prototype.makeHandlers = function (apg) {
-        function Time(roundUpdate) {
-            this.timer = roundUpdate.time;
-            this.roundNumber = roundUpdate.round;
-            if (this.timer < 6) {
-                this.warningSound.play('', 0, 1 - (this.timer * 15) / 100);
-            }
-        }
-        function PlayerStats(playerUpdate) {
-            if (playerUpdate.nm != apg.playerName)
-                return;
-        }
-        function Submit(selectionParms) {
-            apg.WriteToServer("upd", { choices: this.choices });
-        }
-        var handlers = new NetworkMessageHandler();
-        handlers.Add("time", Time);
-        handlers.Add("pl", PlayerStats);
-        handlers.Add("submit", Submit);
-        apg.SetHandlers(handlers);
-    };
-    return RacingGame;
-}());
-function RacingInput(apg) {
-    new RacingGame(apg);
-}
-var secondsPerChoice = 60;
-var ticksPerSecond = 60;
-var IRCWriteDelayInSeconds = 1;
-var maxBufferedIRCWrites = 5;
-var debugErrorsAsAlerts = false;
-var debugPrintMessages = false;
-var debugLogIncomingIRCChat = true;
-var debugLogOutgoingIRCChat = true;
-var debugShowAssetMessages = false;
-var NetworkMessageHandler = (function () {
-    function NetworkMessageHandler() {
-        this.inputs = {};
-        this.inputs = {};
-    }
-    NetworkMessageHandler.prototype.Add = function (msgName, handlerForServerMessage) {
-        this.inputs[msgName] =
-            function (s) {
-                var v = JSON.parse(s);
-                handlerForServerMessage(v);
-            };
-        return this;
-    };
-    NetworkMessageHandler.prototype.Run = function (message) {
-        var msgTemp = message.split("###");
-        if (msgTemp.length != 2) {
-            ConsoleOutput.debugError("Bad Network Message: " + message, "network");
-            return false;
-        }
-        var msgName = msgTemp[0];
-        var unparsedParms = msgTemp[1];
-        if (this.inputs[msgName] == undefined) {
-            ConsoleOutput.debugError("Unknown Network Message: " + msgName + " with parameters " + unparsedParms, "network");
-            return false;
-        }
-        this.inputs[msgName](unparsedParms);
-        return true;
-    };
-    return NetworkMessageHandler;
 }());
 cacheImages('assets/imgs', ['ClientUI4.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
@@ -979,5 +327,657 @@ function WaitingToJoin(apg, previousMessage) {
                 e.visible = true;
         }
     });
+}
+if (typeof Object.assign != 'function') {
+    (function () {
+        Object.assign = function (target) {
+            'use strict';
+            if (target === undefined || target === null) {
+                throw new TypeError('Cannot convert undefined or null to object');
+            }
+            var output = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+                var source = arguments[index];
+                if (source !== undefined && source !== null)
+                    for (var nextKey in source)
+                        if (source.hasOwnProperty(nextKey))
+                            output[nextKey] = source[nextKey];
+            }
+            return output;
+        };
+    })();
+}
+var phaserAssetCacheList;
+var phaserImageList;
+var phaserSoundList;
+function cachePhaserAssets(cacheFunction) {
+    if (phaserAssetCacheList == undefined) {
+        phaserAssetCacheList = [];
+    }
+    phaserAssetCacheList.push(cacheFunction);
+}
+function cacheImages(dir, imageList) {
+    if (phaserImageList == undefined) {
+        phaserImageList = [];
+    }
+    for (var k = 0; k < imageList.length; k++) {
+        phaserImageList.push(dir + "/" + imageList[k]);
+    }
+}
+function cacheSounds(dir, soundList) {
+    if (phaserSoundList == undefined) {
+        phaserSoundList = [];
+    }
+    for (var k = 0; k < soundList.length; k++) {
+        phaserSoundList.push(dir + "/" + soundList[k]);
+    }
+}
+var phaserGoogleWebFontList;
+function cacheGoogleWebFonts(googleWebFontNames) {
+    if (phaserGoogleWebFontList == undefined) {
+        phaserGoogleWebFontList = [];
+    }
+    for (var k = 0; k < googleWebFontNames.length; k++) {
+        phaserGoogleWebFontList.push(googleWebFontNames[k]);
+    }
+}
+var jsonAssetCacheNameList;
+function cacheJSONs(fileNames) {
+    if (jsonAssetCacheNameList == undefined) {
+        jsonAssetCacheNameList = [];
+    }
+    for (var k = 0; k < fileNames.length; k++) {
+        jsonAssetCacheNameList.push(fileNames[k]);
+    }
+}
+function ApgSetup(isMobile, gameWidth, gameHeight, logicIRCChannelName, playerName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd) {
+    if (gameWidth === void 0) { gameWidth = 400; }
+    if (gameHeight === void 0) { gameHeight = 300; }
+    if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
+        ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", " + gameHeight + ".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
+        return;
+    }
+    if (logicIRCChannelName == undefined || logicIRCChannelName == "") {
+        ConsoleOutput.debugError("ApgSetup: logicIRCChannelName is not set.  The game cannot work without this.  This should be set to the name of a Twitch IRC channel, with no leading #.", "sys");
+        return;
+    }
+    if (playerName == undefined || playerName == "") {
+        ConsoleOutput.debugError("ApgSetup: playerName is not set.  The game cannot work without this.  This should be set to the name of a valid Twitch account.", "sys");
+        return;
+    }
+    if (APGInputWidgetDivName == undefined || APGInputWidgetDivName == "") {
+        ConsoleOutput.debugError("ApgSetup: APGInputWidgetDivName is not set.  The game cannot work without this.  This should be the name of a valid div to contain the PhaserJS canvas.", "sys");
+        return;
+    }
+    var curJSONAsset = 0;
+    var JSONAssets = {};
+    function LoadJSONAsset() {
+        if (curJSONAsset >= jsonAssetCacheNameList.length) {
+            LoadPhaserAssets();
+            return;
+        }
+        $.getJSON(jsonAssetCacheNameList[curJSONAsset], function (data) {
+            JSONAssets[jsonAssetCacheNameList[curJSONAsset]] = data.all;
+            ConsoleOutput.logAsset(jsonAssetCacheNameList[curJSONAsset]);
+            curJSONAsset++;
+            LoadJSONAsset();
+        });
+    }
+    LoadJSONAsset();
+    function LoadPhaserAssets() {
+        var _this = this;
+        var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
+            preload: function () {
+                game.stage.disableVisibilityChange = true;
+                if (allowFullScreen) {
+                    game.scale.pageAlignHorizontally = true;
+                    game.scale.pageAlignVertically = true;
+                    game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+                    game.scale.setResizeCallback(gameResized, _this);
+                    function gameResized(manager, bounds) {
+                        var scale = Math.min(window.innerWidth / game.width, window.innerHeight / game.height);
+                        manager.setUserScale(scale, scale, 0, 0);
+                    }
+                }
+                if (phaserAssetCacheList.length == 0) {
+                    ConsoleOutput.debugWarn("ApgSetup: phaserAssetCacheList.length is 0, so no assets are being cached.  This is probably an error.", "sys");
+                }
+                for (var k = 0; k < phaserAssetCacheList.length; k++) {
+                    phaserAssetCacheList[k](game.load);
+                }
+                for (var k = 0; k < phaserImageList.length; k++) {
+                    game.load.image(phaserImageList[k], phaserImageList[k]);
+                }
+                for (var k = 0; k < phaserSoundList.length; k++) {
+                    game.load.audio(phaserSoundList[k], phaserSoundList[k]);
+                }
+                if (phaserGoogleWebFontList != undefined && phaserGoogleWebFontList.length > 0) {
+                    game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+                }
+            },
+            create: function () {
+                game.input.mouse.capture = true;
+                if (phaserGoogleWebFontList == undefined || phaserGoogleWebFontList.length == 0) {
+                    initLaunchGame();
+                }
+            }
+        }, true);
+        WebFontConfig = {
+            active: function () { game.time.events.add(Phaser.Timer.SECOND, initLaunchGame, this); },
+            google: {
+                families: phaserGoogleWebFontList
+            }
+        };
+        function initLaunchGame() {
+            if (engineParms.chat == null) {
+                engineParms.chatLoadedFunction = launchGame;
+            }
+            else {
+                launchGame();
+            }
+        }
+        function launchGame() {
+            onLoadEnd();
+            var apg = new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets);
+            var showingOrientationWarning = false;
+            setInterval(function () {
+                if (isMobile) {
+                    var width = window.innerWidth || document.body.clientWidth;
+                    var height = window.innerHeight || document.body.clientHeight;
+                    if (height > width) {
+                        if (!showingOrientationWarning) {
+                            showingOrientationWarning = true;
+                            document.getElementById("orientationWarning").style.display = '';
+                            document.getElementById(APGInputWidgetDivName).style.display = 'none';
+                        }
+                    }
+                    else {
+                        if (showingOrientationWarning) {
+                            showingOrientationWarning = false;
+                            document.getElementById("orientationWarning").style.display = 'none';
+                            document.getElementById(APGInputWidgetDivName).style.display = '';
+                        }
+                    }
+                }
+                apg.update();
+            }, 1000 / 60);
+            StartGame(apg);
+        }
+    }
+}
+var APGSys = (function () {
+    function APGSys(g, logicIRCChannelName, playerName, chat, JSONAssets) {
+        var _this = this;
+        this.g = g;
+        this.w = g.world;
+        this.JSONAssets = JSONAssets;
+        this.playerName = playerName;
+        this.network = new IRCNetwork(function () { return _this.handlers; }, playerName, logicIRCChannelName, chat, this.w);
+    }
+    APGSys.prototype.update = function () {
+        this.network.update();
+    };
+    APGSys.prototype.WriteToServer = function (msgName, parmsForMessageToServer) {
+        this.network.sendMessageToServer(msgName, parmsForMessageToServer);
+    };
+    APGSys.prototype.SetHandlers = function (theHandlers) {
+        this.handlers = theHandlers;
+    };
+    return APGSys;
+}());
+var IRCNetwork = (function () {
+    function IRCNetwork(getHandlers, player, logicChannelName, chat, w) {
+        this.lastMessageTime = 0;
+        this.messageQueue = [];
+        this.toggleSpace = false;
+        this.channelName = '#' + logicChannelName;
+        var src = this;
+        chat.on("chat", function (channel, userstate, message, self) {
+            if (self)
+                return;
+            if (debugLogIncomingIRCChat) {
+                ConsoleOutput.debugLog(channel + " " + userstate.username + " " + message, "network");
+            }
+            if (userstate.username == logicChannelName) {
+                var msgTemp = message.split("%%");
+                for (var k = 0; k < msgTemp.length; k++) {
+                    getHandlers().Run(msgTemp[k]);
+                }
+            }
+            else {
+            }
+        });
+        this.chat = chat;
+    }
+    IRCNetwork.prototype.sendMessageToServer = function (msg, parms) {
+        this.writeToChat(msg + "###" + JSON.stringify(parms));
+    };
+    IRCNetwork.prototype.writeToChat = function (s) {
+        if (this.lastMessageTime > 0) {
+            if (this.messageQueue.length > maxBufferedIRCWrites) {
+                ConsoleOutput.debugWarn("writeToChat: maxBufferedIRCWrites exceeded.  Too many messages have been queued.  Twitch IRC limits how often clients can post into IRC channels.");
+                return;
+            }
+            this.messageQueue.push(s);
+            return;
+        }
+        this.toggleSpace = !this.toggleSpace;
+        this.chat.say(this.channelName, s + (this.toggleSpace ? ' ' : '  '));
+        if (debugLogOutgoingIRCChat) {
+            ConsoleOutput.debugLog(s, "network");
+        }
+        this.lastMessageTime = IRCWriteDelayInSeconds * ticksPerSecond;
+    };
+    IRCNetwork.prototype.update = function () {
+        this.lastMessageTime--;
+        if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {
+            var delayedMessage = this.messageQueue.shift();
+            this.toggleSpace = !this.toggleSpace;
+            this.chat.say(this.channelName, delayedMessage + (this.toggleSpace ? ' ' : '  '));
+            if (debugLogOutgoingIRCChat) {
+                ConsoleOutput.debugLog(delayedMessage, "network");
+            }
+        }
+    };
+    return IRCNetwork;
+}());
+var NetworkMessageHandler = (function () {
+    function NetworkMessageHandler() {
+        this.inputs = {};
+        this.inputs = {};
+    }
+    NetworkMessageHandler.prototype.Add = function (msgName, handlerForServerMessage) {
+        this.inputs[msgName] =
+            function (s) {
+                var v = JSON.parse(s);
+                handlerForServerMessage(v);
+            };
+        return this;
+    };
+    NetworkMessageHandler.prototype.Run = function (message) {
+        var msgTemp = message.split("###");
+        if (msgTemp.length != 2) {
+            ConsoleOutput.debugError("Bad Network Message: " + message, "network");
+            return false;
+        }
+        var msgName = msgTemp[0];
+        var unparsedParms = msgTemp[1];
+        if (this.inputs[msgName] == undefined) {
+            ConsoleOutput.debugError("Unknown Network Message: " + msgName + " with parameters " + unparsedParms, "network");
+            return false;
+        }
+        this.inputs[msgName](unparsedParms);
+        return true;
+    };
+    return NetworkMessageHandler;
+}());
+var ConsoleOutput = (function () {
+    function ConsoleOutput() {
+    }
+    ConsoleOutput.error = function (s, tag) {
+        if (tag === void 0) { tag = ""; }
+        console.error("Error: " + s);
+        if (debugErrorsAsAlerts) {
+            alert("Error: " + s);
+        }
+    };
+    ConsoleOutput.warn = function (s, tag) {
+        if (tag === void 0) { tag = ""; }
+        console.warn("Warning: " + s);
+    };
+    ConsoleOutput.info = function (s, tag) {
+        if (tag === void 0) { tag = ""; }
+        console.info(s);
+    };
+    ConsoleOutput.log = function (s, tag) {
+        if (tag === void 0) { tag = ""; }
+        console.log(s);
+    };
+    ConsoleOutput.debugError = function (s, tag) {
+        if (tag === void 0) { tag = ""; }
+        if (!debugPrintMessages)
+            return;
+        console.error("Error: " + s);
+        if (debugErrorsAsAlerts) {
+            alert("Error: " + s);
+        }
+    };
+    ConsoleOutput.debugWarn = function (s, tag) {
+        if (tag === void 0) { tag = ""; }
+        if (!debugPrintMessages)
+            return;
+        console.warn("Warning: " + s);
+    };
+    ConsoleOutput.debugInfo = function (s, tag) {
+        if (tag === void 0) { tag = ""; }
+        if (!debugPrintMessages)
+            return;
+        console.info(s);
+    };
+    ConsoleOutput.debugLog = function (s, tag) {
+        if (tag === void 0) { tag = ""; }
+        if (!debugPrintMessages)
+            return;
+        console.log(s);
+    };
+    ConsoleOutput.logAsset = function (s, tag) {
+        if (tag === void 0) { tag = ""; }
+        if (!debugShowAssetMessages)
+            return;
+        console.log("Successfully loaded " + s);
+    };
+    return ConsoleOutput;
+}());
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var ent = (function (_super) {
+    __extends(ent, _super);
+    function ent(t, x, y, key, fields) {
+        _super.call(this, t.game, x, y, key);
+        this.upd = null;
+        if (fields)
+            Object.assign(this, fields);
+        this.exists = true;
+        this.visible = true;
+        this.alive = true;
+        this.z = t.children.length;
+        t.addChild(this);
+        if (t.enableBody) {
+            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+        }
+        if (t.cursor === null) {
+            t.cursor = this;
+        }
+    }
+    ent.prototype.update = function () { if (this.upd != null)
+        this.upd(this); };
+    Object.defineProperty(ent.prototype, "scalex", {
+        set: function (value) { this.scale.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "scaley", {
+        set: function (value) { this.scale.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "anchorx", {
+        set: function (value) { this.anchor.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "anchory", {
+        set: function (value) { this.anchor.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    ent.prototype.ix = function (value, speed) { this.x = this.x * (1 - speed) + speed * value; return this; };
+    ent.prototype.iy = function (value, speed) { this.y = this.y * (1 - speed) + speed * value; return this; };
+    ent.prototype.ixy = function (x, y, speed) { this.x = this.x * (1 - speed) + speed * x; this.y = this.y * (1 - speed) + speed * y; return this; };
+    ent.prototype.iscaley = function (value, speed) { this.scale.y = this.scale.y * (1 - speed) + speed * value; return this; };
+    ent.prototype.ialpha = function (value, speed) { this.alpha = this.alpha * (1 - speed) + speed * value; return this; };
+    ent.prototype.irotation = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
+    Object.defineProperty(ent.prototype, "tex", {
+        set: function (value) { this.loadTexture(value); },
+        enumerable: true,
+        configurable: true
+    });
+    return ent;
+}(Phaser.Sprite));
+var enttx = (function (_super) {
+    __extends(enttx, _super);
+    function enttx(t, x, y, text, style, fields) {
+        _super.call(this, t.game, x, y, text, style);
+        this.upd = null;
+        if (fields)
+            Object.assign(this, fields);
+        this.exists = true;
+        this.visible = true;
+        this.alive = true;
+        this.z = t.children.length;
+        t.addChild(this);
+        if (t.enableBody) {
+            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+        }
+        if (t.cursor === null) {
+            t.cursor = this;
+        }
+    }
+    enttx.prototype.update = function () { if (this.upd != null)
+        this.upd(this); };
+    Object.defineProperty(enttx.prototype, "scx", {
+        set: function (value) { this.scale.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(enttx.prototype, "scy", {
+        set: function (value) { this.scale.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(enttx.prototype, "anchorx", {
+        set: function (value) { this.anchor.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(enttx.prototype, "anchory", {
+        set: function (value) { this.anchor.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    enttx.prototype.ix = function (value, speed) { this.x = this.x * (1 - speed) + speed * value; return this; };
+    enttx.prototype.iy = function (value, speed) { this.y = this.y * (1 - speed) + speed * value; return this; };
+    enttx.prototype.ixy = function (x, y, speed) { this.x = this.x * (1 - speed) + speed * x; this.y = this.y * (1 - speed) + speed * y; return this; };
+    enttx.prototype.iscx = function (value, speed) { this.scale.x = this.scale.x * (1 - speed) + speed * value; return this; };
+    enttx.prototype.iscy = function (value, speed) { this.scale.y = this.scale.y * (1 - speed) + speed * value; return this; };
+    enttx.prototype.ial = function (value, speed) { this.alpha = this.alpha * (1 - speed) + speed * value; return this; };
+    enttx.prototype.irot = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
+    return enttx;
+}(Phaser.Text));
+var Scroller = (function () {
+    function Scroller(g, x, y, windowx, windowy, clearOnScroll) {
+        this.px = 0;
+        this.py = 0;
+        this.x = x;
+        this.y = y;
+        this.windowx = windowx;
+        this.windowy = windowy;
+        this.clearOnScroll = clearOnScroll;
+        this.b = g.make.bitmapData(x, y);
+        this.img = this.b.addToWorld();
+        this.img.x = this.img.y = 0;
+        this.img2 = this.b.addToWorld();
+        this.img.x = x;
+        this.img.y = 0;
+        this.img3 = this.b.addToWorld();
+        this.img.x = 0;
+        this.img.y = y;
+        this.img4 = this.b.addToWorld();
+        this.img.x = x;
+        this.img.y = y;
+        this.b.fill(0, 0, 0, 0);
+    }
+    Scroller.prototype.draw = function (s, x, y, sc) {
+        x += this.px;
+        y += this.py;
+        this.b.draw(s, x, y, s.width * sc, s.height * sc);
+        this.b.draw(s, x - this.x, y, s.width * sc, s.height * sc);
+        this.b.draw(s, x, y - this.y, s.width * sc, s.height * sc);
+        this.b.draw(s, x - this.x, y - this.y, s.width * sc, s.height * sc);
+    };
+    Scroller.prototype.scrollBy = function (x, y) {
+        if (this.clearOnScroll) {
+            var x1, y1, x2, y2;
+            if (y < 0) {
+                x1 = this.px;
+                y1 = this.py + this.windowy + y;
+                x2 = this.px + this.windowx;
+                y2 = this.py + this.windowy;
+                if (x1 > this.x)
+                    x1 -= this.x;
+                if (y1 > this.y)
+                    y1 -= this.y;
+                if (x2 > this.x)
+                    x2 -= this.x;
+                if (y2 > this.y)
+                    y2 -= this.y;
+                if (y1 < y2)
+                    this.b.clear(x1, y1, x2 - x1, y2 - y1);
+                else {
+                    this.b.clear(x1, 0, x2 - x1, y2);
+                    this.b.clear(x1, y1, x2 - x1, this.y - y1);
+                }
+            }
+        }
+        this.px += x;
+        if (this.px < 0)
+            this.px += this.x;
+        if (this.px > this.x)
+            this.px -= this.x;
+        this.py += y;
+        if (this.py < 0)
+            this.py += this.y;
+        if (this.py > this.y)
+            this.py -= this.y;
+        this.doScroll(this.px, this.py);
+    };
+    Scroller.prototype.doScroll = function (x, y) {
+        this.px = x % this.x;
+        if (x < 0)
+            this.px -= this.x;
+        this.py = y % this.y;
+        if (y < 0)
+            this.py -= this.y;
+        this.img.x = -this.px;
+        this.img.y = -this.py;
+        this.img2.x = -this.px + this.x;
+        this.img2.y = -this.py;
+        this.img3.x = -this.px;
+        this.img3.y = -this.py + this.y;
+        this.img4.x = -this.px + this.x;
+        this.img4.y = -this.py + this.y;
+    };
+    return Scroller;
+}());
+var debugAllCarParts = [];
+cachePhaserAssets(function (l) {
+    var assetSets = ["bodyHood", "bodySide", "bodyTrunk", "defense", "nitro", "offense", "case", "pistons", "plugs", "airfreshner", "seat", "steering", "tireBolts", "tireBrand", "tire"];
+    for (var k = 0; k < assetSets.length; k++) {
+        for (var j = 1; j < 4; j++) {
+            l.image("carPart_" + k + "_" + j, "racinggame/" + assetSets[k] + j + ".png");
+            debugAllCarParts.push("carPart_" + k + "_" + j);
+        }
+    }
+});
+cacheImages('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselected.png']);
+cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
+cacheGoogleWebFonts(['Anton']);
+var RacingGame = (function () {
+    function RacingGame(apg) {
+        var _this = this;
+        this.timer = 0;
+        this.choices = [1, 1, 1, 1, 1, 1];
+        this.roundNumber = 1;
+        var PlayerChoice;
+        (function (PlayerChoice) {
+            PlayerChoice[PlayerChoice["bodyHood"] = 0] = "bodyHood";
+            PlayerChoice[PlayerChoice["bodySide"] = 1] = "bodySide";
+            PlayerChoice[PlayerChoice["bodyTrunk"] = 2] = "bodyTrunk";
+            PlayerChoice[PlayerChoice["defense"] = 3] = "defense";
+            PlayerChoice[PlayerChoice["nitro"] = 4] = "nitro";
+            PlayerChoice[PlayerChoice["offense"] = 5] = "offense";
+            PlayerChoice[PlayerChoice["case"] = 6] = "case";
+            PlayerChoice[PlayerChoice["pistons"] = 7] = "pistons";
+            PlayerChoice[PlayerChoice["plugs"] = 8] = "plugs";
+            PlayerChoice[PlayerChoice["airfreshner"] = 9] = "airfreshner";
+            PlayerChoice[PlayerChoice["seat"] = 10] = "seat";
+            PlayerChoice[PlayerChoice["steering"] = 11] = "steering";
+            PlayerChoice[PlayerChoice["tireBolts"] = 12] = "tireBolts";
+            PlayerChoice[PlayerChoice["tireBrand"] = 13] = "tireBrand";
+            PlayerChoice[PlayerChoice["tire"] = 14] = "tire";
+        })(PlayerChoice || (PlayerChoice = {}));
+        var endOfRoundSound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+        this.warningSound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+        var carSet = 3;
+        var tick = 0, choiceLeft = 50, choiceUp = 118;
+        var lastRoundUpdate = 0;
+        this.makeHandlers(apg);
+        var bkg = new ent(apg.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
+            scalex: 2, scaley: 2,
+            upd: function (e) {
+                if (_this.roundNumber != lastRoundUpdate) {
+                    lastRoundUpdate = _this.roundNumber;
+                }
+            }
+        });
+        this.addArt(apg, carSet);
+    }
+    RacingGame.prototype.addArt = function (apg, carSet) {
+        var statNames = ["Fuel Cap", "Speed Cap", "Weight", "Suaveness", "Power"];
+        function fnt(sz) {
+            sz *= 2;
+            return '' + sz + 'px Anton';
+        }
+        new enttx(apg.w, 2 * 10, 2 * 10, "CAR PERFORMANCE", { font: fnt(20), fill: '#fff' });
+        for (var k = 0; k < 5; k++) {
+            new enttx(apg.w, 2 * 10, 2 * (48 + (72 - 48) * k), statNames[k] + ":", { font: fnt(16), fill: '#fff' });
+        }
+        new enttx(apg.w, 2 * 12, 2 * 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
+        new enttx(apg.w, 2 * 15, 2 * 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
+        new enttx(apg.w, 2 * 15, 2 * 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
+        new enttx(apg.w, 2 * 152, 2 * 10, "OPTIONS", { font: fnt(20), fill: '#fff' });
+        new ent(apg.w, 2 * 158, 2 * 36, "racinggame/selected.png");
+        new ent(apg.w, 2 * 158, 2 * 92, "racinggame/unselected.png");
+        new ent(apg.w, 2 * 158, 2 * 150, "racinggame/unselected.png");
+        new enttx(apg.w, 2 * 158, 2 * 36, "Featherwate", { font: fnt(16), fill: '#0' });
+        new enttx(apg.w, 2 * 158, 2 * 92, "Unguzzler", { font: fnt(16), fill: '#0' });
+        new enttx(apg.w, 2 * 158, 2 * 150, "Hulkite", { font: fnt(16), fill: '#0' });
+        var picChangeTick = 0;
+        var picFrame = 0;
+        for (var k = 1; k < 4; k++) {
+            new ent(apg.w, 2 * 220, 2 * 40, debugAllCarParts[carSet * 9 + (k - 1) * 3 + 2], { scalex: 1, scaley: 1 });
+        }
+        new enttx(apg.w, 2 * 220, 2 * 178, "-1 Weight, +1 Power", { font: fnt(24), fill: '#fff' });
+    };
+    RacingGame.prototype.makeHandlers = function (apg) {
+        function Time(roundUpdate) {
+            this.timer = roundUpdate.time;
+            this.roundNumber = roundUpdate.round;
+            if (this.timer < 6) {
+                this.warningSound.play('', 0, 1 - (this.timer * 15) / 100);
+            }
+        }
+        function PlayerStats(playerUpdate) {
+            if (playerUpdate.nm != apg.playerName)
+                return;
+        }
+        function Submit(selectionParms) {
+            apg.WriteToServer("upd", { choices: this.choices });
+        }
+        var handlers = new NetworkMessageHandler();
+        handlers.Add("time", Time);
+        handlers.Add("pl", PlayerStats);
+        handlers.Add("submit", Submit);
+        apg.SetHandlers(handlers);
+    };
+    return RacingGame;
+}());
+function RacingInput(apg) {
+    new RacingGame(apg);
+}
+var secondsPerChoice = 60;
+var ticksPerSecond = 60;
+var IRCWriteDelayInSeconds = 1;
+var maxBufferedIRCWrites = 5;
+var debugErrorsAsAlerts = false;
+var debugPrintMessages = false;
+var debugLogIncomingIRCChat = true;
+var debugLogOutgoingIRCChat = true;
+var debugShowAssetMessages = false;
+function StartGame(apg) {
+    RacingInput(apg);
 }
 //# sourceMappingURL=../Typescript Src/ts/game.js.map

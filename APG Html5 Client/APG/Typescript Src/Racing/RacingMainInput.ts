@@ -30,6 +30,11 @@ interface RacingPlayerUpdate {
 	money: number;
 }
 
+// fix app size
+// make input work
+// make messages from server get handled
+// make messages to server (and other clients) get handled
+
 class RacingGame {
 
 	addArt(apg: APGSys, carSet:number): void {
