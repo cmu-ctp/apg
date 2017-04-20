@@ -7,10 +7,10 @@ namespace APG {
 	public class NetworkMessageHandler {
 		Dictionary<string, Action<string, string>> commands = new Dictionary<string, Action<string, string>>();
 
-		public NetworkMessageHandler Add<T>(string msgName, Action<string, T> func) {
+		public NetworkMessageHandler Add<T>(string msgName, Action<string, T> handlerForClientMessage) {
 			commands[msgName] = (string user, string s) => {
 				T parms = JsonUtility.FromJson<T>(s);
-				func(user, parms);
+				handlerForClientMessage(user, parms);
 			};
 			return this;
 		}

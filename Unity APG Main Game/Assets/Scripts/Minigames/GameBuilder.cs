@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections.Generic;
 using v3 = UnityEngine.Vector3;
 using APG;
 
@@ -7,6 +8,10 @@ public class GameBuilder:MonoBehaviour {
 	public GameObject basicSpriteObject;
 
 	public GameObject sky, ground, overlay1, overlay2;
+
+	public Sprite introPlaque;
+	public Sprite playerHighlight;
+	public GameObject textName;
 
 	public IncomingWaveHUD incomingWaveHUD;
 	public Backgrounds backgrounds;
@@ -22,6 +27,10 @@ public class GameBuilder:MonoBehaviour {
 	public MusicSet musicSet;
 
 	FullGame fullGame;
+
+	public void MakeRoundEnd(int roundNumber, int ticksPerSecond, List<PlayerEndOfRoundInfo> info, Action<int> setPauseTimer) {
+		fullGame.MakeRoundEnd( roundNumber, ticksPerSecond, info, setPauseTimer );
+	}
 
 	void Start() {
 		Application.runInBackground = true;
@@ -222,6 +231,120 @@ class FullGame {
 
 	float aspect;
 
+	void MakeIntroPlaque() {
+		new ent( gameSys) { ignorePause = true, sprite = assets.introPlaque, parentMono=assets, scale = 1.3f, pos= new v3( 0, 0, 10 ), health = 1,
+			update = e2 => {
+				if( Input.GetKey(KeyCode.Escape) || Input.GetKey(KeyCode.Space) || Input.GetButton("Fire1") || Input.GetButton("Fire2") ) e2.health = 0;
+				if( e2.health > 0 ) {
+					var v = e2.pos;
+					nm.ease(ref v, new v3(0,0,10), .1f );
+					e2.pos = v;
+				}
+				else {
+					var v = e2.pos;
+					nm.ease(ref v, new v3(0,-10,10), .1f );
+					e2.pos = v;
+				}
+				if( e2.pos.y < -9f )e2.remove();
+			}
+		};
+	}
+
+		public void MakeRoundEnd( int roundNumber, int ticksPerSecond, List<PlayerEndOfRoundInfo> info, Action<int> setPauseTimer ) {
+
+			var tick = ticksPerSecond * (12 + 4 );
+			new ent( gameSys ) { ignorePause = true,
+				update = e => {
+					tick--;
+
+					if( tick == ticksPerSecond * (11 + 4) ) {
+						new ent( gameSys, assets.textName ) { ignorePause = true, text = "Round " + (roundNumber-1)+" is over!", parentMono=assets, scale = .1f, pos= new v3( 0, 3, 10 ), health = ticksPerSecond * 2,
+							update = e2 => {
+								if( e2.health > 0 ) {
+									var v = e2.pos;
+									nm.ease(ref v, new v3(0,3,10), .1f );
+									e2.pos = v;
+								}
+								else {
+									var v = e2.pos;
+									nm.ease(ref v, new v3(0,-10,10), .1f );
+									e2.pos = v;
+								}
+								e2.health--;
+								if( e2.pos.y < -9f )e2.remove();
+							} };
+					}
+
+					if( tick == ticksPerSecond * (11 + 2) ) {
+
+						new ent( gameSys, assets.textName ) { ignorePause = true, text = "Audience Actions for Round " + (roundNumber), parentMono=assets, scale = .1f, pos= new v3( 0, 4, 10 ), health = ticksPerSecond * 13,
+							update = e2 => {
+								if( e2.health > 0 ) {
+									var v = e2.pos;
+									nm.ease(ref v, new v3(0,4,10), .1f );
+									e2.pos = v;
+								}
+								else {
+									var v = e2.pos;
+									nm.ease(ref v, new v3(0,-10,10), .1f );
+									e2.pos = v;
+								}
+								e2.health--;
+								if( e2.pos.y < -9f )e2.remove();
+							}
+						};
+
+						var lastID = -1;
+
+						new ent( gameSys ) { ignorePause = true, scale = 1f, pos= new v3( 0, 3, 10 ), health = ticksPerSecond * 13, sprite = assets.playerHighlight, color=new Color(1,1,1,.5f),
+							update = e2 => {
+								int id = (int)Mathf.Floor( 20 * e2.health/ (ticksPerSecond*13f));
+								if( id < 0 )id=0;
+								if( id >= info.Count )id=info.Count-1;
+
+								if( id != lastID ) {
+									lastID = id;
+									new ent( gameSys, assets.textName ) { ignorePause = true, scale = .05f, pos = info[id].pos + new v3( 0, .5f, -.1f ), health = ticksPerSecond * 1, text = info[id].actionName, textColor=info[id].actionColor,
+										update = e3 => {
+											e3.health--;
+											if( e3.health < 10 )e3.textAlpha = e3.health/10f;
+											e3.pos = e3.pos + new v3(0,.01f, 0);
+											if( e3.health <= 0f )e3.remove();
+										}
+									};
+									new ent( gameSys, assets.textName ) { ignorePause = true, scale = .05f, pos = info[id].pos + new v3( 0, .1f, -.1f ), health = ticksPerSecond * 1, text = info[id].stanceName, textColor=info[id].stanceColor,
+										update = e3 => {
+											e3.health--;
+											if( e3.health < 10 )e3.textAlpha = e3.health/10f;
+											e3.pos = e3.pos + new v3(0,.01f, 0);
+											if( e3.health <= 0f )e3.remove();
+										}
+									};
+								}
+
+								e2.health--;
+								if( e2.health <= 0f )e2.remove();
+									var v = e2.pos;
+									nm.ease(ref v, info[id].pos, .3f );
+									e2.pos = v;
+							}
+						};
+					}
+
+
+					if( tick < 12 * ticksPerSecond ) {
+						setPauseTimer( tick );
+					}
+
+					if( tick == 0 ) {
+						setPauseTimer( 0 );
+						e.remove();
+					}
+				}
+			};
+		}
+
+
 	public void Init( MonoBehaviour src ) {
 
 		aspect = Camera.main.aspect;
@@ -230,7 +353,7 @@ class FullGame {
 		reactSys.Init( gameSys, assets.reacts );
 		assets.basicGameLogic.SetGameSys( gameSys );
 
-		assets.basicGameLogic.MakeIntroPlaque();
+		MakeIntroPlaque();
 
 		assets.basicGameLogic.SetAudiencePlayers( audiencePlayerSys );
 		foeSys = new FoeSys(assets.foes, gameSys, playerSys, audiencePlayerSys);

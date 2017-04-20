@@ -23,7 +23,7 @@ class IRCNetwork{
 	private lastMessageTime: number = 0;
 	private messageQueue: string[] = [];
 
-	constructor(getHandlers: () => APGSubgameMessageHandler, player: string, logicChannelName: string, chat: tmiClient, w: Phaser.World ) {
+	constructor(getHandlers: () => NetworkMessageHandler, player: string, logicChannelName: string, chat: tmiClient, w: Phaser.World ) {
 		this.channelName = '#'+logicChannelName;
 
 		var src: IRCNetwork = this;
@@ -39,7 +39,7 @@ class IRCNetwork{
 			if (userstate.username == logicChannelName) {
 				var msgTemp:string[] = message.split("%%");
 				for (var k = 0; k < msgTemp.length; k++) {
-					getHandlers().run(msgTemp[k]);
+					getHandlers().Run(msgTemp[k]);
 				}
 			}
 			else {

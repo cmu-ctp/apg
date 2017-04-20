@@ -1,7 +1,7 @@
-﻿function StartGame(sys: APGSys) {
+﻿function StartGame(apg: APGSys) {
 
-	//MainPlayerInput(sys);
-	//WaitingToJoin(sys);
+	//MainPlayerInput(apg);
+	//WaitingToJoin(apg);
 
-	RacingInput(sys);
+	RacingInput(apg);
 }

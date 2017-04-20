@@ -9,31 +9,31 @@ interface ClientJoinParms{
 interface EmptyParms {
 }
 
-function WaitingForJoinAcknowledement(sys: APGSys): void {
-	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+function WaitingForJoinAcknowledement(apg: APGSys): void {
+	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
 	var endSubgame: boolean = false, timeOut: number = 0, retry:number = 0;
 
-	sys.handlers = new APGSubgameMessageHandler()
-		.add<ClientJoinParms>( "join", p => {
-			if (p.name != sys.playerName) return;
+	apg.SetHandlers(new NetworkMessageHandler()
+		.Add<ClientJoinParms>("join", p => {
+			if (p.name != apg.playerName) return;
 
 			endSubgame = true;
 			endOfRoundSound.play();
-			MainPlayerInput(sys);
-		});
+			MainPlayerInput(apg);
+		}));
 
-	new ent(sys.w, 60, 0, 'assets/imgs/ClientUI3.png', {
+	new ent(apg.w, 60, 0, 'assets/imgs/ClientUI3.png', {
 		alpha: 0,
 		upd: e => {
 			retry++;
 			if (retry > ticksPerSecond * 4) {
 				retry = 0;
-				sys.sendMessageToServer<EmptyParms>("join", {});
+				apg.WriteToServer<EmptyParms>("join", {});
 			}
 			timeOut++;
 			if (timeOut > ticksPerSecond * 20) {
 				endSubgame = true;
-				WaitingToJoin(sys, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game." );
+				WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game." );
 				return;
 			}
 			if (endSubgame) {
@@ -46,7 +46,7 @@ function WaitingForJoinAcknowledement(sys: APGSys): void {
 		}
 	});
 	var tick: number = 0;
-	new enttx(sys.w, 320, 100 + 60, "Trying to Connect to Streamer's Game - Hold on a Second...", { font: '32px Caveat Brush', fill: '#222' }, {
+	new enttx(apg.w, 320, 100 + 60, "Trying to Connect to Streamer's Game - Hold on a Second...", { font: '32px Caveat Brush', fill: '#222' }, {
 		alpha: 0,
 		upd: e => {
 			if (endSubgame) {

@@ -2,7 +2,7 @@
 The APGSubgameMessageHandler is a set of functions that the networking system uses.
 */
 
-class APGSubgameMessageHandler {
+class NetworkMessageHandler {
 
 	private inputs: any = {};
 
@@ -10,7 +10,7 @@ class APGSubgameMessageHandler {
 		this.inputs = {};
 	}
 
-	add<T>(msgName: string, handlerForServerMessage: (parmsForHandler: T) => void): APGSubgameMessageHandler {
+	Add<T>(msgName: string, handlerForServerMessage: (parmsForHandler: T) => void): NetworkMessageHandler {
 		this.inputs[msgName] =
 			function (s: string): void {
 				var v: T = JSON.parse(s);
@@ -19,7 +19,7 @@ class APGSubgameMessageHandler {
 		return this;
 	}
 
-	run(message: string): boolean {
+	Run(message: string): boolean {
 
 		var msgTemp:string[] = message.split("###");
 		if (msgTemp.length != 2) {

@@ -38,10 +38,7 @@ namespace APG {
 
 	public class APGBasicGameLogic:MonoBehaviour {
 
-		public GameObject textName;
 		public GameBuilder src;
-		public Sprite introPlaque;
-		public Sprite playerHighlight;
 
 		public TwitchGameLogicChat network;
 		public int maxPlayers = 20;
@@ -150,25 +147,6 @@ namespace APG {
 				} ) );*/
 		}
 
-		public void MakeIntroPlaque() {
-			new ent( gameSys) { ignorePause = true, sprite = introPlaque, parentMono=src, scale = 1.3f, pos= new v3( 0, 0, 10 ), health = 1,
-				update = e2 => {
-					if( Input.GetKey(KeyCode.Escape) || Input.GetKey(KeyCode.Space) || Input.GetButton("Fire1") || Input.GetButton("Fire2") ) e2.health = 0;
-					if( e2.health > 0 ) {
-						var v = e2.pos;
-						nm.ease(ref v, new v3(0,0,10), .1f );
-						e2.pos = v;
-					}
-					else {
-						var v = e2.pos;
-						nm.ease(ref v, new v3(0,-10,10), .1f );
-						e2.pos = v;
-					}
-					if( e2.pos.y < -9f )e2.remove();
-				}
-			};
-		}
-
 		void InviteAudience() {
 			nextChatInviteTime--;
 			if(players.PlayerCount() < maxPlayers) {
@@ -206,105 +184,7 @@ namespace APG {
 			return pausedTimer/(ticksPerSecond * 12f );
 		}
 
-		void MakeRoundEnd() {
-			var info = players.GetEndOfRoundInfo();
-
-			Debug.Log( "The Length is " + info.Count );
-
-			var tick = ticksPerSecond * (12 + 4 );
-			new ent( gameSys ) { ignorePause = true,
-				update = e => {
-					tick--;
-
-					if( tick == ticksPerSecond * (11 + 4) ) {
-						new ent( gameSys, textName ) { ignorePause = true, text = "Round " + (roundNumber-1)+" is over!", parentMono=src, scale = .1f, pos= new v3( 0, 3, 10 ), health = ticksPerSecond * 2,
-							update = e2 => {
-								if( e2.health > 0 ) {
-									var v = e2.pos;
-									nm.ease(ref v, new v3(0,3,10), .1f );
-									e2.pos = v;
-								}
-								else {
-									var v = e2.pos;
-									nm.ease(ref v, new v3(0,-10,10), .1f );
-									e2.pos = v;
-								}
-								e2.health--;
-								if( e2.pos.y < -9f )e2.remove();
-							} };
-					}
-
-					if( tick == ticksPerSecond * (11 + 2) ) {
-
-						new ent( gameSys, textName ) { ignorePause = true, text = "Audience Actions for Round " + (roundNumber), parentMono=src, scale = .1f, pos= new v3( 0, 4, 10 ), health = ticksPerSecond * 13,
-							update = e2 => {
-								if( e2.health > 0 ) {
-									var v = e2.pos;
-									nm.ease(ref v, new v3(0,4,10), .1f );
-									e2.pos = v;
-								}
-								else {
-									var v = e2.pos;
-									nm.ease(ref v, new v3(0,-10,10), .1f );
-									e2.pos = v;
-								}
-								e2.health--;
-								if( e2.pos.y < -9f )e2.remove();
-							}
-						};
-
-						var lastID = -1;
-
-						new ent( gameSys ) { ignorePause = true, scale = 1f, pos= new v3( 0, 3, 10 ), health = ticksPerSecond * 13, sprite = playerHighlight, color=new Color(1,1,1,.5f),
-							update = e2 => {
-								int id = (int)Mathf.Floor( 20 * e2.health/ (ticksPerSecond*13f));
-								if( id < 0 )id=0;
-								if( id >= info.Count )id=info.Count-1;
-
-								if( id != lastID ) {
-									lastID = id;
-									new ent( gameSys, textName ) { ignorePause = true, scale = .05f, pos = info[id].pos + new v3( 0, .5f, -.1f ), health = ticksPerSecond * 1, text = info[id].actionName, textColor=info[id].actionColor,
-										update = e3 => {
-											e3.health--;
-											if( e3.health < 10 )e3.textAlpha = e3.health/10f;
-											e3.pos = e3.pos + new v3(0,.01f, 0);
-											if( e3.health <= 0f )e3.remove();
-										}
-									};
-									new ent( gameSys, textName ) { ignorePause = true, scale = .05f, pos = info[id].pos + new v3( 0, .1f, -.1f ), health = ticksPerSecond * 1, text = info[id].stanceName, textColor=info[id].stanceColor,
-										update = e3 => {
-											e3.health--;
-											if( e3.health < 10 )e3.textAlpha = e3.health/10f;
-											e3.pos = e3.pos + new v3(0,.01f, 0);
-											if( e3.health <= 0f )e3.remove();
-										}
-									};
-								}
-
-								e2.health--;
-								if( e2.health <= 0f )e2.remove();
-									var v = e2.pos;
-									nm.ease(ref v, info[id].pos, .3f );
-									e2.pos = v;
-							}
-						};
-					}
-
-
-					if( tick < 12 * ticksPerSecond ) {
-						pausedTimer = tick;
-					}
-
-					if( tick == 0 ) {
-						pausedTimer=0;
-						e.remove();
-					}
-				}
-			};
-		}
-
 		void PausedTimer() {
-			//pausedTimer--;
 			if( pausedTimer == 0 ) {
 				endOfRoundTimer = ticksPerSecond * secondsAfterLockedInChoice;
 				nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
@@ -324,7 +204,7 @@ namespace APG {
 				// Run some sort of between round thinker here.
 				gameSys.Sound( roundOver, 1 );
 
-				MakeRoundEnd();
+				src.MakeRoundEnd( roundNumber, ticksPerSecond, players.GetEndOfRoundInfo(), val => pausedTimer = val );
 
 				timerUpdater = PausedTimer;
 			}

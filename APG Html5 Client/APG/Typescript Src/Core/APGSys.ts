@@ -1,7 +1,5 @@
 ﻿class APGSys {
 
-	handlers: APGSubgameMessageHandler;
-
 	g: Phaser.Game;
 
 	w: Phaser.World;
@@ -9,8 +7,6 @@
 	playerName: string;
 
 	JSONAssets: { any };
-
-	private network: IRCNetwork;
 
 	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any) {
 
@@ -25,7 +21,18 @@
 		this.network.update();
 	}
 
-	sendMessageToServer<T>(msgName: string, parmsForMessageToServer: T): void {
+	WriteToServer<T>(msgName: string, parmsForMessageToServer: T): void {
 		this.network.sendMessageToServer(msgName, parmsForMessageToServer);
 	}
+
+	SetHandlers(theHandlers: NetworkMessageHandler): void {
+		this.handlers = theHandlers;
+	}
+
+	//____________________________________________________
+
+	private handlers: NetworkMessageHandler;
+
+	private network: IRCNetwork;
+
 }

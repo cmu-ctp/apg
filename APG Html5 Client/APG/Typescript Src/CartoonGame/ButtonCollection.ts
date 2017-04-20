@@ -15,7 +15,7 @@ class ButtonCollection {
 	selected: number;
 	update: (active: boolean) => void;
 
-	constructor(sys:APGSys, baseX: number, baseY: number, xAdd: number, yAdd: number, size: number, highlightColor: string, baseColor: string, setToolTip: (str: string) => void, setOption: (val: number) => void, buttonsInit: ActionEntry[]) {
+	constructor(apg:APGSys, baseX: number, baseY: number, xAdd: number, yAdd: number, size: number, highlightColor: string, baseColor: string, setToolTip: (str: string) => void, setOption: (val: number) => void, buttonsInit: ActionEntry[]) {
 		let fx1 = 0, fx2 = 0, fy1 = 0, fy2 = 0, updateActive:boolean = false;
 
 		var big: ButtonCollection = this;
@@ -24,7 +24,7 @@ class ButtonCollection {
 			updateActive = active;
 		};
 
-		let clickSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+		let clickSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
 		var fontName: string = "Caveat Brush";
 
 		function addOption(id: number, str: string, x: number, y: number, toolTip: string): void {
@@ -39,7 +39,7 @@ class ButtonCollection {
 			}
 
 			var textColor = { font: '18px ' + fontName, fill: '#222' };
-			new enttx(sys.w, 60, 50 + 20, str, textColor, {
+			new enttx(apg.w, 60, 50 + 20, str, textColor, {
 				upd: e => {
 					mul = mul * (1 - spd) + spd * (updateActive ? 1 : 0);
 
@@ -62,13 +62,13 @@ class ButtonCollection {
 					}
 					lastHighlight = highlighted;
 
-					if (sys.g.input.activePointer.isDown == false) inputUsed = false;
+					if (apg.g.input.activePointer.isDown == false) inputUsed = false;
 
 					if (!updateActive) {return;}
 					highlighted = true;
-					if (sys.g.input.x < x1 || sys.g.input.x > x2 || sys.g.input.y < y1 || sys.g.input.y > y2) highlighted = false;
+					if (apg.g.input.x < x1 || apg.g.input.x > x2 || apg.g.input.y < y1 || apg.g.input.y > y2) highlighted = false;
 					if (highlighted) { setToolTip(toolTip); }
-					if (highlighted && sys.g.input.activePointer.isDown && inputUsed == false) {
+					if (highlighted && apg.g.input.activePointer.isDown && inputUsed == false) {
 						clickSound.play();
 						big.selected = id;
 						inputUsed = true;
@@ -90,7 +90,7 @@ class ButtonCollection {
 
 		function addSelector(): void {
 			let goalx: number = 0, goaly: number = 0, mul: number = 1, tick: number = Math.random() * Math.PI * 2, tickScale: number = Math.random() * .8 + .4;
-			new ent(sys.w, 50, 50, 'assets/imgs/blueorb.png', { scalex : .24, scaley : .24,
+			new ent(apg.w, 50, 50, 'assets/imgs/blueorb.png', { scalex : .24, scaley : .24,
 				upd: e => {
 					e.x = goalx;
 					e.y = goaly;

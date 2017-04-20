@@ -21,17 +21,17 @@ interface PlayerUpdate{
 }
 
 
-function MainPlayerInput(sys: APGSys): void {
+function MainPlayerInput(apg: APGSys): void {
 	var fontName: string = "Caveat Brush";
 
-	var actions: any = sys.JSONAssets['TestActions.json'];
+	var actions: any = apg.JSONAssets['TestActions.json'];
 
-	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
-	var warningSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+	var warningSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
 
 
 	function makeButtonSet(baseX: number, baseY: number, xAdd: number, yAdd: number, size: number, highlightColor: string, baseColor: string, setToolTip: (str: string) => void, setOption: (val: number) => void, buttonsInit: ActionEntry[]): ButtonCollection {
-		return new ButtonCollection(sys, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
+		return new ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
 	}
 	function addActionSet(setToolTip: (str: string) => void): ButtonCollection {
 		var o = [];
@@ -65,19 +65,19 @@ function MainPlayerInput(sys: APGSys): void {
 	var choices: number[] = [1, 1, 1, 1, 1, 1];
 	var myStats: PlayerUpdate = { nm: "", hp: 3, money: 0 };
 
-	sys.handlers = new APGSubgameMessageHandler()
-		.add<RoundUpdate>("time", p => {
+	apg.SetHandlers(new NetworkMessageHandler()
+		.Add<RoundUpdate>("time", p => {
 			timer = p.time;
 			roundNumber = p.round;
 			if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
 		})
-		.add<PlayerUpdate>("pl", p => {
-			if (p.nm != sys.playerName) return;
+		.Add<PlayerUpdate>("pl", p => {
+			if (p.nm != apg.playerName) return;
 			myStats = p;
 		})
-		.add<SelectionParms>("submit", p => {
-			sys.sendMessageToServer<SelectionParms>("upd", { choices: choices });
-		});
+		.Add<SelectionParms>("submit", p => {
+			apg.WriteToServer<SelectionParms>("upd", { choices: choices });
+		}));
 
 	var toolTip: string = "";
 	function setToolTip(str: string): void { toolTip = str; }
@@ -87,7 +87,7 @@ function MainPlayerInput(sys: APGSys): void {
 	var roundLabel: enttx, toolTipLabel: enttx, nextChoiceLabel: enttx;
 	var lastRoundUpdate: number = 0;
 
-	new ent(sys.w, 0, 0, 'assets/imgs/ClientUI4.png', {
+	new ent(apg.w, 0, 0, 'assets/imgs/ClientUI4.png', {
 		upd: e => {
 			if (roundNumber != lastRoundUpdate) {
 				roundLabel.text = "Choices for Round " + roundNumber;
@@ -99,19 +99,19 @@ function MainPlayerInput(sys: APGSys): void {
 			nextChoiceLabel.text = "" + timer;
 		}
 	});
-	roundLabel = new enttx(sys.w, 220, 25, "Choices for Round ", { font: '54px ' + fontName, fill: '#688' });
-	toolTipLabel = new enttx(sys.w, 340, 150, "ToolTip", { font: '20px ' + fontName, fill: '#233', wordWrap: true, wordWrapWidth: 330 });
-	nextChoiceLabel = new enttx(sys.w, 650, 350, "", { font: '40px ' + fontName, fill: '#688' });
+	roundLabel = new enttx(apg.w, 220, 25, "Choices for Round ", { font: '54px ' + fontName, fill: '#688' });
+	toolTipLabel = new enttx(apg.w, 340, 150, "ToolTip", { font: '20px ' + fontName, fill: '#233', wordWrap: true, wordWrapWidth: 330 });
+	nextChoiceLabel = new enttx(apg.w, 650, 350, "", { font: '40px ' + fontName, fill: '#688' });
 	tabButtons = addActionSet(setToolTip);
 	choiceButtons = addActions(choices, setToolTip);
 
 	function category(msg: string, x: number, y: number ):void {
-		new enttx(sys.w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
+		new enttx(apg.w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
 	}
 
 	function inCategory(x: number, y: number, add: number, labels: string[]): void {
 		for (var k = 0; k < labels.length; k++) {
-			new enttx(sys.w, x, y + k*add, labels[k], { font: '14px ' + fontName, fill: '#211' });
+			new enttx(apg.w, x, y + k*add, labels[k], { font: '14px ' + fontName, fill: '#211' });
 		}
 	}
 

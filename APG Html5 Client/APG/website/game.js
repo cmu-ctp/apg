@@ -107,8 +107,8 @@ var enttx = (function (_super) {
     enttx.prototype.irot = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
     return enttx;
 }(Phaser.Text));
-function StartGame(sys) {
-    MainPlayerInput(sys);
+function StartGame(apg) {
+    RacingInput(apg);
 }
 var APGSys = (function () {
     function APGSys(g, logicIRCChannelName, playerName, chat, JSONAssets) {
@@ -122,8 +122,11 @@ var APGSys = (function () {
     APGSys.prototype.update = function () {
         this.network.update();
     };
-    APGSys.prototype.sendMessageToServer = function (msgName, parmsForMessageToServer) {
+    APGSys.prototype.WriteToServer = function (msgName, parmsForMessageToServer) {
         this.network.sendMessageToServer(msgName, parmsForMessageToServer);
+    };
+    APGSys.prototype.SetHandlers = function (theHandlers) {
+        this.handlers = theHandlers;
     };
     return APGSys;
 }());
@@ -314,14 +317,14 @@ var ActionEntry = (function () {
 cacheImages('assets/imgs', ['blueorb.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
 var ButtonCollection = (function () {
-    function ButtonCollection(sys, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit) {
+    function ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit) {
         var fx1 = 0, fx2 = 0, fy1 = 0, fy2 = 0, updateActive = false;
         var big = this;
         this.selected = 0;
         this.update = function (active) {
             updateActive = active;
         };
-        var clickSound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+        var clickSound = apg.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
         var fontName = "Caveat Brush";
         function addOption(id, str, x, y, toolTip) {
             var highlighted = false, highlightVertical = size * 3 / 4, highlightHorizontal = size * 16 / 40, x1 = x, x2 = x + str.length * highlightHorizontal, y1 = y - highlightVertical, y2 = y + 10, mul = 1, spd = .07 + .26 * Math.random(), lastHighlight = false, inputUsed = false;
@@ -332,7 +335,7 @@ var ButtonCollection = (function () {
                 fy2 = y2;
             }
             var textColor = { font: '18px ' + fontName, fill: '#222' };
-            new enttx(sys.w, 60, 50 + 20, str, textColor, {
+            new enttx(apg.w, 60, 50 + 20, str, textColor, {
                 upd: function (e) {
                     mul = mul * (1 - spd) + spd * (updateActive ? 1 : 0);
                     e.x = x + 10 * 1.5 * (1 - mul);
@@ -355,18 +358,18 @@ var ButtonCollection = (function () {
                             e.addColor(baseColor, 0);
                     }
                     lastHighlight = highlighted;
-                    if (sys.g.input.activePointer.isDown == false)
+                    if (apg.g.input.activePointer.isDown == false)
                         inputUsed = false;
                     if (!updateActive) {
                         return;
                     }
                     highlighted = true;
-                    if (sys.g.input.x < x1 || sys.g.input.x > x2 || sys.g.input.y < y1 || sys.g.input.y > y2)
+                    if (apg.g.input.x < x1 || apg.g.input.x > x2 || apg.g.input.y < y1 || apg.g.input.y > y2)
                         highlighted = false;
                     if (highlighted) {
                         setToolTip(toolTip);
                     }
-                    if (highlighted && sys.g.input.activePointer.isDown && inputUsed == false) {
+                    if (highlighted && apg.g.input.activePointer.isDown && inputUsed == false) {
                         clickSound.play();
                         big.selected = id;
                         inputUsed = true;
@@ -387,7 +390,7 @@ var ButtonCollection = (function () {
         }
         function addSelector() {
             var goalx = 0, goaly = 0, mul = 1, tick = Math.random() * Math.PI * 2, tickScale = Math.random() * .8 + .4;
-            new ent(sys.w, 50, 50, 'assets/imgs/blueorb.png', { scalex: .24, scaley: .24,
+            new ent(apg.w, 50, 50, 'assets/imgs/blueorb.png', { scalex: .24, scaley: .24,
                 upd: function (e) {
                     e.x = goalx;
                     e.y = goaly;
@@ -484,7 +487,7 @@ var IRCNetwork = (function () {
             if (userstate.username == logicChannelName) {
                 var msgTemp = message.split("%%");
                 for (var k = 0; k < msgTemp.length; k++) {
-                    getHandlers().run(msgTemp[k]);
+                    getHandlers().Run(msgTemp[k]);
                 }
             }
             else {
@@ -622,65 +625,98 @@ cachePhaserAssets(function (l) {
 cacheImages('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselected.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
 cacheGoogleWebFonts(['Anton']);
-function RacingInput(sys) {
-    var PlayerChoice;
-    (function (PlayerChoice) {
-        PlayerChoice[PlayerChoice["bodyHood"] = 0] = "bodyHood";
-        PlayerChoice[PlayerChoice["bodySide"] = 1] = "bodySide";
-        PlayerChoice[PlayerChoice["bodyTrunk"] = 2] = "bodyTrunk";
-        PlayerChoice[PlayerChoice["defense"] = 3] = "defense";
-        PlayerChoice[PlayerChoice["nitro"] = 4] = "nitro";
-        PlayerChoice[PlayerChoice["offense"] = 5] = "offense";
-        PlayerChoice[PlayerChoice["case"] = 6] = "case";
-        PlayerChoice[PlayerChoice["pistons"] = 7] = "pistons";
-        PlayerChoice[PlayerChoice["plugs"] = 8] = "plugs";
-        PlayerChoice[PlayerChoice["airfreshner"] = 9] = "airfreshner";
-        PlayerChoice[PlayerChoice["seat"] = 10] = "seat";
-        PlayerChoice[PlayerChoice["steering"] = 11] = "steering";
-        PlayerChoice[PlayerChoice["tireBolts"] = 12] = "tireBolts";
-        PlayerChoice[PlayerChoice["tireBrand"] = 13] = "tireBrand";
-        PlayerChoice[PlayerChoice["tire"] = 14] = "tire";
-    })(PlayerChoice || (PlayerChoice = {}));
-    var statNames = ["Fuel Cap", "Speed Cap", "Weight", "Suaveness", "Power"];
-    var timer = 0;
-    var roundNumber = 1;
-    var choices = [1, 1, 1, 1, 1, 1];
-    var endOfRoundSound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
-    var warningSound = sys.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
-    var carSet = 3;
-    sys.handlers = new APGSubgameMessageHandler();
-    var tick = 0, choiceLeft = 50, choiceUp = 118;
-    var lastRoundUpdate = 0;
-    var bkg = new ent(sys.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
-        upd: function (e) {
-            if (roundNumber != lastRoundUpdate) {
-                lastRoundUpdate = roundNumber;
+var RacingGame = (function () {
+    function RacingGame(apg) {
+        var _this = this;
+        this.timer = 0;
+        this.choices = [1, 1, 1, 1, 1, 1];
+        this.roundNumber = 1;
+        var PlayerChoice;
+        (function (PlayerChoice) {
+            PlayerChoice[PlayerChoice["bodyHood"] = 0] = "bodyHood";
+            PlayerChoice[PlayerChoice["bodySide"] = 1] = "bodySide";
+            PlayerChoice[PlayerChoice["bodyTrunk"] = 2] = "bodyTrunk";
+            PlayerChoice[PlayerChoice["defense"] = 3] = "defense";
+            PlayerChoice[PlayerChoice["nitro"] = 4] = "nitro";
+            PlayerChoice[PlayerChoice["offense"] = 5] = "offense";
+            PlayerChoice[PlayerChoice["case"] = 6] = "case";
+            PlayerChoice[PlayerChoice["pistons"] = 7] = "pistons";
+            PlayerChoice[PlayerChoice["plugs"] = 8] = "plugs";
+            PlayerChoice[PlayerChoice["airfreshner"] = 9] = "airfreshner";
+            PlayerChoice[PlayerChoice["seat"] = 10] = "seat";
+            PlayerChoice[PlayerChoice["steering"] = 11] = "steering";
+            PlayerChoice[PlayerChoice["tireBolts"] = 12] = "tireBolts";
+            PlayerChoice[PlayerChoice["tireBrand"] = 13] = "tireBrand";
+            PlayerChoice[PlayerChoice["tire"] = 14] = "tire";
+        })(PlayerChoice || (PlayerChoice = {}));
+        var endOfRoundSound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+        this.warningSound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+        var carSet = 3;
+        var tick = 0, choiceLeft = 50, choiceUp = 118;
+        var lastRoundUpdate = 0;
+        this.makeHandlers(apg);
+        var bkg = new ent(apg.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
+            scalex: 2, scaley: 2,
+            upd: function (e) {
+                if (_this.roundNumber != lastRoundUpdate) {
+                    lastRoundUpdate = _this.roundNumber;
+                }
+            }
+        });
+        this.addArt(apg, carSet);
+    }
+    RacingGame.prototype.addArt = function (apg, carSet) {
+        var statNames = ["Fuel Cap", "Speed Cap", "Weight", "Suaveness", "Power"];
+        function fnt(sz) {
+            sz *= 2;
+            return '' + sz + 'px Anton';
+        }
+        new enttx(apg.w, 2 * 10, 2 * 10, "CAR PERFORMANCE", { font: fnt(20), fill: '#fff' });
+        for (var k = 0; k < 5; k++) {
+            new enttx(apg.w, 2 * 10, 2 * (48 + (72 - 48) * k), statNames[k] + ":", { font: fnt(16), fill: '#fff' });
+        }
+        new enttx(apg.w, 2 * 12, 2 * 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
+        new enttx(apg.w, 2 * 15, 2 * 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
+        new enttx(apg.w, 2 * 15, 2 * 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
+        new enttx(apg.w, 2 * 152, 2 * 10, "OPTIONS", { font: fnt(20), fill: '#fff' });
+        new ent(apg.w, 2 * 158, 2 * 36, "racinggame/selected.png");
+        new ent(apg.w, 2 * 158, 2 * 92, "racinggame/unselected.png");
+        new ent(apg.w, 2 * 158, 2 * 150, "racinggame/unselected.png");
+        new enttx(apg.w, 2 * 158, 2 * 36, "Featherwate", { font: fnt(16), fill: '#0' });
+        new enttx(apg.w, 2 * 158, 2 * 92, "Unguzzler", { font: fnt(16), fill: '#0' });
+        new enttx(apg.w, 2 * 158, 2 * 150, "Hulkite", { font: fnt(16), fill: '#0' });
+        var picChangeTick = 0;
+        var picFrame = 0;
+        for (var k = 1; k < 4; k++) {
+            new ent(apg.w, 2 * 220, 2 * 40, debugAllCarParts[carSet * 9 + (k - 1) * 3 + 2], { scalex: 1, scaley: 1 });
+        }
+        new enttx(apg.w, 2 * 220, 2 * 178, "-1 Weight, +1 Power", { font: fnt(24), fill: '#fff' });
+    };
+    RacingGame.prototype.makeHandlers = function (apg) {
+        function Time(roundUpdate) {
+            this.timer = roundUpdate.time;
+            this.roundNumber = roundUpdate.round;
+            if (this.timer < 6) {
+                this.warningSound.play('', 0, 1 - (this.timer * 15) / 100);
             }
         }
-    });
-    function fnt(sz) {
-        return '' + sz + 'px Anton';
-    }
-    new enttx(sys.w, 10, 10, "CAR PERFORMANCE", { font: fnt(20), fill: '#fff' });
-    for (var k = 0; k < 5; k++) {
-        new enttx(sys.w, 10, 48 + (72 - 48) * k, statNames[k] + ":", { font: fnt(16), fill: '#fff' });
-    }
-    new enttx(sys.w, 12, 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
-    new enttx(sys.w, 15, 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
-    new enttx(sys.w, 15, 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
-    new enttx(sys.w, 152, 10, "OPTIONS", { font: fnt(20), fill: '#fff' });
-    new ent(sys.w, 158, 36, "racinggame/selected.png");
-    new ent(sys.w, 158, 92, "racinggame/unselected.png");
-    new ent(sys.w, 158, 150, "racinggame/unselected.png");
-    new enttx(sys.w, 158, 36, "Featherwate", { font: fnt(16), fill: '#0' });
-    new enttx(sys.w, 158, 92, "Unguzzler", { font: fnt(16), fill: '#0' });
-    new enttx(sys.w, 158, 150, "Hulkite", { font: fnt(16), fill: '#0' });
-    var picChangeTick = 0;
-    var picFrame = 0;
-    for (var k = 1; k < 4; k++) {
-        new ent(sys.w, 220, 40, debugAllCarParts[carSet * 9 + (k - 1) * 3 + 2], { scalex: .5, scaley: .5 });
-    }
-    new enttx(sys.w, 220, 178, "-1 Weight, +1 Power", { font: fnt(24), fill: '#fff' });
+        function PlayerStats(playerUpdate) {
+            if (playerUpdate.nm != apg.playerName)
+                return;
+        }
+        function Submit(selectionParms) {
+            apg.WriteToServer("upd", { choices: this.choices });
+        }
+        var handlers = new NetworkMessageHandler();
+        handlers.Add("time", Time);
+        handlers.Add("pl", PlayerStats);
+        handlers.Add("submit", Submit);
+        apg.SetHandlers(handlers);
+    };
+    return RacingGame;
+}());
+function RacingInput(apg) {
+    new RacingGame(apg);
 }
 var secondsPerChoice = 60;
 var ticksPerSecond = 60;
@@ -691,12 +727,12 @@ var debugPrintMessages = false;
 var debugLogIncomingIRCChat = true;
 var debugLogOutgoingIRCChat = true;
 var debugShowAssetMessages = false;
-var APGSubgameMessageHandler = (function () {
-    function APGSubgameMessageHandler() {
+var NetworkMessageHandler = (function () {
+    function NetworkMessageHandler() {
         this.inputs = {};
         this.inputs = {};
     }
-    APGSubgameMessageHandler.prototype.add = function (msgName, handlerForServerMessage) {
+    NetworkMessageHandler.prototype.Add = function (msgName, handlerForServerMessage) {
         this.inputs[msgName] =
             function (s) {
                 var v = JSON.parse(s);
@@ -704,7 +740,7 @@ var APGSubgameMessageHandler = (function () {
             };
         return this;
     };
-    APGSubgameMessageHandler.prototype.run = function (message) {
+    NetworkMessageHandler.prototype.Run = function (message) {
         var msgTemp = message.split("###");
         if (msgTemp.length != 2) {
             ConsoleOutput.debugError("Bad Network Message: " + message, "network");
@@ -719,18 +755,18 @@ var APGSubgameMessageHandler = (function () {
         this.inputs[msgName](unparsedParms);
         return true;
     };
-    return APGSubgameMessageHandler;
+    return NetworkMessageHandler;
 }());
 cacheImages('assets/imgs', ['ClientUI4.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
 cacheJSONs(['TestActions.json']);
-function MainPlayerInput(sys) {
+function MainPlayerInput(apg) {
     var fontName = "Caveat Brush";
-    var actions = sys.JSONAssets['TestActions.json'];
-    var endOfRoundSound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
-    var warningSound = sys.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+    var actions = apg.JSONAssets['TestActions.json'];
+    var endOfRoundSound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+    var warningSound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
     function makeButtonSet(baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit) {
-        return new ButtonCollection(sys, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
+        return new ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
     }
     function addActionSet(setToolTip) {
         var o = [];
@@ -762,22 +798,22 @@ function MainPlayerInput(sys) {
     var roundNumber = 1;
     var choices = [1, 1, 1, 1, 1, 1];
     var myStats = { nm: "", hp: 3, money: 0 };
-    sys.handlers = new APGSubgameMessageHandler()
-        .add("time", function (p) {
+    apg.SetHandlers(new NetworkMessageHandler()
+        .Add("time", function (p) {
         timer = p.time;
         roundNumber = p.round;
         if (timer < 6) {
             warningSound.play('', 0, 1 - (timer * 15) / 100);
         }
     })
-        .add("pl", function (p) {
-        if (p.nm != sys.playerName)
+        .Add("pl", function (p) {
+        if (p.nm != apg.playerName)
             return;
         myStats = p;
     })
-        .add("submit", function (p) {
-        sys.sendMessageToServer("upd", { choices: choices });
-    });
+        .Add("submit", function (p) {
+        apg.WriteToServer("upd", { choices: choices });
+    }));
     var toolTip = "";
     function setToolTip(str) { toolTip = str; }
     var tick = 0, choiceLeft = 50, choiceUp = 118, tabButtons, choiceButtons, bkg = new Image();
@@ -785,7 +821,7 @@ function MainPlayerInput(sys) {
     var labelColor = '#608080';
     var roundLabel, toolTipLabel, nextChoiceLabel;
     var lastRoundUpdate = 0;
-    new ent(sys.w, 0, 0, 'assets/imgs/ClientUI4.png', {
+    new ent(apg.w, 0, 0, 'assets/imgs/ClientUI4.png', {
         upd: function (e) {
             if (roundNumber != lastRoundUpdate) {
                 roundLabel.text = "Choices for Round " + roundNumber;
@@ -798,17 +834,17 @@ function MainPlayerInput(sys) {
             nextChoiceLabel.text = "" + timer;
         }
     });
-    roundLabel = new enttx(sys.w, 220, 25, "Choices for Round ", { font: '54px ' + fontName, fill: '#688' });
-    toolTipLabel = new enttx(sys.w, 340, 150, "ToolTip", { font: '20px ' + fontName, fill: '#233', wordWrap: true, wordWrapWidth: 330 });
-    nextChoiceLabel = new enttx(sys.w, 650, 350, "", { font: '40px ' + fontName, fill: '#688' });
+    roundLabel = new enttx(apg.w, 220, 25, "Choices for Round ", { font: '54px ' + fontName, fill: '#688' });
+    toolTipLabel = new enttx(apg.w, 340, 150, "ToolTip", { font: '20px ' + fontName, fill: '#233', wordWrap: true, wordWrapWidth: 330 });
+    nextChoiceLabel = new enttx(apg.w, 650, 350, "", { font: '40px ' + fontName, fill: '#688' });
     tabButtons = addActionSet(setToolTip);
     choiceButtons = addActions(choices, setToolTip);
     function category(msg, x, y) {
-        new enttx(sys.w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
+        new enttx(apg.w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
     }
     function inCategory(x, y, add, labels) {
         for (var k = 0; k < labels.length; k++) {
-            new enttx(sys.w, x, y + k * add, labels[k], { font: '14px ' + fontName, fill: '#211' });
+            new enttx(apg.w, x, y + k * add, labels[k], { font: '14px ' + fontName, fill: '#211' });
         }
     }
     category("RESOURCES", 40, 100);
@@ -821,47 +857,47 @@ function MainPlayerInput(sys) {
 cacheImages('assets/imgs', ['ClientUI3.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
-function ShowSubmitted(sys, getRoundNumber) {
+function ShowSubmitted(apg, getRoundNumber) {
     var inputUsed = false;
-    var clickSound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
-    sys.handlers = new APGSubgameMessageHandler();
-    new ent(sys.w, 0, 0, 'assets/imgs/ClientUI3.png', {
+    var clickSound = apg.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+    apg.SetHandlers(new NetworkMessageHandler());
+    new ent(apg.w, 0, 0, 'assets/imgs/ClientUI3.png', {
         upd: function (e) {
-            if (sys.g.input.activePointer.isDown && !inputUsed) {
+            if (apg.g.input.activePointer.isDown && !inputUsed) {
                 inputUsed = true;
-                MainPlayerInput(sys);
+                MainPlayerInput(apg);
                 clickSound.play();
             }
         }
     });
-    new enttx(sys.w, 60, 50 + 20, "Chosen For Round " + getRoundNumber() + ":", { font: '16px Caveat Brush', fill: '#222' });
+    new enttx(apg.w, 60, 50 + 20, "Chosen For Round " + getRoundNumber() + ":", { font: '16px Caveat Brush', fill: '#222' });
 }
 cacheImages('assets/imgs', ['ClientUI3.png']);
 cacheSounds('assets/snds/fx', ['strokeup4.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
-function WaitingForJoinAcknowledement(sys) {
-    var endOfRoundSound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+function WaitingForJoinAcknowledement(apg) {
+    var endOfRoundSound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
     var endSubgame = false, timeOut = 0, retry = 0;
-    sys.handlers = new APGSubgameMessageHandler()
-        .add("join", function (p) {
-        if (p.name != sys.playerName)
+    apg.SetHandlers(new NetworkMessageHandler()
+        .Add("join", function (p) {
+        if (p.name != apg.playerName)
             return;
         endSubgame = true;
         endOfRoundSound.play();
-        MainPlayerInput(sys);
-    });
-    new ent(sys.w, 60, 0, 'assets/imgs/ClientUI3.png', {
+        MainPlayerInput(apg);
+    }));
+    new ent(apg.w, 60, 0, 'assets/imgs/ClientUI3.png', {
         alpha: 0,
         upd: function (e) {
             retry++;
             if (retry > ticksPerSecond * 4) {
                 retry = 0;
-                sys.sendMessageToServer("join", {});
+                apg.WriteToServer("join", {});
             }
             timeOut++;
             if (timeOut > ticksPerSecond * 20) {
                 endSubgame = true;
-                WaitingToJoin(sys, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game.");
+                WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game.");
                 return;
             }
             if (endSubgame) {
@@ -875,7 +911,7 @@ function WaitingForJoinAcknowledement(sys) {
         }
     });
     var tick = 0;
-    new enttx(sys.w, 320, 100 + 60, "Trying to Connect to Streamer's Game - Hold on a Second...", { font: '32px Caveat Brush', fill: '#222' }, {
+    new enttx(apg.w, 320, 100 + 60, "Trying to Connect to Streamer's Game - Hold on a Second...", { font: '32px Caveat Brush', fill: '#222' }, {
         alpha: 0,
         upd: function (e) {
             if (endSubgame) {
@@ -893,12 +929,12 @@ function WaitingForJoinAcknowledement(sys) {
 cacheImages('assets/imgs', ['ClientUI3.png']);
 cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
-function WaitingToJoin(sys, previousMessage) {
+function WaitingToJoin(apg, previousMessage) {
     if (previousMessage === void 0) { previousMessage = ""; }
-    var clickSound = sys.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
-    sys.handlers = new APGSubgameMessageHandler();
+    var clickSound = apg.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+    apg.SetHandlers(new NetworkMessageHandler());
     var inputUsed = false, endSubgame = false;
-    new ent(sys.g.world, 0, 0, 'assets/imgs/ClientUI3.png', {
+    new ent(apg.g.world, 0, 0, 'assets/imgs/ClientUI3.png', {
         upd: function (e) {
             if (endSubgame) {
                 e.x = e.x * .7 + .3 * -30;
@@ -906,18 +942,18 @@ function WaitingToJoin(sys, previousMessage) {
                     e.destroy(true);
                 return;
             }
-            if (sys.g.input.activePointer.isDown && !inputUsed) {
+            if (apg.g.input.activePointer.isDown && !inputUsed) {
                 inputUsed = true;
                 clickSound.play();
-                WaitingForJoinAcknowledement(sys);
-                sys.sendMessageToServer("join", {});
+                WaitingForJoinAcknowledement(apg);
+                apg.WriteToServer("join", {});
                 endSubgame = true;
             }
         }
     });
     var tc = 0, textColor = { font: '32px Caveat Brush', fill: '#222' }, textColor2 = { font: '20px Caveat Brush', fill: '#811', wordWrap: true, wordWrapWidth: 430 };
     if (previousMessage != "") {
-        new enttx(sys.w, 160, 2 * (50 + 20) + 60, previousMessage, textColor2, {
+        new enttx(apg.w, 160, 2 * (50 + 20) + 60, previousMessage, textColor2, {
             upd: function (e) {
                 if (endSubgame) {
                     e.x = e.x * .7 + .3 * -50;
@@ -928,7 +964,7 @@ function WaitingToJoin(sys, previousMessage) {
             }
         });
     }
-    new enttx(sys.w, 140, 2 * (50 + 20) - 20, "Tap or click to Connect to the Streamer's Game!", textColor, {
+    new enttx(apg.w, 140, 2 * (50 + 20) - 20, "Tap or click to Connect to the Streamer's Game!", textColor, {
         upd: function (e) {
             if (endSubgame) {
                 e.x = e.x * .7 + .3 * -50;

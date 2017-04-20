@@ -15,8 +15,6 @@ cacheImages('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselecte
 cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
 cacheGoogleWebFonts(['Anton']);
 
-
-
 interface RacingRoundUpdate {
 	round: number;
 	time: number;
@@ -32,93 +30,110 @@ interface RacingPlayerUpdate {
 	money: number;
 }
 
+class RacingGame {
 
+	addArt(apg: APGSys, carSet:number): void {
 
-function RacingInput(sys: APGSys): void {
-	enum PlayerChoice {
-		bodyHood = 0, bodySide, bodyTrunk, defense, nitro, offense, case, pistons, plugs, airfreshner, seat, steering, tireBolts, tireBrand, tire
-	}
+		var statNames = ["Fuel Cap", "Speed Cap", "Weight", "Suaveness", "Power"];
 
-	var statNames = [ "Fuel Cap", "Speed Cap", "Weight", "Suaveness", "Power" ];
+		// ______________________
 
-	var timer: number = 0;
-	var roundNumber: number = 1;
-	var choices: number[] = [1, 1, 1, 1, 1, 1];
-
-	var endOfRoundSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
-	var warningSound: Phaser.Sound = sys.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
-
-	var carSet: number = 3;
-
-	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118;
-	var lastRoundUpdate: number = 0;
-
-	function Time(roundUpdate: RacingRoundUpdate): void {
-		timer = roundUpdate.time;
-		roundNumber = roundUpdate.round;
-		if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
-	}
-	function PlayerStats(playerUpdate: RacingPlayerUpdate): void {
-		if (playerUpdate.nm != sys.playerName) return;
-		//myStats = p;
-	}
-	function Submit(selectionParms: RacingSelectionParms): void {
-		sys.sendMessageToServer<RacingSelectionParms>("upd", { choices: choices });
-	}
-
-	var handlers: APGSubgameMessageHandler = new APGSubgameMessageHandler();
-	handlers.add<RacingRoundUpdate>("time", Time);
-	handlers.add<RacingPlayerUpdate>("pl", PlayerStats);
-	handlers.add<RacingSelectionParms>("submit", Submit);
-	sys.handlers = handlers;
-
-
-	var bkg: ent = new ent(sys.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
-		upd: e => {
-			if (roundNumber != lastRoundUpdate) {
-				lastRoundUpdate = roundNumber;
-			}
+		function fnt(sz: number): string {
+			sz *= 2;
+			return '' + sz + 'px Anton';
 		}
-	});
 
-	// ______________________
+		new enttx(apg.w, 2 * 10, 2 * 10, "CAR PERFORMANCE", { font: fnt(20), fill: '#fff' });
 
-	function fnt(sz: number): string {
-		return '' + sz + 'px Anton';
+		for (var k = 0; k < 5; k++) {
+			new enttx(apg.w, 2 * 10, 2 * (48 + (72 - 48) * k), statNames[k] + ":", { font: fnt(16), fill: '#fff' });
+		}
+
+		// ______________________
+
+		new enttx(apg.w, 2 * 12, 2 * 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
+
+		new enttx(apg.w, 2 * 15, 2 * 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
+		new enttx(apg.w, 2 * 15, 2 * 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
+
+		// ______________________
+
+		new enttx(apg.w, 2 * 152, 2 * 10, "OPTIONS", { font: fnt(20), fill: '#fff' });
+
+		new ent(apg.w, 2 * 158, 2 * 36, "racinggame/selected.png");
+		new ent(apg.w, 2 * 158, 2 * 92, "racinggame/unselected.png");
+		new ent(apg.w, 2 * 158, 2 * 150, "racinggame/unselected.png");
+
+		new enttx(apg.w, 2 * 158, 2 * 36, "Featherwate", { font: fnt(16), fill: '#0' });
+		new enttx(apg.w, 2 * 158, 2 * 92, "Unguzzler", { font: fnt(16), fill: '#0' });
+		new enttx(apg.w, 2 * 158, 2 * 150, "Hulkite", { font: fnt(16), fill: '#0' });
+
+		var picChangeTick = 0;
+		var picFrame = 0;
+
+		for (var k = 1; k < 4; k++) {
+			//"carPart_" + k + "_" + j
+			new ent(apg.w, 2 * 220, 2 * 40, debugAllCarParts[carSet * 9 + (k - 1) * 3 + 2], { scalex: 1, scaley: 1 });
+		}
+
+		new enttx(apg.w, 2 * 220, 2 * 178, "-1 Weight, +1 Power", { font: fnt(24), fill: '#fff' });
 	}
 
-	new enttx(sys.w, 10, 10, "CAR PERFORMANCE", { font: fnt(20), fill: '#fff' });
+	timer: number = 0;
+	choices: number[] = [1, 1, 1, 1, 1, 1];
+	roundNumber: number = 1;
+	warningSound: Phaser.Sound;
 
-	for (var k = 0; k < 5; k++) {
-		new enttx(sys.w, 10, 48 + (72 - 48) * k, statNames[k] + ":", { font: fnt(16), fill: '#fff' });
+	makeHandlers(apg: APGSys): void {
+
+		function Time(roundUpdate: RacingRoundUpdate): void {
+			this.timer = roundUpdate.time;
+			this.roundNumber = roundUpdate.round;
+			if (this.timer < 6) { this.warningSound.play('', 0, 1 - (this.timer * 15) / 100); }
+		}
+		function PlayerStats(playerUpdate: RacingPlayerUpdate): void {
+			if (playerUpdate.nm != apg.playerName) return;
+			//myStats = p;
+		}
+		function Submit(selectionParms: RacingSelectionParms): void {
+			apg.WriteToServer<RacingSelectionParms>("upd", { choices: this.choices });
+		}
+
+		var handlers: NetworkMessageHandler = new NetworkMessageHandler();
+		handlers.Add<RacingRoundUpdate>("time", Time);
+		handlers.Add<RacingPlayerUpdate>("pl", PlayerStats);
+		handlers.Add<RacingSelectionParms>("submit", Submit);
+		apg.SetHandlers( handlers );
 	}
 
-	// ______________________
+	constructor(apg: APGSys ) {
+		enum PlayerChoice {
+			bodyHood = 0, bodySide, bodyTrunk, defense, nitro, offense, case, pistons, plugs, airfreshner, seat, steering, tireBolts, tireBrand, tire
+		}
 
-	new enttx(sys.w, 12, 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
+		var endOfRoundSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+		this.warningSound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
 
-	new enttx(sys.w, 15, 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
-	new enttx(sys.w, 15, 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
+		var carSet: number = 3;
 
-	// ______________________
+		var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118;
+		var lastRoundUpdate: number = 0;
 
-	new enttx(sys.w, 152, 10, "OPTIONS", { font: fnt(20), fill: '#fff' });
+		this.makeHandlers( apg );
 
-	new ent(sys.w, 158, 36, "racinggame/selected.png");
-	new ent(sys.w, 158, 92, "racinggame/unselected.png");
-	new ent(sys.w, 158, 150, "racinggame/unselected.png");
+		var bkg: ent = new ent(apg.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
+			scalex: 2, scaley: 2,
+			upd: e => {
+				if (this.roundNumber != lastRoundUpdate) {
+					lastRoundUpdate = this.roundNumber;
+				}
+			}
+		});
 
-	new enttx(sys.w, 158, 36, "Featherwate", { font: fnt(16), fill: '#0' });
-	new enttx(sys.w, 158, 92, "Unguzzler", { font: fnt(16), fill: '#0' });
-	new enttx(sys.w, 158, 150, "Hulkite", { font: fnt(16), fill: '#0' });
-
-	var picChangeTick = 0;
-	var picFrame = 0;
-
-	for (var k = 1; k < 4; k++) {
-		//"carPart_" + k + "_" + j
-		new ent(sys.w, 220, 40, debugAllCarParts[carSet*9 + (k-1)*3+2], {scalex: .5, scaley: .5});
+		this.addArt( apg, carSet );
 	}
+}
 
-	new enttx(sys.w, 220, 178, "-1 Weight, +1 Power", { font: fnt(24), fill: '#fff' });
+function RacingInput(apg: APGSys): void {
+	new RacingGame( apg );
 }

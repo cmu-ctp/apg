@@ -42,7 +42,7 @@
     <TypeScriptCompile Include="Typescript Src\Libraries\pixi.comments.d.ts" />
     <TypeScriptCompile Include="Typescript Src\Racing\RacingMainInput.ts" />
     <TypeScriptCompile Include="Typescript Src\Settings.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\APGSubgameMessageHandler.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\NetworkMessageHandler.ts" />
     <TypeScriptCompile Include="Typescript Src\CartoonGame\MainPlayerInput.ts" />
     <TypeScriptCompile Include="Typescript Src\CartoonGame\ShowSubmitted.ts" />
     <TypeScriptCompile Include="Typescript Src\CartoonGame\WaitingForJoinAcknowledgement.ts" />

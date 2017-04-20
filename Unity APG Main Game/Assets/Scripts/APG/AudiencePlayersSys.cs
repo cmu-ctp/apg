@@ -7,8 +7,10 @@ namespace APG {
 		void WriteLocal( string user, string msg, object parms = null );
 		void WriteToChat( string msg );
 
-		string LaunchAPGClientURL();
 		void SetHandlers( NetworkMessageHandler theHandlers );
+
+		string LaunchAPGClientURL();
+
 		ChatterInterface Chatters();
 
 		void StartRecordingNetworking();
