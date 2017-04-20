@@ -1,33 +1,16 @@
 ﻿using UnityEngine;
 
 namespace APG {
-
-	public interface AudienceInterface {
-		void WriteToClients( string msg, object parms = null );
-		void WriteLocal( string user, string msg, object parms = null );
-		void WriteToChat( string msg );
-
-		void SetHandlers( NetworkMessageHandler theHandlers );
-
-		string LaunchAPGClientURL();
-
-		ChatterInterface Chatters();
-
-		void StartRecordingNetworking();
-		void EndRecordingNetworkingAndSave( string messagesToClientsFileName, string messagesFromClientsFileName );
-		void PlaybackNetworking( string messagesFromClientsFileName );
-	}
-
 	public class AudiencePlayersSys : AudienceInterface {
 
 		ChatSys chatSys;
 		NetworkMessageHandler handlers;
 		public int time = 0;
 
-		TwitchGameLogicChat network;
+		TwitchNetworking network;
 		IRCNetworkRecorder recorder;
 
-		public AudiencePlayersSys ( TwitchGameLogicChat theNetwork, IRCNetworkRecorder theRecorder ) {
+		public AudiencePlayersSys ( TwitchNetworking theNetwork, IRCNetworkRecorder theRecorder ) {
 			network = theNetwork;
 			recorder = theRecorder;
 

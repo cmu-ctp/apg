@@ -1,5 +1,5 @@
 using UnityEngine;
 
-[RequireComponent(typeof(TwitchGameLogicChat))]
+[RequireComponent(typeof(TwitchNetworking))]
 public class TwitchIRCChat:TwitchIRC {
 }

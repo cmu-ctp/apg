@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(TwitchGameLogicChat))]
+[RequireComponent(typeof(TwitchNetworking))]
 public class TwitchIRC:MonoBehaviour {
 	string server = "irc.twitch.tv";
 	int port = 6667;
@@ -16,7 +16,7 @@ public class TwitchIRC:MonoBehaviour {
 	List<string> recievedMsgs = new List<string>();
 	System.Threading.Thread inProc, outProc;
 
-	protected TwitchGameLogicChat logic;
+	protected TwitchNetworking logic;
 
 	public Func<string> oauthFunc = null;
 	public Func<string> channelNameFunc = null;
@@ -34,7 +34,7 @@ public class TwitchIRC:MonoBehaviour {
 		var output = new System.IO.StreamWriter(networkStream);
 		//Send PASS & NICK.
 
-		logic = this.GetComponent<TwitchGameLogicChat>();
+		logic = this.GetComponent<TwitchNetworking>();
 
 		output.WriteLine("PASS " + oauthFunc());
 		output.WriteLine("NICK " + channelNameFunc().ToLower());

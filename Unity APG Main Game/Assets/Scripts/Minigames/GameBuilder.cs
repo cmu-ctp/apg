@@ -21,7 +21,7 @@ public class GameBuilder:MonoBehaviour {
 	public Props props;
 	public Reacts reacts;
 
-	public TwitchGameLogicChat gameLogicChat;
+	public TwitchNetworking gameLogicChat;
 	public APGBasicGameLogic basicGameLogic;
 
 	public MusicSet musicSet;

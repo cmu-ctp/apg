@@ -9,7 +9,7 @@ using UnityEditor;
 
 [RequireComponent(typeof(TwitchIRCChat))]
 [RequireComponent(typeof(TwitchIRCLogic))]
-public class TwitchGameLogicChat:MonoBehaviour {
+public class TwitchNetworking:MonoBehaviour {
 
 	[Tooltip("")]
 	public string LogicOauth;

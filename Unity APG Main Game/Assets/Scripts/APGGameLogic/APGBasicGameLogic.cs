@@ -40,7 +40,7 @@ namespace APG {
 
 		public GameBuilder src;
 
-		public TwitchGameLogicChat network;
+		public TwitchNetworking network;
 		public int maxPlayers = 20;
 		public int secondsPerChoice = 40;
 		public int secondsAfterLockedInChoice = 7;
