@@ -16,8 +16,10 @@
 
 	set tex(value: string) {this.loadTexture(value);}
 
+	set src(value: ent) { value.addChild( this ); }
+
 	constructor(t: Phaser.Group, x: number, y: number, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture,
-		fields?: { rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, upd?: (m: ent) => void }) {
+		fields?: { src?:ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, upd?: (m: ent) => void }) {
 		super(t.game, x, y, key);
 		if (fields) Object.assign(this, fields);
 		this.exists = true; this.visible = true; this.alive = true; this.z = t.children.length;

@@ -31,6 +31,7 @@ class IRCNetwork{
 		chat.on("chat", function (channel: string, userstate: any, message: string, self: boolean): void {
 
 			if (self) return;
+			if (userstate.username == player) return;
 
 			if (debugLogIncomingIRCChat) {
 				ConsoleOutput.debugLog(channel + " " + userstate.username + " " + message, "network");
@@ -43,6 +44,10 @@ class IRCNetwork{
 				}
 			}
 			else {
+				var msgTemp: string[] = message.split("%%");
+				for (var k = 0; k < msgTemp.length; k++) {
+					getHandlers().RunPeer(userstate.username, msgTemp[k]);
+				}
 			}
 		});
 		this.chat = chat;

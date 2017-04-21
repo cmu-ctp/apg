@@ -1,17 +1,27 @@
 var setupParms = {
     isMobile: false,
-    isDebug: false,
     chatIRCChannelName: "",
     logicIRCChannelName: "",
     playerName: "",
     playerOauth: "",
-    skipAuthentication: false
+    skipAuthentication: false,
+    isDebug: false,
+    appFailedWithoutRecovery: false,
+    appFailMessage:''
 };
 
 var engineParms = {
     chat: null,
     chatLoadedFunction: null
 };
+
+function FatalError() { Error.apply(this, arguments); this.name = "FatalError"; }
+FatalError.prototype = Object.create(Error.prototype);
+
+function AppFail(s) {
+    setupParms.appFailMessage = s;
+    setupParms.appFailedWithoutRecovery = true;
+}
 
 function CreateTwitchApp() {
 
@@ -42,6 +52,15 @@ function CreateTwitchApp() {
         setupParms.logicIRCChannelName = stateValTable[2];
     }
 
+    if (setupParms.logicIRCChannelName === '') {
+        AppFail('Logic IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
+    }
+
+    if (setupParms.chatIRCChannelName === '') {
+        AppFail('Chat IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
+    }
+
+
     // The Client-ID is used by Twitch.init .  See https://github.com/justintv/twitch-js-sdk
     //	It was generated here: https://www.twitch.tv/kraken/oauth2/clients/new
     // You need to register a new game with Twitch to get your own Client-ID.
@@ -58,6 +77,10 @@ function CreateTwitchApp() {
                     setupParms.playerOauth = "oauth:" + Twitch.getToken();
                 }
 
+                if (setupParms.logicIRCChannelName === setupParms.playerName) {
+                    AppFail('' + setupParms.playerName + ' is the same as the streamers networking channel.');
+                }
+
                 var options = {
                     options: { debug: true },
                     connection: { reconnect: true },
@@ -71,6 +94,7 @@ function CreateTwitchApp() {
                 }
                 engineParms.chat.connect().then(function (data) {
                 }).catch(function (err) {
+                    AppFail( 'Twitch Chat Initialization Error: ' + err );
                     console.log("Error: " + err);
                 });
             });
@@ -142,11 +166,19 @@ if (!setupParms.isMobile ) {
     AddAppReposition();
 }
 
-
 // This is the only script referenced by the web page.
 
 function onLoadEnd() {
 
+    if (setupParms.appFailedWithoutRecovery === true) {
+        document.getElementById('loadLabel').style.display = 'none';
+        document.getElementById("orientationWarning").style.display = 'none';
+        document.getElementById("appErrorMessage").style.display = '';
+        document.getElementById("appErrorMessage").textContent = 'Unrecoverable Error: ' + setupParms.appFailMessage;
+        throw new FatalError();
+    }
+
+    document.getElementById("appErrorMessage").style.display = 'none';
     document.getElementById("orientationWarning").style.display = 'none';
     document.getElementById("orientationWarning").textContent = 'This game only works in landscape mode.  Please reposition your phone or tablet.';
 
