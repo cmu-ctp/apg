@@ -29,11 +29,15 @@ In particular, you MUST set
 2. Logic Channel Name
 3. Chat Oauth
 4. Chat Channel name
+5. Game Client ID
+6. Redirect Webpage
    
 Chat channel should be your twitch account name.  Chat oauth should be an oauth for your Twitch account, which you can generate here:
 http://www.twitchapps.com/tmi/.  It should look like this: oauth:5rse5basug5w2glamb9e4qetp60rcx .  Make sure to include "oauth:" in there.
 
 Logic channel should be a second, different twitch account that you more than likely will need to make.  This is a second IRC channel that is just used for game network traffic.  We do this so that the streamers chat room, which is of course meant to be social, doesn't get clogged up with messy game logic updates.  And Logic Oauth should be an oauth attached to this channel.
+
+To register a webpage with twitch for your game client, and to get a Twitch game client ID, go here: https://www.twitch.tv/kraken/oauth2/clients/new
 
 There are some other fields in there that do some other useful things, but this is the bare minimum you need to do to have a game that connects to Twitch's IRC successfully.  I'll document the other features better later.
 
