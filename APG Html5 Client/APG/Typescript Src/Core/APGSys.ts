@@ -14,7 +14,7 @@
 		this.w = g.world;
 		this.JSONAssets = JSONAssets;
 		this.playerName = playerName;
-		this.network = new IRCNetwork(() => this.handlers, playerName, logicIRCChannelName, chat, this.w);
+		this.network = new IRCNetwork(() => this.handlers, playerName, logicIRCChannelName, chat);
 	}
 
 	update(): void {

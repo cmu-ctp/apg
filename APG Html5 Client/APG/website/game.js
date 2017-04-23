@@ -118,7 +118,7 @@ var enttx = (function (_super) {
     return enttx;
 }(Phaser.Text));
 function StartGame(apg) {
-    RacingInput(apg);
+    MainPlayerInput(apg);
 }
 var APGSys = (function () {
     function APGSys(g, logicIRCChannelName, playerName, chat, JSONAssets) {
@@ -127,7 +127,7 @@ var APGSys = (function () {
         this.w = g.world;
         this.JSONAssets = JSONAssets;
         this.playerName = playerName;
-        this.network = new IRCNetwork(function () { return _this.handlers; }, playerName, logicIRCChannelName, chat, this.w);
+        this.network = new IRCNetwork(function () { return _this.handlers; }, playerName, logicIRCChannelName, chat);
     }
     APGSys.prototype.update = function () {
         this.network.update();
@@ -482,37 +482,44 @@ var ConsoleOutput = (function () {
     return ConsoleOutput;
 }());
 var IRCNetwork = (function () {
-    function IRCNetwork(getHandlers, player, logicChannelName, chat, w) {
+    function IRCNetwork(getHandlers, player, logicChannelName, chat) {
+        var _this = this;
         this.lastMessageTime = 0;
         this.messageQueue = [];
         this.toggleSpace = false;
+        this.getHandlers = getHandlers;
+        this.playerName = player;
+        this.logicChannelName = logicChannelName;
         this.channelName = '#' + logicChannelName;
-        var src = this;
-        chat.on("chat", function (channel, userstate, message, self) {
-            if (self)
-                return;
-            if (userstate.username == player)
-                return;
-            if (debugLogIncomingIRCChat) {
-                ConsoleOutput.debugLog(channel + " " + userstate.username + " " + message, "network");
-            }
-            if (userstate.username == logicChannelName) {
-                var msgTemp = message.split("%%");
-                for (var k = 0; k < msgTemp.length; k++) {
-                    getHandlers().Run(msgTemp[k]);
-                }
-            }
-            else {
-                var msgTemp = message.split("%%");
-                for (var k = 0; k < msgTemp.length; k++) {
-                    getHandlers().RunPeer(userstate.username, msgTemp[k]);
-                }
-            }
-        });
         this.chat = chat;
+        if (chat != null)
+            chat.on("chat", function (channel, userstate, message, self) { return _this.handleInputMessage(userstate.username, message); });
     }
-    IRCNetwork.prototype.sendMessageToServer = function (msg, parms) {
-        this.writeToChat(msg + "###" + JSON.stringify(parms));
+    IRCNetwork.prototype.handleInputMessage = function (userName, message) {
+        if (userName == this.playerName)
+            return;
+        if (debugLogIncomingIRCChat) {
+            ConsoleOutput.debugLog(userName + " " + message, "network");
+        }
+        console.log("testing " + userName + " vs " + this.logicChannelName);
+        if (userName == this.logicChannelName) {
+            var messageTemp = message.split("%%");
+            for (var k = 0; k < messageTemp.length; k++) {
+                this.getHandlers().Run(messageTemp[k]);
+            }
+        }
+        else {
+            var messageTemp = message.split("%%");
+            for (var k = 0; k < messageTemp.length; k++) {
+                this.getHandlers().RunPeer(userName, messageTemp[k]);
+            }
+        }
+    };
+    IRCNetwork.prototype.sendMessageToServer = function (message, parms) {
+        this.writeToChat(message + "###" + JSON.stringify(parms));
+    };
+    IRCNetwork.prototype.sendMessageLocally = function (user, message, parms) {
+        this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
     };
     IRCNetwork.prototype.writeToChat = function (s) {
         if (this.lastMessageTime > 0) {
@@ -524,7 +531,8 @@ var IRCNetwork = (function () {
             return;
         }
         this.toggleSpace = !this.toggleSpace;
-        this.chat.say(this.channelName, s + (this.toggleSpace ? ' ' : '  '));
+        if (this.chat != null)
+            this.chat.say(this.channelName, s + (this.toggleSpace ? ' ' : '  '));
         if (debugLogOutgoingIRCChat) {
             ConsoleOutput.debugLog(s, "network");
         }
@@ -535,7 +543,8 @@ var IRCNetwork = (function () {
         if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {
             var delayedMessage = this.messageQueue.shift();
             this.toggleSpace = !this.toggleSpace;
-            this.chat.say(this.channelName, delayedMessage + (this.toggleSpace ? ' ' : '  '));
+            if (this.chat != null)
+                this.chat.say(this.channelName, delayedMessage + (this.toggleSpace ? ' ' : '  '));
             if (debugLogOutgoingIRCChat) {
                 ConsoleOutput.debugLog(delayedMessage, "network");
             }

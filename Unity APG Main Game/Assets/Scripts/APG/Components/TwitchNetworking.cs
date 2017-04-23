@@ -1,7 +1,9 @@
 using UnityEngine;
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using APG;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -25,8 +27,7 @@ public class TwitchNetworking:MonoBehaviour {
 	[Tooltip("")]
 	public string RedirectLink;
 
-	[Tooltip("")]
-	public string BitlyLink;
+	string BitlyLink = "";
 
 	[Tooltip("Name of file to save network settings in, relative Assets folder.  If this file exists, the fields set in the Unity Editor will be ignored.")]
 	public string NetworkSettingPath;
@@ -58,8 +59,6 @@ public class TwitchNetworking:MonoBehaviour {
 
 	[SerializeField] NetworkSettings settings = null;
 
-	string launchAPGClientURL = "GAME LAUNCHING LINK NOT SET";
-
 	EmptyMsg emptyMsg = new EmptyMsg();
 
 	TwitchIRCChat IRCChat;
@@ -73,6 +72,24 @@ public class TwitchNetworking:MonoBehaviour {
 
 	//___________________________________________
 
+	private Uri ShortenUri(Uri longUri, string login, string apiKey, bool addHistory) {
+	  const string bitlyUrl = @"http://api.bit.ly/shorten?longUrl={0}&apiKey={1}&login={2}&version=2.0.1&format=json&history={3}";
+	  var request = WebRequest.Create(string.Format(bitlyUrl, longUri, apiKey, login, addHistory ? "1" : "0"));
+	  var response = (HttpWebResponse)request.GetResponse();
+	  string bitlyResponse;
+	  using (var reader = new StreamReader(response.GetResponseStream())) {
+		bitlyResponse = reader.ReadToEnd();
+	  }
+	  response.Close();
+	  if (!string.IsNullOrEmpty(bitlyResponse)) {
+		const RegexOptions options = ((RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline) | RegexOptions.IgnoreCase);
+		const string rx = "\"shortUrl\":\\ \"(?<short>.*?)\"";
+		Regex reg = new Regex(rx, options);
+		string tmp = reg.Match(bitlyResponse).Groups["short"].Value;
+		return string.IsNullOrEmpty(tmp) ? longUri : new Uri(tmp);
+	  }
+	  return longUri;
+	}
 
 	void LoadNetworkSettings() {
 		settings = new NetworkSettings { ChatChannelName = ChatChannelName, LogicChannelName = LogicChannelName, LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = BitlyLink };
@@ -87,18 +104,21 @@ public class TwitchNetworking:MonoBehaviour {
 		catch {
 		}
 
-		if( !File.Exists( settingPath ) && ( settings.LogicChannelName != "" && settings.ChatChannelName != "" && settings.LogicOauth != "" && settings.ChatOauth != "" )) {
-			File.WriteAllText( settingPath, JsonUtility.ToJson( settings ) );
-		}
-
-		launchAPGClientURL = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+"B+"+settings.ChatChannelName+"+"+settings.LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
+		var forceSettingsWrite = false;
 
 		if( settings.BitlyLink != "" ) {
-			launchAPGClientURL = settings.BitlyLink;
+		}
+		else {
+			var longUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+"B+"+settings.ChatChannelName+"+"+settings.LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
+
+			settings.BitlyLink = ShortenUri( new Uri( longUrl ), "kenzidelx", "R_9945fa5fc55249e28f45da879047ba24", false ).ToString();
+
+			forceSettingsWrite = true;
 		}
 
-		Debug.Log( "HTML5 Client is launched for this game and this twitch account with the following URL: " + launchAPGClientURL );
-		Debug.Log( "Paste these specific URLs into Bitly for shortened URLs." );
+		if( forceSettingsWrite || (!File.Exists( settingPath ) && ( settings.LogicChannelName != "" && settings.ChatChannelName != "" && settings.LogicOauth != "" && settings.ChatOauth != "" ))) {
+			File.WriteAllText( settingPath, JsonUtility.ToJson( settings ) );
+		}
 
 		#if UNITY_EDITOR
 		if( settings.LogicChannelName == "" ) {
@@ -184,7 +204,7 @@ public class TwitchNetworking:MonoBehaviour {
 	}
 
 	public string LaunchAPGClientURL() {
-		return launchAPGClientURL;
+		return settings.BitlyLink;
 	}
 
 	void Awake() {

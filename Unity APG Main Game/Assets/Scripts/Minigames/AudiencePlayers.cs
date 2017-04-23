@@ -94,7 +94,7 @@ public class AudiencePlayerSys {
 	void RunDebug(PlayerSet playerSet, AudienceInterface apg) {
 		var names = new string[] { "Taki", "Fin", "Castral Fex", "FireTiger", "Ribaeld", "Big Tong", "Gatekeeper", "KittyKat", "Purifier", "Flaer", "Soothsayer13", "xxxBarryxxx", "PlasterPant", "Kokirei", "Fighter", "Seer", "Paninea", "Graethei", "Magesty", "Revolution" };
 		//for(var k = 0; k < 20; k++) playerSet.AddPlayer( names[k] );
-		for(var k = 0; k < 20; k++) playerSet.AddPlayer( names[k] );
+		for(var k = 0; k < 10; k++) playerSet.AddPlayer( names[k] );
 		var tick=0;
 		new ent( gameSys ) {
 			update = e => {

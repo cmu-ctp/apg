@@ -103,7 +103,7 @@ public class TwitchIRC:MonoBehaviour {
 	//MonoBehaviour Events.
 	void Start() {
 		stopThreads = false;
-		Debug.Log( "Starting IRC ");
+		//Debug.Log( "Starting IRC ");
 		StartIRC();
 	}
 	void OnEnable() {

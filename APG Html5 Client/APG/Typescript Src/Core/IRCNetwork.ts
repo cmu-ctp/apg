@@ -7,59 +7,61 @@
 
 class IRCNetwork{
 
-// Server Messages:
-// Join acknowledge
-// time update
-// submit please
-// game update
-
-// Client messages:
-// Join Please
-// Here is my update
-
 	private chat: tmiClient;
 
 	private channelName: string;
 	private lastMessageTime: number = 0;
 	private messageQueue: string[] = [];
 
-	constructor(getHandlers: () => NetworkMessageHandler, player: string, logicChannelName: string, chat: tmiClient, w: Phaser.World ) {
-		this.channelName = '#'+logicChannelName;
+	private getHandlers: () => NetworkMessageHandler;
+	private playerName: string;
+	private logicChannelName: string;
 
-		var src: IRCNetwork = this;
+	private handleInputMessage(userName: string, message: string): void {
 
-		chat.on("chat", function (channel: string, userstate: any, message: string, self: boolean): void {
+		if (userName == this.playerName) return;
 
-			if (self) return;
-			if (userstate.username == player) return;
+		if (debugLogIncomingIRCChat) {
+			ConsoleOutput.debugLog(userName + " " + message, "network");
+		}
 
-			if (debugLogIncomingIRCChat) {
-				ConsoleOutput.debugLog(channel + " " + userstate.username + " " + message, "network");
+		console.log("testing " + userName + " vs " + this.logicChannelName);
+
+		if (userName == this.logicChannelName) {
+			var messageTemp: string[] = message.split("%%");
+			for (var k = 0; k < messageTemp.length; k++) {
+				this.getHandlers().Run(messageTemp[k]);
 			}
+		}
+		else {
+			var messageTemp: string[] = message.split("%%");
+			for (var k = 0; k < messageTemp.length; k++) {
+				this.getHandlers().RunPeer(userName, messageTemp[k]);
+			}
+		}
+	}
 
-			if (userstate.username == logicChannelName) {
-				var msgTemp:string[] = message.split("%%");
-				for (var k = 0; k < msgTemp.length; k++) {
-					getHandlers().Run(msgTemp[k]);
-				}
-			}
-			else {
-				var msgTemp: string[] = message.split("%%");
-				for (var k = 0; k < msgTemp.length; k++) {
-					getHandlers().RunPeer(userstate.username, msgTemp[k]);
-				}
-			}
-		});
+	constructor(getHandlers: () => NetworkMessageHandler, player: string, logicChannelName: string, chat: tmiClient) {
+		this.getHandlers = getHandlers;
+		this.playerName = player;
+		this.logicChannelName = logicChannelName;
+		this.channelName = '#' + logicChannelName;
 		this.chat = chat;
+		if( chat != null )chat.on("chat", (channel: string, userstate: any, message: string, self: boolean): void => this.handleInputMessage(userstate.username, message));
 	}
 
-	sendMessageToServer<T>(msg: string, parms: T): void {
-		this.writeToChat(msg+"###" + JSON.stringify( parms ));
+	sendMessageToServer<T>(message: string, parms: T): void {
+		this.writeToChat(message+"###" + JSON.stringify( parms ));
 	}
+
+	sendMessageLocally<T>(user:string, message: string, parms: T): void {
+		this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
+	}
+
 
 	// Twitch refuses duplicate IRC Chat messages, which makes sense for chat, but is a problem for network updates.
 	// This field toggles between appending one or two spaces to our message to avoid this filter.
-	toggleSpace: boolean = false;
+	private toggleSpace: boolean = false;
 
 	private writeToChat(s: string): void {
 
@@ -73,7 +75,7 @@ class IRCNetwork{
 		}
 
 		this.toggleSpace = !this.toggleSpace;
-		this.chat.say(this.channelName, s + (this.toggleSpace ? ' ' : '  '));
+		if( this.chat != null )this.chat.say(this.channelName, s + (this.toggleSpace ? ' ' : '  '));
 		if (debugLogOutgoingIRCChat) {
 			ConsoleOutput.debugLog(s, "network");
 		}
@@ -88,7 +90,7 @@ class IRCNetwork{
 			var delayedMessage = this.messageQueue.shift();
 
 			this.toggleSpace = !this.toggleSpace;
-			this.chat.say(this.channelName, delayedMessage + (this.toggleSpace ? ' ':'  ' ) );
+			if (this.chat != null)this.chat.say(this.channelName, delayedMessage + (this.toggleSpace ? ' ':'  ' ) );
 			if (debugLogOutgoingIRCChat) {
 				ConsoleOutput.debugLog(delayedMessage, "network");
 			}
