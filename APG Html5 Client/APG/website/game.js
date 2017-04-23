@@ -326,8 +326,8 @@ var ActionEntry = (function () {
     }
     return ActionEntry;
 }());
-cacheImages('assets/imgs', ['blueorb.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
+cacheImages('cartoongame/imgs', ['blueorb.png']);
+cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 var ButtonCollection = (function () {
     function ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit) {
         var fx1 = 0, fx2 = 0, fy1 = 0, fy2 = 0, updateActive = false;
@@ -336,7 +336,7 @@ var ButtonCollection = (function () {
         this.update = function (active) {
             updateActive = active;
         };
-        var clickSound = apg.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+        var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
         var fontName = "Caveat Brush";
         function addOption(id, str, x, y, toolTip) {
             var highlighted = false, highlightVertical = size * 3 / 4, highlightHorizontal = size * 16 / 40, x1 = x, x2 = x + str.length * highlightHorizontal, y1 = y - highlightVertical, y2 = y + 10, mul = 1, spd = .07 + .26 * Math.random(), lastHighlight = false, inputUsed = false;
@@ -402,7 +402,7 @@ var ButtonCollection = (function () {
         }
         function addSelector() {
             var goalx = 0, goaly = 0, mul = 1, tick = Math.random() * Math.PI * 2, tickScale = Math.random() * .8 + .4;
-            new ent(apg.w, 50, 50, 'assets/imgs/blueorb.png', { scalex: .24, scaley: .24,
+            new ent(apg.w, 50, 50, 'cartoongame/imgs/blueorb.png', { scalex: .24, scaley: .24,
                 upd: function (e) {
                     e.x = goalx;
                     e.y = goaly;
@@ -554,91 +554,6 @@ var IRCNetwork = (function () {
     };
     return IRCNetwork;
 }());
-var Scroller = (function () {
-    function Scroller(g, x, y, windowx, windowy, clearOnScroll) {
-        this.px = 0;
-        this.py = 0;
-        this.x = x;
-        this.y = y;
-        this.windowx = windowx;
-        this.windowy = windowy;
-        this.clearOnScroll = clearOnScroll;
-        this.b = g.make.bitmapData(x, y);
-        this.img = this.b.addToWorld();
-        this.img.x = this.img.y = 0;
-        this.img2 = this.b.addToWorld();
-        this.img.x = x;
-        this.img.y = 0;
-        this.img3 = this.b.addToWorld();
-        this.img.x = 0;
-        this.img.y = y;
-        this.img4 = this.b.addToWorld();
-        this.img.x = x;
-        this.img.y = y;
-        this.b.fill(0, 0, 0, 0);
-    }
-    Scroller.prototype.draw = function (s, x, y, sc) {
-        x += this.px;
-        y += this.py;
-        this.b.draw(s, x, y, s.width * sc, s.height * sc);
-        this.b.draw(s, x - this.x, y, s.width * sc, s.height * sc);
-        this.b.draw(s, x, y - this.y, s.width * sc, s.height * sc);
-        this.b.draw(s, x - this.x, y - this.y, s.width * sc, s.height * sc);
-    };
-    Scroller.prototype.scrollBy = function (x, y) {
-        if (this.clearOnScroll) {
-            var x1, y1, x2, y2;
-            if (y < 0) {
-                x1 = this.px;
-                y1 = this.py + this.windowy + y;
-                x2 = this.px + this.windowx;
-                y2 = this.py + this.windowy;
-                if (x1 > this.x)
-                    x1 -= this.x;
-                if (y1 > this.y)
-                    y1 -= this.y;
-                if (x2 > this.x)
-                    x2 -= this.x;
-                if (y2 > this.y)
-                    y2 -= this.y;
-                if (y1 < y2)
-                    this.b.clear(x1, y1, x2 - x1, y2 - y1);
-                else {
-                    this.b.clear(x1, 0, x2 - x1, y2);
-                    this.b.clear(x1, y1, x2 - x1, this.y - y1);
-                }
-            }
-        }
-        this.px += x;
-        if (this.px < 0)
-            this.px += this.x;
-        if (this.px > this.x)
-            this.px -= this.x;
-        this.py += y;
-        if (this.py < 0)
-            this.py += this.y;
-        if (this.py > this.y)
-            this.py -= this.y;
-        this.doScroll(this.px, this.py);
-    };
-    Scroller.prototype.doScroll = function (x, y) {
-        this.px = x % this.x;
-        if (x < 0)
-            this.px -= this.x;
-        this.py = y % this.y;
-        if (y < 0)
-            this.py -= this.y;
-        this.img.x = -this.px;
-        this.img.y = -this.py;
-        this.img2.x = -this.px + this.x;
-        this.img2.y = -this.py;
-        this.img3.x = -this.px;
-        this.img3.y = -this.py + this.y;
-        this.img4.x = -this.px + this.x;
-        this.img4.y = -this.py + this.y;
-    };
-    return Scroller;
-}());
 var carParts;
 cachePhaserAssets(function (l) {
     var assetSets = ["bodyHood", "bodySide", "bodyTrunk", "defense", "nitro", "offense", "case", "pistons", "plugs", "airfreshner", "seat", "steering", "tireBolts", "tireBrand", "tire"];
@@ -658,7 +573,7 @@ cachePhaserAssets(function (l) {
     }
 });
 cacheImages('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselected.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
+cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
 cacheGoogleWebFonts(['Anton']);
 var RacingGame = (function () {
     function RacingGame(apg) {
@@ -693,8 +608,8 @@ var RacingGame = (function () {
             PlayerChoice[PlayerChoice["tire"] = 14] = "tire";
         })(PlayerChoice || (PlayerChoice = {}));
         apg.WriteToServer("join", {});
-        var endOfRoundSound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
-        this.warningSound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+        var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
+        this.warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
         var tick = 0, choiceLeft = 50, choiceUp = 118;
         var lastRoundUpdate = 0;
         this.makeHandlers(apg);
@@ -926,14 +841,14 @@ var NetworkMessageHandler = (function () {
     };
     return NetworkMessageHandler;
 }());
-cacheImages('assets/imgs', ['ClientUI4.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
-cacheJSONs(['TestActions.json']);
+cacheImages('cartoongame/imgs', ['ClientUI4.png']);
+cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
+cacheJSONs(['cartoongame/json/TestActions.json']);
 function MainPlayerInput(apg) {
     var fontName = "Caveat Brush";
-    var actions = apg.JSONAssets['TestActions.json'];
-    var endOfRoundSound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
-    var warningSound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+    var actions = apg.JSONAssets['cartoongame/json/TestActions.json'];
+    var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
+    var warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
     function makeButtonSet(baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit) {
         return new ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
     }
@@ -990,7 +905,7 @@ function MainPlayerInput(apg) {
     var labelColor = '#608080';
     var roundLabel, toolTipLabel, nextChoiceLabel;
     var lastRoundUpdate = 0;
-    new ent(apg.w, 0, 0, 'assets/imgs/ClientUI4.png', {
+    new ent(apg.w, 0, 0, 'cartoongame/imgs/ClientUI4.png', {
         upd: function (e) {
             if (roundNumber != lastRoundUpdate) {
                 roundLabel.text = "Choices for Round " + roundNumber;
@@ -1023,14 +938,14 @@ function MainPlayerInput(apg) {
     category("SELECTED CHOICES", 40, 300);
     inCategory(50, 320, 16, ["Move:", "Action:", "Stance:", "Item:"]);
 }
-cacheImages('assets/imgs', ['ClientUI3.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
+cacheImages('cartoongame/imgs', ['ClientUI3.png']);
+cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 function ShowSubmitted(apg, getRoundNumber) {
     var inputUsed = false;
-    var clickSound = apg.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+    var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
     apg.SetHandlers(new NetworkMessageHandler());
-    new ent(apg.w, 0, 0, 'assets/imgs/ClientUI3.png', {
+    new ent(apg.w, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
         upd: function (e) {
             if (apg.g.input.activePointer.isDown && !inputUsed) {
                 inputUsed = true;
@@ -1041,11 +956,11 @@ function ShowSubmitted(apg, getRoundNumber) {
     });
     new enttx(apg.w, 60, 50 + 20, "Chosen For Round " + getRoundNumber() + ":", { font: '16px Caveat Brush', fill: '#222' });
 }
-cacheImages('assets/imgs', ['ClientUI3.png']);
-cacheSounds('assets/snds/fx', ['strokeup4.mp3']);
+cacheImages('cartoongame/imgs', ['ClientUI3.png']);
+cacheSounds('cartoongame/snds/fx', ['strokeup4.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 function WaitingForJoinAcknowledement(apg) {
-    var endOfRoundSound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+    var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
     var endSubgame = false, timeOut = 0, retry = 0;
     apg.SetHandlers(new NetworkMessageHandler()
         .Add("join", function (p) {
@@ -1055,7 +970,7 @@ function WaitingForJoinAcknowledement(apg) {
         endOfRoundSound.play();
         MainPlayerInput(apg);
     }));
-    new ent(apg.w, 60, 0, 'assets/imgs/ClientUI3.png', {
+    new ent(apg.w, 60, 0, 'cartoongame/imgs/ClientUI3.png', {
         alpha: 0,
         upd: function (e) {
             retry++;
@@ -1095,15 +1010,15 @@ function WaitingForJoinAcknowledement(apg) {
         }
     });
 }
-cacheImages('assets/imgs', ['ClientUI3.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
+cacheImages('cartoongame/imgs', ['ClientUI3.png']);
+cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 function WaitingToJoin(apg, previousMessage) {
     if (previousMessage === void 0) { previousMessage = ""; }
-    var clickSound = apg.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+    var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
     apg.SetHandlers(new NetworkMessageHandler());
     var inputUsed = false, endSubgame = false;
-    new ent(apg.g.world, 0, 0, 'assets/imgs/ClientUI3.png', {
+    new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
         upd: function (e) {
             if (endSubgame) {
                 e.x = e.x * .7 + .3 * -30;

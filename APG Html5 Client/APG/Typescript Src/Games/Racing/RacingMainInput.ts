@@ -21,7 +21,7 @@ cachePhaserAssets( l => {
 });
 
 cacheImages('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselected.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
+cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
 cacheGoogleWebFonts(['Anton']);
 
 // "join"
@@ -223,8 +223,8 @@ class RacingGame {
 
 		apg.WriteToServer<JoinParms>("join", {});
 
-		var endOfRoundSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
-		this.warningSound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+		var endOfRoundSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
+		this.warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
 
 		var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118;
 		var lastRoundUpdate: number = 0;

@@ -1,17 +1,17 @@
-﻿cacheImages('assets/imgs', ['ClientUI3.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
+﻿cacheImages('cartoongame/imgs', ['ClientUI3.png']);
+cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 
 interface EmptyParms{
 }
 
 function WaitingToJoin(apg: APGSys, previousMessage:string = "" ): void {
-	var clickSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+	var clickSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
 
 	apg.SetHandlers(new NetworkMessageHandler());
 	var inputUsed: boolean = false, endSubgame: boolean = false;
 
-	new ent(apg.g.world, 0, 0, 'assets/imgs/ClientUI3.png', {
+	new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
 		upd: e => {
 			if (endSubgame) {
 				e.x = e.x * .7 + .3 * -30;

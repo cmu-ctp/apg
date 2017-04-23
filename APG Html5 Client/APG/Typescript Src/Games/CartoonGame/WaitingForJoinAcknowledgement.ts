@@ -1,5 +1,5 @@
-﻿cacheImages('assets/imgs', ['ClientUI3.png']);
-cacheSounds('assets/snds/fx', ['strokeup4.mp3']);
+﻿cacheImages('cartoongame/imgs', ['ClientUI3.png']);
+cacheSounds('cartoongame/snds/fx', ['strokeup4.mp3']);
 cacheGoogleWebFonts(['Caveat Brush']);
 
 interface ClientJoinParms{
@@ -10,7 +10,7 @@ interface EmptyParms {
 }
 
 function WaitingForJoinAcknowledement(apg: APGSys): void {
-	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
+	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
 	var endSubgame: boolean = false, timeOut: number = 0, retry:number = 0;
 
 	apg.SetHandlers(new NetworkMessageHandler()
@@ -22,7 +22,7 @@ function WaitingForJoinAcknowledement(apg: APGSys): void {
 			MainPlayerInput(apg);
 		}));
 
-	new ent(apg.w, 60, 0, 'assets/imgs/ClientUI3.png', {
+	new ent(apg.w, 60, 0, 'cartoongame/imgs/ClientUI3.png', {
 		alpha: 0,
 		upd: e => {
 			retry++;

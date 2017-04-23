@@ -10,109 +10,104 @@
 
 function onLoadEnd() {
 
-    var setupParms = {
+    var devParms = {
+        disableNetworking: true,
 
-        isMobile: true,
-        chatIRCChannelName: "",
-        logicIRCChannelName: "",
-        playerName: "",
-        playerOauth: "",
-        isDebug: true,
         skipAuthentication: true,
-        disableNetworking:true,
+        forceChatIRCChannelName: "",
+        forceLogicIRCChannelName: "",
+        forcePlayerName: "",
+        forcePlayerOauth: "",
+        forceMobile: true,
+    }
 
+    var appParms = {
+        // The Client-ID is used by Twitch.init .  See https://github.com/justintv/twitch-js-sdk - It was generated here: https://www.twitch.tv/kraken/oauth2/clients/new
+        // You need to register a new game with Twitch to get your own Client-ID. - The Client-ID is public - there is no need to hide it.  It should be a string of 31 alpha-numeric digits.
         clientID: 'hjgrph2akqwki1617ac5rdq9rqiep0k',
 
         gameWidth: 800,
         gameHeight: 450,
         landscapeOnly: true,
         portraitOnly: false,
-
-        appFailedWithoutRecovery: false,
-        appFailMessage: ''
     };
 
     var engineParms = {
+        isMobile: true,
         chat: null,
-        chatLoadedFunction: null
+        chatLoadedFunction: null,
+        appFailedWithoutRecovery: false,
+        appFailMessage: ''
     };
 
     function FatalError() { Error.apply(this, arguments); this.name = "FatalError"; }
     FatalError.prototype = Object.create(Error.prototype);
 
     function AppFail(s) {
-        setupParms.appFailMessage = s;
-        setupParms.appFailedWithoutRecovery = true;
+        engineParms.appFailMessage = s;
+        engineParms.appFailedWithoutRecovery = true;
     }
 
     function CreateTwitchApp() {
 
-        if (setupParms.isDebug !== true) {
-            if (/Mobi/.test(navigator.userAgent)) {
-                setupParms.isMobile = true;
-            }
-            else {
-                setupParms.isMobile = false;
-            }
+        if (/Mobi/.test(navigator.userAgent)) {
+            engineParms.isMobile = true;
+        }
+        else {
+            engineParms.isMobile = false;
+        }
+        if (devParms.forceMobile === true) {
+            engineParms.isMobile = true;
         }
 
-        // The following values should be set manually for testing locally.  These values will be overridden by the server when launching from a server.
-
-        var clientID = setupParms.clientID;
+        if (devParms.skipAuthentication === true ) {
+            engineParms.chatIRCChannelName = devParms.forceChatIRCChannelName;
+            engineParms.logicIRCChannelName = devParms.forceLogicIRCChannelName;
+            engineParms.playerName = devParms.forcePlayerName;
+            engineParms.playerOauth = devParms.forcePlayerOauth;
+        }
 
         if (location.hash !== null && location.hash !== "") {
-
-            setupParms.skipAuthentication = false;
-
             var lochash = location.hash.substr(1);
-
             var stateVals = lochash.substr(lochash.indexOf('state=')).split('&')[0].split('=')[1];
-
             var stateValTable = stateVals.split("+");
-            setupParms.chatIRCChannelName = stateValTable[1];
-            setupParms.logicIRCChannelName = stateValTable[2];
+            engineParms.chatIRCChannelName = stateValTable[1];
+            engineParms.logicIRCChannelName = stateValTable[2];
         }
 
-        if (!setupParms.disableNetworking) {
-            if (setupParms.logicIRCChannelName === '') {
+        if (!devParms.disableNetworking) {
+            if (engineParms.logicIRCChannelName === '') {
                 AppFail('Logic IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
             }
 
-            if (setupParms.chatIRCChannelName === '') {
+            if (engineParms.chatIRCChannelName === '') {
                 AppFail('Chat IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
             }
         }
 
-
-        // The Client-ID is used by Twitch.init .  See https://github.com/justintv/twitch-js-sdk
-        //	It was generated here: https://www.twitch.tv/kraken/oauth2/clients/new
-        // You need to register a new game with Twitch to get your own Client-ID.
-        // The Client-ID is public - there is no need to hide it.  It should be a string of 31 alpha-numeric digits.
-
-        // Initialize. If we are already logged in, there is no need for the connect button
-        if (setupParms.disableNetworking) {
+        if (devParms.disableNetworking) {
             engineParms.chat = null;
         }
         else {
-            Twitch.init({ clientId: clientID }, function (error, status) {
-                if (status.authenticated || setupParms.skipAuthentication) {
+            Twitch.init({ clientId: appParms.clientID }, function (error, status) {
+                if (status.authenticated || devParms.skipAuthentication) {
                     Twitch.api({ method: 'user' }, function (error, user) {
 
-                        if (!setupParms.skipAuthentication) {
+                        if (!devParms.skipAuthentication) {
                             if (user === null) alert(error);
-                            setupParms.playerName = user.display_name;
-                            setupParms.playerOauth = "oauth:" + Twitch.getToken();
+                            engineParms.playerName = user.display_name;
+                            engineParms.playerOauth = "oauth:" + Twitch.getToken();
                         }
 
-                        if (setupParms.logicIRCChannelName === setupParms.playerName) {
-                            AppFail('' + setupParms.playerName + ' is the same as the streamers networking channel.');
+                        if (engineParms.logicIRCChannelName === engineParms.playerName) {
+                            AppFail('' + engineParms.playerName + ' is the same as the streamers networking channel.');
                         }
 
                         var options = {
                             options: { debug: true },
                             connection: { reconnect: true },
-                            identity: { username: setupParms.playerName, password: setupParms.playerOauth },
-                            channels: ["#" + setupParms.logicIRCChannelName]
+                            identity: { username: engineParms.playerName, password: engineParms.playerOauth },
+                            channels: ["#" + engineParms.logicIRCChannelName]
                         };
                         engineParms.chat = new tmi.client(options);
                         if (engineParms.chatLoadedFunction !== null) {
@@ -132,7 +127,6 @@ function onLoadEnd() {
     CreateTwitchApp();
 
     var preloaderFunction = null;
-
     function AddPreloader() {
         var tick = 0;
         var preloaderFunction = setInterval(function () {
@@ -146,7 +140,6 @@ function onLoadEnd() {
 
         }, 1000 / 6);
     }
-
     AddPreloader();
 
     function AddAppReposition() {
@@ -189,15 +182,15 @@ function onLoadEnd() {
         }, 1000 / 30);
     }
 
-    if (!setupParms.isMobile) {
+    if (!engineParms.isMobile) {
         AddAppReposition();
     }
 
-    if (setupParms.appFailedWithoutRecovery === true) {
+    if (engineParms.appFailedWithoutRecovery === true) {
         document.getElementById('loadLabel').style.display = 'none';
         document.getElementById("orientationWarning").style.display = 'none';
         document.getElementById("appErrorMessage").style.display = '';
-        document.getElementById("appErrorMessage").textContent = 'Unrecoverable Error: ' + setupParms.appFailMessage;
+        document.getElementById("appErrorMessage").textContent = 'Unrecoverable Error: ' + engineParms.appFailMessage;
         throw new FatalError();
     }
 
@@ -207,7 +200,7 @@ function onLoadEnd() {
 
     function addTwitchIFrames() {
 
-        if (setupParms.isMobile ) {
+        if (engineParms.isMobile) {
             $('.browser').removeClass();
             return;
         }
@@ -218,14 +211,14 @@ function onLoadEnd() {
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("scrolling", "no");
         iframe.setAttribute("id", "chat_embed");
-        iframe.setAttribute("src", "http://www.twitch.tv/" + setupParms.chatIRCChannelName + "/chat");
+        iframe.setAttribute("src", "http://www.twitch.tv/" + engineParms.chatIRCChannelName + "/chat");
         iframe.setAttribute("width", "400");
         iframe.setAttribute("height", "720");
         document.getElementById("TwitchChat").appendChild(iframe);
 
         iframe = document.createElement('iframe');
         iframe.setAttribute("allowfullscreen", "true");
-        iframe.setAttribute("src", "http://player.twitch.tv/?channel=" + setupParms.chatIRCChannelName);
+        iframe.setAttribute("src", "http://player.twitch.tv/?channel=" + engineParms.chatIRCChannelName);
         iframe.setAttribute("width", "1024");
         iframe.setAttribute("height", "768");
         document.getElementById("TwitchVideo").appendChild(iframe);
@@ -235,16 +228,16 @@ function onLoadEnd() {
     var isFullScreen = false;
     var phaserDivName = "APGInputWidget";
 
-    if (setupParms.isMobile ) {
+    if (engineParms.isMobile) {
         phaserDivName = "APGInputWidgetMobile";
     }
 
-    if (setupParms.isMobile) {
+    if (engineParms.isMobile) {
         isFullScreen = true;
     }
 
     document.getElementById(phaserDivName).style.display = 'none';
-    ApgSetup(setupParms.disableNetworking, setupParms.isMobile, setupParms.gameWidth, setupParms.gameHeight, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
+    ApgSetup(devParms.disableNetworking, engineParms.isMobile, appParms.gameWidth, appParms.gameHeight, engineParms.logicIRCChannelName, engineParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
         if (preloaderFunction !== null) {
             clearInterval(preloaderFunction);
             preloaderFunction = null;

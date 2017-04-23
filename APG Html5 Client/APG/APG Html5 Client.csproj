@@ -27,29 +27,27 @@
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Typescript Src\Phaser\ent.ts" />
-    <TypeScriptCompile Include="Typescript Src\Phaser\enttx.ts" />
+    <TypeScriptCompile Include="Typescript Src\Games\Phaser\ent.ts" />
+    <TypeScriptCompile Include="Typescript Src\Games\Phaser\enttx.ts" />
     <TypeScriptCompile Include="Typescript Src\StartGame.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\APGSys.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\APGCore.ts" />
-    <TypeScriptCompile Include="Typescript Src\CartoonGame\ButtonCollection.ts" />
-    <TypeScriptCompile Include="Typescript Src\Debug\ConsoleOutput.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\jquery.d.ts" />
+    <TypeScriptCompile Include="Typescript Src\Games\CartoonGame\ButtonCollection.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\ConsoleOutput.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\Libraries\jquery.d.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\IRCNetwork.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\p2.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\phaser.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Phaser\Scroller.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\pixi.comments.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Racing\RacingMainInput.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\Libraries\p2.d.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\Libraries\phaser.d.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\Libraries\pixi.comments.d.ts" />
+    <TypeScriptCompile Include="Typescript Src\Games\Racing\RacingMainInput.ts" />
     <TypeScriptCompile Include="Typescript Src\Settings.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\NetworkMessageHandler.ts" />
-    <TypeScriptCompile Include="Typescript Src\CartoonGame\MainPlayerInput.ts" />
-    <TypeScriptCompile Include="Typescript Src\CartoonGame\ShowSubmitted.ts" />
-    <TypeScriptCompile Include="Typescript Src\CartoonGame\WaitingForJoinAcknowledgement.ts" />
-    <TypeScriptCompile Include="Typescript Src\CartoonGame\WaitingToJoin.ts" />
+    <TypeScriptCompile Include="Typescript Src\Games\CartoonGame\MainPlayerInput.ts" />
+    <TypeScriptCompile Include="Typescript Src\Games\CartoonGame\ShowSubmitted.ts" />
+    <TypeScriptCompile Include="Typescript Src\Games\CartoonGame\WaitingForJoinAcknowledgement.ts" />
+    <TypeScriptCompile Include="Typescript Src\Games\CartoonGame\WaitingToJoin.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="website\TestActions.json" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

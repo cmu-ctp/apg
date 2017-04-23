@@ -1,6 +1,6 @@
-﻿cacheImages('assets/imgs', ['ClientUI4.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3', 'strokeup.mp3','strokeup4.mp3']);
-cacheJSONs(['TestActions.json']);
+﻿cacheImages('cartoongame/imgs', ['ClientUI4.png']);
+cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3','strokeup4.mp3']);
+cacheJSONs(['cartoongame/json/TestActions.json']);
 
 interface RoundUpdate {
 	round: number;
@@ -24,10 +24,10 @@ interface PlayerUpdate{
 function MainPlayerInput(apg: APGSys): void {
 	var fontName: string = "Caveat Brush";
 
-	var actions: any = apg.JSONAssets['TestActions.json'];
+	var actions: any = apg.JSONAssets['cartoongame/json/TestActions.json'];
 
-	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup4.mp3', 1, false);
-	var warningSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup.mp3', 1, false);
+	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
+	var warningSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
 
 
 	function makeButtonSet(baseX: number, baseY: number, xAdd: number, yAdd: number, size: number, highlightColor: string, baseColor: string, setToolTip: (str: string) => void, setOption: (val: number) => void, buttonsInit: ActionEntry[]): ButtonCollection {
@@ -87,7 +87,7 @@ function MainPlayerInput(apg: APGSys): void {
 	var roundLabel: enttx, toolTipLabel: enttx, nextChoiceLabel: enttx;
 	var lastRoundUpdate: number = 0;
 
-	new ent(apg.w, 0, 0, 'assets/imgs/ClientUI4.png', {
+	new ent(apg.w, 0, 0, 'cartoongame/imgs/ClientUI4.png', {
 		upd: e => {
 			if (roundNumber != lastRoundUpdate) {
 				roundLabel.text = "Choices for Round " + roundNumber;

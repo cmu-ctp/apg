@@ -7,8 +7,8 @@
 	}
 }
 
-cacheImages('assets/imgs', ['blueorb.png']);
-cacheSounds('assets/snds/fx', ['strokeup2.mp3']);
+cacheImages('cartoongame/imgs', ['blueorb.png']);
+cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 
 class ButtonCollection {
 
@@ -24,7 +24,7 @@ class ButtonCollection {
 			updateActive = active;
 		};
 
-		let clickSound: Phaser.Sound = apg.g.add.audio('assets/snds/fx/strokeup2.mp3', 1, false);
+		let clickSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
 		var fontName: string = "Caveat Brush";
 
 		function addOption(id: number, str: string, x: number, y: number, toolTip: string): void {
@@ -90,7 +90,7 @@ class ButtonCollection {
 
 		function addSelector(): void {
 			let goalx: number = 0, goaly: number = 0, mul: number = 1, tick: number = Math.random() * Math.PI * 2, tickScale: number = Math.random() * .8 + .4;
-			new ent(apg.w, 50, 50, 'assets/imgs/blueorb.png', { scalex : .24, scaley : .24,
+			new ent(apg.w, 50, 50, 'cartoongame/imgs/blueorb.png', { scalex : .24, scaley : .24,
 				upd: e => {
 					e.x = goalx;
 					e.y = goaly;
