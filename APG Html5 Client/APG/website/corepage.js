@@ -19,6 +19,7 @@ function onLoadEnd() {
         playerOauth: "",
         isDebug: true,
         skipAuthentication: true,
+        disableNetworking:true,
 
         clientID: 'hjgrph2akqwki1617ac5rdq9rqiep0k',
 
@@ -72,12 +73,14 @@ function onLoadEnd() {
             setupParms.logicIRCChannelName = stateValTable[2];
         }
 
-        if (setupParms.logicIRCChannelName === '') {
-            AppFail('Logic IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
-        }
+        if (!setupParms.disableNetworking) {
+            if (setupParms.logicIRCChannelName === '') {
+                AppFail('Logic IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
+            }
 
-        if (setupParms.chatIRCChannelName === '') {
-            AppFail('Chat IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
+            if (setupParms.chatIRCChannelName === '') {
+                AppFail('Chat IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
+            }
         }
 
 
@@ -87,39 +90,44 @@ function onLoadEnd() {
         // The Client-ID is public - there is no need to hide it.  It should be a string of 31 alpha-numeric digits.
 
         // Initialize. If we are already logged in, there is no need for the connect button
-        Twitch.init({ clientId: clientID }, function (error, status) {
-            if (status.authenticated || setupParms.skipAuthentication) {
-                Twitch.api({ method: 'user' }, function (error, user) {
+        if (setupParms.disableNetworking) {
+            engineParms.chat = null;
+        }
+        else {
+            Twitch.init({ clientId: clientID }, function (error, status) {
+                if (status.authenticated || setupParms.skipAuthentication) {
+                    Twitch.api({ method: 'user' }, function (error, user) {
 
-                    if (!setupParms.skipAuthentication) {
-                        if (user === null) alert(error);
-                        setupParms.playerName = user.display_name;
-                        setupParms.playerOauth = "oauth:" + Twitch.getToken();
-                    }
+                        if (!setupParms.skipAuthentication) {
+                            if (user === null) alert(error);
+                            setupParms.playerName = user.display_name;
+                            setupParms.playerOauth = "oauth:" + Twitch.getToken();
+                        }
 
-                    if (setupParms.logicIRCChannelName === setupParms.playerName) {
-                        AppFail('' + setupParms.playerName + ' is the same as the streamers networking channel.');
-                    }
+                        if (setupParms.logicIRCChannelName === setupParms.playerName) {
+                            AppFail('' + setupParms.playerName + ' is the same as the streamers networking channel.');
+                        }
 
-                    var options = {
-                        options: { debug: true },
-                        connection: { reconnect: true },
-                        identity: { username: setupParms.playerName, password: setupParms.playerOauth },
-                        channels: ["#" + setupParms.logicIRCChannelName]
-                    };
-                    engineParms.chat = new tmi.client(options);
-                    if (engineParms.chatLoadedFunction !== null) {
-                        engineParms.chatLoadedFunction();
-                        engineParms.chatLoadedFunction = null;
-                    }
-                    engineParms.chat.connect().then(function (data) {
-                    }).catch(function (err) {
-                        AppFail('Twitch Chat Initialization Error: ' + err);
-                        console.log("Error: " + err);
+                        var options = {
+                            options: { debug: true },
+                            connection: { reconnect: true },
+                            identity: { username: setupParms.playerName, password: setupParms.playerOauth },
+                            channels: ["#" + setupParms.logicIRCChannelName]
+                        };
+                        engineParms.chat = new tmi.client(options);
+                        if (engineParms.chatLoadedFunction !== null) {
+                            engineParms.chatLoadedFunction();
+                            engineParms.chatLoadedFunction = null;
+                        }
+                        engineParms.chat.connect().then(function (data) {
+                        }).catch(function (err) {
+                            AppFail('Twitch Chat Initialization Error: ' + err);
+                            console.log("Error: " + err);
+                        });
                     });
-                });
-            }
-        });
+                }
+            });
+        }
     }
     CreateTwitchApp();
 
@@ -140,7 +148,6 @@ function onLoadEnd() {
     }
 
     AddPreloader();
-
 
     function AddAppReposition() {
         var mouseDown = false;
@@ -237,7 +244,7 @@ function onLoadEnd() {
     }
 
     document.getElementById(phaserDivName).style.display = 'none';
-    ApgSetup(setupParms.isMobile, setupParms.gameWidth, setupParms.gameHeight, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
+    ApgSetup(setupParms.disableNetworking, setupParms.isMobile, setupParms.gameWidth, setupParms.gameHeight, setupParms.logicIRCChannelName, setupParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
         if (preloaderFunction !== null) {
             clearInterval(preloaderFunction);
             preloaderFunction = null;

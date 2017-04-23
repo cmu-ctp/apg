@@ -202,20 +202,22 @@ function cacheJSONs(fileNames) {
         jsonAssetCacheNameList.push(fileNames[k]);
     }
 }
-function ApgSetup(isMobile, gameWidth, gameHeight, logicIRCChannelName, playerName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd) {
+function ApgSetup(disableNetworking, isMobile, gameWidth, gameHeight, logicIRCChannelName, playerName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd) {
     if (gameWidth === void 0) { gameWidth = 400; }
     if (gameHeight === void 0) { gameHeight = 300; }
     if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
         ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", " + gameHeight + ".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
         return;
     }
-    if (logicIRCChannelName == undefined || logicIRCChannelName == "") {
-        ConsoleOutput.debugError("ApgSetup: logicIRCChannelName is not set.  The game cannot work without this.  This should be set to the name of a Twitch IRC channel, with no leading #.", "sys");
-        return;
-    }
-    if (playerName == undefined || playerName == "") {
-        ConsoleOutput.debugError("ApgSetup: playerName is not set.  The game cannot work without this.  This should be set to the name of a valid Twitch account.", "sys");
-        return;
+    if (disableNetworking == false) {
+        if (logicIRCChannelName == undefined || logicIRCChannelName == "") {
+            ConsoleOutput.debugError("ApgSetup: logicIRCChannelName is not set.  The game cannot work without this.  This should be set to the name of a Twitch IRC channel, with no leading #.", "sys");
+            return;
+        }
+        if (playerName == undefined || playerName == "") {
+            ConsoleOutput.debugError("ApgSetup: playerName is not set.  The game cannot work without this.  This should be set to the name of a valid Twitch account.", "sys");
+            return;
+        }
     }
     if (APGInputWidgetDivName == undefined || APGInputWidgetDivName == "") {
         ConsoleOutput.debugError("ApgSetup: APGInputWidgetDivName is not set.  The game cannot work without this.  This should be the name of a valid div to contain the PhaserJS canvas.", "sys");
@@ -281,7 +283,7 @@ function ApgSetup(isMobile, gameWidth, gameHeight, logicIRCChannelName, playerNa
             }
         };
         function initLaunchGame() {
-            if (engineParms.chat == null) {
+            if (engineParms.chat == null && disableNetworking == false) {
                 engineParms.chatLoadedFunction = launchGame;
             }
             else {
