@@ -8,7 +8,7 @@
 
 // This is the only script referenced by the web page.
 
-function onLoadEnd( gameLaunchFunction, devParms, appParms ) {
+function launchAPGClient( gameLaunchFunction, devParms, appParms ) {
 
     var isMobile= true;
     var appFailedWithoutRecovery= false;
@@ -219,13 +219,37 @@ function onLoadEnd( gameLaunchFunction, devParms, appParms ) {
         isFullScreen = true;
     }
 
-    document.getElementById(phaserDivName).style.display = 'none';
-    ApgSetup(gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isFullScreen, engineParms, function () {
+    function ClearOnLoadEnd(){
         if (preloaderFunction !== null) {
             clearInterval(preloaderFunction);
             preloaderFunction = null;
         }
         document.getElementById('loadLabel').style.display = 'none';
         document.getElementById(phaserDivName).style.display = '';
-    });
+    }
+
+    var showingOrientationWarning = false;
+    function HandleOrientation() {
+        if (!isMobile) return;
+
+        var width = window.innerWidth || document.body.clientWidth;
+        var height = window.innerHeight || document.body.clientHeight;
+        if (height > width) {
+            if (!showingOrientationWarning) {
+                showingOrientationWarning = true;
+                document.getElementById("orientationWarning").style.display = '';
+                document.getElementById(APGInputWidgetDivName).style.display = 'none';
+            }
+        }
+        else {
+            if (showingOrientationWarning) {
+                showingOrientationWarning = false;
+                document.getElementById("orientationWarning").style.display = 'none';
+                document.getElementById(APGInputWidgetDivName).style.display = '';
+            }
+        }
+    }
+
+    document.getElementById(phaserDivName).style.display = 'none';
+    ApgSetup(gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isFullScreen, engineParms, ClearOnLoadEnd, HandleOrientation );
 }
