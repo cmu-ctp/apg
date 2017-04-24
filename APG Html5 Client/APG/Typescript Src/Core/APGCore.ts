@@ -23,8 +23,9 @@ if (typeof Object.assign != 'function') {
 
 ______________________________________________________________________________________________*/
 
+declare var WebFontConfig: Object;
 
-function ApgSetup(gameLaunchFunction:(APGSys)=>void, disableNetworking:boolean, isMobile:boolean, gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any, onLoadEnd:()=>void, handleOrientation:()=>void ) {
+function ApgSetup(assetCacheFunction:( Cacher )=>void, gameLaunchFunction:(APGSys)=>void, disableNetworking:boolean, isMobile:boolean, gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any, onLoadEnd:()=>void, handleOrientation:()=>void ) {
 
 	if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
 		ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", "  + gameHeight +".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
@@ -42,25 +43,11 @@ function ApgSetup(gameLaunchFunction:(APGSys)=>void, disableNetworking:boolean, 
 		return;
 	}
 
-	var curJSONAsset = 0;
-	var JSONAssets = {};
+	var cache = new AssetCacher();
 
-	function LoadJSONAsset() {
-		if (curJSONAsset >= jsonAssetCacheNameList.length) {
-			LoadPhaserAssets();
-			return;
-		}
-		$.getJSON(jsonAssetCacheNameList[curJSONAsset], function (data) {
-			JSONAssets[jsonAssetCacheNameList[curJSONAsset]] = data.all;
+	assetCacheFunction( cache );
 
-			ConsoleOutput.logAsset(jsonAssetCacheNameList[curJSONAsset]);
-
-			curJSONAsset++;
-
-			LoadJSONAsset();
-		});
-	}
-	LoadJSONAsset();
+	cache.LoadJSONAsset(LoadPhaserAssets); 
 
 	function LoadPhaserAssets() {
 		var game: Phaser.Game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
@@ -78,30 +65,12 @@ function ApgSetup(gameLaunchFunction:(APGSys)=>void, disableNetworking:boolean, 
 					}
 				}
 
-				if (phaserAssetCacheList.length == 0) {
-					ConsoleOutput.debugWarn("ApgSetup: phaserAssetCacheList.length is 0, so no assets are being cached.  This is probably an error.", "sys");
-				}
-
-				for (var k = 0; k < phaserAssetCacheList.length; k++) {
-					phaserAssetCacheList[k](game.load);
-				}
-
-				for (var k = 0; k < phaserImageList.length; k++) {
-					game.load.image(phaserImageList[k], phaserImageList[k]);
-				}
-
-				for (var k = 0; k < phaserSoundList.length; k++) {
-					game.load.audio(phaserSoundList[k], phaserSoundList[k]);
-				}
-
-				if (phaserGoogleWebFontList != undefined && phaserGoogleWebFontList.length > 0) {
-					game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
-				}
+				cache.Run(game);
 			},
 			create: () => {
 				game.input.mouse.capture = true;
 
-				if (phaserGoogleWebFontList == undefined || phaserGoogleWebFontList.length == 0) {
+				if (cache.phaserGoogleWebFontList == undefined || cache.phaserGoogleWebFontList.length == 0) {
 					initLaunchGame();
 				}
 			}
@@ -111,7 +80,7 @@ function ApgSetup(gameLaunchFunction:(APGSys)=>void, disableNetworking:boolean, 
 			//  'active' means all requested fonts have finished loading.  We need a delay after loading to give browser time to get sorted for fonts, for some reason.
 			active: function () { game.time.events.add(Phaser.Timer.SECOND, initLaunchGame, this); },
 			google: {
-				families: phaserGoogleWebFontList
+				families: cache.phaserGoogleWebFontList
 			}
 		};
 
@@ -126,7 +95,7 @@ function ApgSetup(gameLaunchFunction:(APGSys)=>void, disableNetworking:boolean, 
 
 		function launchGame() {
 			onLoadEnd();
-			var apg: APGFullSystem = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, JSONAssets);
+			var apg: APGFullSystem = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets);
 			var showingOrientationWarning = false;
 			setInterval(function () {
 				handleOrientation();

@@ -1,6 +1,9 @@
-﻿cacheImages('cartoongame/imgs', ['ClientUI3.png']);
-cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3']);
-cacheGoogleWebFonts(['Caveat Brush']);
+﻿function ShowSubmittedCache(c: Cacher): void {
+	c.images('cartoongame/imgs', ['ClientUI3.png']);
+	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
+	c.googleWebFonts(['Caveat Brush']);
+}
+
 function ShowSubmitted(apg: APGSys, getRoundNumber: () => number): void {
 	var inputUsed: boolean = false;
 	var clickSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);

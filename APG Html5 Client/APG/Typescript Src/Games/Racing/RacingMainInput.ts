@@ -1,28 +1,31 @@
 ﻿var carParts;
 
-cachePhaserAssets( l => {
-	var assetSets = ["bodyHood", "bodySide", "bodyTrunk", "defense", "nitro", "offense", "case", "pistons", "plugs", "airfreshner", "seat", "steering", "tireBolts", "tireBrand", "tire"];
+function CacheRacingGame(c: Cacher): void {
+	c.assets(l => {
+		var assetSets = ["bodyHood", "bodySide", "bodyTrunk", "defense", "nitro", "offense", "case", "pistons", "plugs", "airfreshner", "seat", "steering", "tireBolts", "tireBrand", "tire"];
 
-	carParts = [];
-	for (var k = 0; k < 5; k++) {
-		carParts.push([]);
-		for (var j = 0; j < 3; j++) {
-			carParts[k].push([]);
+		carParts = [];
+		for (var k = 0; k < 5; k++) {
+			carParts.push([]);
+			for (var j = 0; j < 3; j++) {
+				carParts[k].push([]);
+			}
 		}
-	}
 
-	for (var k = 0; k < assetSets.length; k++) {
-		for (var j = 1; j < 4; j++) {
-			var s = "carPart_" + k + "_" + j;
-			l.image(s, "racinggame/" + assetSets[k] + j + ".png");
-			carParts[Math.floor(k / 3)][k % 3].push(s);
+		for (var k = 0; k < assetSets.length; k++) {
+			for (var j = 1; j < 4; j++) {
+				var s = "carPart_" + k + "_" + j;
+				l.image(s, "racinggame/" + assetSets[k] + j + ".png");
+				carParts[Math.floor(k / 3)][k % 3].push(s);
+			}
 		}
-	}
-});
+	});
 
-cacheImages('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselected.png']);
-cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
-cacheGoogleWebFonts(['Anton']);
+	c.images('racinggame', ['audienceInterfaceBG.png', 'selected.png', 'unselected.png']);
+	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
+	c.googleWebFonts(['Anton']);
+}
+
 
 // "join"
 interface JoinParms {

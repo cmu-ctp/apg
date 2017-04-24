@@ -8,7 +8,7 @@
 
 // This is the only script referenced by the web page.
 
-function launchAPGClient( gameLaunchFunction, devParms, appParms ) {
+function launchAPGClient( assetCacheFunction, gameLaunchFunction, devParms, appParms ) {
 
     var isMobile= true;
     var appFailedWithoutRecovery= false;
@@ -238,18 +238,18 @@ function launchAPGClient( gameLaunchFunction, devParms, appParms ) {
             if (!showingOrientationWarning) {
                 showingOrientationWarning = true;
                 document.getElementById("orientationWarning").style.display = '';
-                document.getElementById(APGInputWidgetDivName).style.display = 'none';
+                document.getElementById(phaserDivName).style.display = 'none';
             }
         }
         else {
             if (showingOrientationWarning) {
                 showingOrientationWarning = false;
                 document.getElementById("orientationWarning").style.display = 'none';
-                document.getElementById(APGInputWidgetDivName).style.display = '';
+                document.getElementById(phaserDivName).style.display = '';
             }
         }
     }
 
     document.getElementById(phaserDivName).style.display = 'none';
-    ApgSetup(gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isFullScreen, engineParms, ClearOnLoadEnd, HandleOrientation );
+    ApgSetup(assetCacheFunction, gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isFullScreen, engineParms, ClearOnLoadEnd, HandleOrientation );
 }

@@ -1,4 +1,9 @@
-﻿class ActionEntry {
+﻿function ButtonCache(c: Cacher): void {
+	c.images('cartoongame/imgs', ['blueorb.png']);
+	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
+}
+
+class ActionEntry {
 	label: string;
 	tooltip: string;
 	constructor(label: string, tooltip: string) {
@@ -6,9 +11,6 @@
 		this.tooltip = tooltip;
 	}
 }
-
-cacheImages('cartoongame/imgs', ['blueorb.png']);
-cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 
 class ButtonCollection {
 

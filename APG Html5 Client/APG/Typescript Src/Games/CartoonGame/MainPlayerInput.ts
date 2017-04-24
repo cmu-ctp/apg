@@ -1,6 +1,13 @@
-﻿cacheImages('cartoongame/imgs', ['ClientUI4.png']);
-cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3','strokeup4.mp3']);
-cacheJSONs(['cartoongame/json/TestActions.json']);
+﻿function CartoonAssetCache(c: Cacher): void {
+	c.images('cartoongame/imgs', ['ClientUI4.png']);
+	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
+	c.json(['cartoongame/json/TestActions.json']);
+
+	WaitingToJoinCache(c);
+	JoinAcknowledgeCache(c);
+	ShowSubmittedCache(c);
+	ButtonCache(c);
+}
 
 interface RoundUpdate {
 	round: number;
@@ -19,7 +26,6 @@ interface PlayerUpdate{
 	hp:number;
 	money:number;
 }
-
 
 function MainPlayerInput(apg: APGSys): void {
 	var w = apg.g.world;

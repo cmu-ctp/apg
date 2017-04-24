@@ -1,4 +1,17 @@
-﻿interface APGSys {
+﻿interface Cacher {
+
+	assets(cacheFunction: (loader: Phaser.Loader) => void): void;
+
+	images(dir: string, imageList: string[]): void;
+
+	sounds(dir: string, soundList: string[]): void;
+
+	googleWebFonts(googleWebFontNames: string[]): void;
+
+	json(fileNames: string[]): void;
+}
+
+interface APGSys {
 
 	g: Phaser.Game;
 

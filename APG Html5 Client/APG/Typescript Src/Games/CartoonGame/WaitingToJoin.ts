@@ -1,6 +1,8 @@
-﻿cacheImages('cartoongame/imgs', ['ClientUI3.png']);
-cacheSounds('cartoongame/snds/fx', ['strokeup2.mp3']);
-cacheGoogleWebFonts(['Caveat Brush']);
+﻿function WaitingToJoinCache(c: Cacher): void {
+	c.images('cartoongame/imgs', ['ClientUI3.png']);
+	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
+	c.googleWebFonts(['Caveat Brush']);
+}
 
 interface EmptyParms{
 }
