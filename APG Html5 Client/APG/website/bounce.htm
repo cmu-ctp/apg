@@ -9,14 +9,52 @@
     <script src="https://ttv-api.s3.amazonaws.com/twitch.min.js"></script>
     <script src="http://cdn.tmijs.org/js/latest/1.x/tmi.min.js"></script>
     <script src="phaser.min.js"></script>
-    <script src="game.js"></script>
+    <script src="APGApp.js"></script>
     <script src="corepage.js"></script>
 
     <link rel="stylesheet" href="client.css" type="text/css" />
 
-</head>
+    <script>
 
-<body onload="onLoadEnd();">
+        devParms = {
+            disableNetworking: false,
+
+            skipAuthentication: false,
+            forceChatIRCChannelName: "",
+            forceLogicIRCChannelName: "",
+            forcePlayerName: "",
+            forcePlayerOauth: "",
+
+            forceMobile: false
+        };
+
+        appParms = {
+            // The Client-ID is used by Twitch.init .  See https://github.com/justintv/twitch-js-sdk - It was generated here: https://www.twitch.tv/kraken/oauth2/clients/new
+            // You need to register a new game with Twitch to get your own Client-ID. - The Client-ID is public - there is no need to hide it.  It should be a string of 31 alpha-numeric digits.
+            clientID: 'hjgrph2akqwki1617ac5rdq9rqiep0k',
+
+            allowClientReposition: true,
+
+            gameWidth: 800,
+            gameHeight: 450,
+            landscapeOnly: true,
+            portraitOnly: false,
+
+            videoWidth: 1024,
+            videoHeight: 768,
+            chatWidth: 400,
+            chatHeight: 720
+        };
+
+    </script>
+
+</head>
+<!--
+	MainPlayerInput(apg);
+	//WaitingToJoin(apg);
+	//RacingInput(apg);
+-->
+<body onload="onLoadEnd(MainPlayerInput, devParms, appParms);">
     <h1><div id="loadLabel">Please wait while the audience app loads</div></h1>
     <h1><div id="orientationWarning"></div></h1>
     <h1><div id="appErrorMessage"></div></h1>

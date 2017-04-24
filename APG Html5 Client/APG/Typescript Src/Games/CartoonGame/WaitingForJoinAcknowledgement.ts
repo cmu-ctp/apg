@@ -13,16 +13,16 @@ function WaitingForJoinAcknowledement(apg: APGSys): void {
 	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
 	var endSubgame: boolean = false, timeOut: number = 0, retry:number = 0;
 
-	apg.SetHandlers(new NetworkMessageHandler()
-		.Add<ClientJoinParms>("join", p => {
+	apg.ResetServerMessageRegistry()
+		.Register<ClientJoinParms>("join", p => {
 			if (p.name != apg.playerName) return;
 
 			endSubgame = true;
 			endOfRoundSound.play();
 			MainPlayerInput(apg);
-		}));
+		});
 
-	new ent(apg.w, 60, 0, 'cartoongame/imgs/ClientUI3.png', {
+	new ent(apg.g.world, 60, 0, 'cartoongame/imgs/ClientUI3.png', {
 		alpha: 0,
 		upd: e => {
 			retry++;
@@ -46,7 +46,7 @@ function WaitingForJoinAcknowledement(apg: APGSys): void {
 		}
 	});
 	var tick: number = 0;
-	new enttx(apg.w, 320, 100 + 60, "Trying to Connect to Streamer's Game - Hold on a Second...", { font: '32px Caveat Brush', fill: '#222' }, {
+	new enttx(apg.g.world, 320, 100 + 60, "Trying to Connect to Streamer's Game - Hold on a Second...", { font: '32px Caveat Brush', fill: '#222' }, {
 		alpha: 0,
 		upd: e => {
 			if (endSubgame) {

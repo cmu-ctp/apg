@@ -18,6 +18,8 @@ class ButtonCollection {
 	constructor(apg:APGSys, baseX: number, baseY: number, xAdd: number, yAdd: number, size: number, highlightColor: string, baseColor: string, setToolTip: (str: string) => void, setOption: (val: number) => void, buttonsInit: ActionEntry[]) {
 		let fx1 = 0, fx2 = 0, fy1 = 0, fy2 = 0, updateActive:boolean = false;
 
+		var w = apg.g.world;
+
 		var big: ButtonCollection = this;
 		this.selected = 0;
 		this.update = active => {
@@ -39,7 +41,7 @@ class ButtonCollection {
 			}
 
 			var textColor = { font: '18px ' + fontName, fill: '#222' };
-			new enttx(apg.w, 60, 50 + 20, str, textColor, {
+			new enttx(w, 60, 50 + 20, str, textColor, {
 				upd: e => {
 					mul = mul * (1 - spd) + spd * (updateActive ? 1 : 0);
 
@@ -90,7 +92,7 @@ class ButtonCollection {
 
 		function addSelector(): void {
 			let goalx: number = 0, goaly: number = 0, mul: number = 1, tick: number = Math.random() * Math.PI * 2, tickScale: number = Math.random() * .8 + .4;
-			new ent(apg.w, 50, 50, 'cartoongame/imgs/blueorb.png', { scalex : .24, scaley : .24,
+			new ent(w, 50, 50, 'cartoongame/imgs/blueorb.png', { scalex : .24, scaley : .24,
 				upd: e => {
 					e.x = goalx;
 					e.y = goaly;

@@ -28,8 +28,7 @@ cacheGoogleWebFonts(['Anton']);
 interface JoinParms {
 }
 
-interface TeamInfo
-{
+interface TeamInfo{
 	pitStopID:number;
     part1:string;
 	part2: string;
@@ -57,6 +56,7 @@ class RacingGame {
 	select1: ent;
 	select2: ent;
 	select3: ent;
+
 	baseEnt: ent;
 
 	allInput: ent;
@@ -72,45 +72,47 @@ class RacingGame {
 			return '' + sz + 'px Anton';
 		}
 
-		new enttx(apg.w, sc * 10, sc * 10, "CAR PERFORMANCE", { font: fnt(20), fill: '#fff' });
+		var w = apg.g.world;
+
+		new enttx(w, sc * 10, sc * 10, "CAR PERFORMANCE", { font: fnt(20), fill: '#fff' });
 
 		for (var k = 0; k < 5; k++) {
-			new enttx(apg.w, sc * 10, sc * (48 + (72 - 48) * k), statNames[k] + ":", { font: fnt(16), fill: '#fff' });
+			new enttx(w, sc * 10, sc * (48 + (72 - 48) * k), statNames[k] + ":", { font: fnt(16), fill: '#fff' });
 		}
 
 		// ______________________
 
-		new enttx(apg.w, sc * 12, sc * 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
+		new enttx(w, sc * 12, sc * 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
 
-		new enttx(apg.w, sc * 15, sc * 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
-		new enttx(apg.w, sc * 15, sc * 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
+		new enttx(w, sc * 15, sc * 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
+		new enttx(w, sc * 15, sc * 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
 
 		// ______________________
 
-		new enttx(apg.w, sc * 152, sc * 10, "OPTIONS", { font: fnt(20), fill: '#fff' });
+		new enttx(w, sc * 152, sc * 10, "OPTIONS", { font: fnt(20), fill: '#fff' });
 
-		this.select1 = new ent(apg.w, sc * 158, sc * 36, "racinggame/selected.png", { alpha: 1 });
-		this.select2 = new ent(apg.w, sc * 158, sc * 92, "racinggame/unselected.png", { alpha: .5 });
-		this.select3 = new ent(apg.w, sc * 158, sc * 150, "racinggame/unselected.png", { alpha: .5 });
+		this.select1 = new ent(w, sc * 158, sc * 36, "racinggame/selected.png", { alpha: 1 });
+		this.select2 = new ent(w, sc * 158, sc * 92, "racinggame/unselected.png", { alpha: .5 });
+		this.select3 = new ent(w, sc * 158, sc * 150, "racinggame/unselected.png", { alpha: .5 });
 
-		this.partLabel1 = new enttx(apg.w, sc * 158, sc * 36, "Featherwate", { font: fnt(16), fill: '#0' });
-		this.partLabel2 = new enttx(apg.w, sc * 158, sc * 92, "Unguzzler", { font: fnt(16), fill: '#0' });
-		this.partLabel3 = new enttx(apg.w, sc * 158, sc * 150, "Hulkite", { font: fnt(16), fill: '#0' });
+		this.partLabel1 = new enttx(w, sc * 158, sc * 36, "Featherwate", { font: fnt(16), fill: '#0' });
+		this.partLabel2 = new enttx(w, sc * 158, sc * 92, "Unguzzler", { font: fnt(16), fill: '#0' });
+		this.partLabel3 = new enttx(w, sc * 158, sc * 150, "Hulkite", { font: fnt(16), fill: '#0' });
 
 		var picChangeTick = 0;
 		var picFrame = 0;
 
-		this.carPart1 = new ent(apg.w, sc * 220, sc * 40, carParts[this.pitstopID][0][0], { scalex: sc * .4, scaley: sc * .4 });
-		this.carPart2 = new ent(apg.w, sc * 220, sc * 40, carParts[this.pitstopID][1][0], { scalex: sc * .4, scaley: sc * .4 });
-		this.carPart3 = new ent(apg.w, sc * 220, sc * 40, carParts[this.pitstopID][2][0], { scalex: sc * .4, scaley: sc * .4 });
+		this.carPart1 = new ent(w, sc * 220, sc * 40, carParts[this.pitstopID][0][0], { scalex: sc * .4, scaley: sc * .4 });
+		this.carPart2 = new ent(w, sc * 220, sc * 40, carParts[this.pitstopID][1][0], { scalex: sc * .4, scaley: sc * .4 });
+		this.carPart3 = new ent(w, sc * 220, sc * 40, carParts[this.pitstopID][2][0], { scalex: sc * .4, scaley: sc * .4 });
 
 		this.myPart = this.carPart1;
 
-		new enttx(apg.w, sc * 220, sc * 178, "-1 Weight, +1 Power", { font: fnt(24), fill: '#fff' });
+		new enttx(w, sc * 220, sc * 178, "-1 Weight, +1 Power", { font: fnt(24), fill: '#fff' });
 
-		this.joinBkg = new ent(apg.w, 0, 0, "racinggame/selected.png", { alpha: 1, scalex: sc * 10, scaley: sc * 10 });
+		this.joinBkg = new ent(w, 0, 0, "racinggame/selected.png", { alpha: 1, scalex: sc * 10, scaley: sc * 10 });
 
-		this.joinText = new enttx(apg.w, sc * 40, sc * 178, "Tap Anywhere to Join Game", { font: fnt(18), fill: '#0' });
+		this.joinText = new enttx(w, sc * 40, sc * 178, "Tap Anywhere to Join Game", { font: fnt(18), fill: '#0' });
 	}
 
 	joinBkg: ent;
@@ -123,6 +125,7 @@ class RacingGame {
 	carPart1: ent;
 	carPart2: ent;
 	carPart3: ent;
+
 	myPart: ent = null;
 
 	pitstopID: number = 0;
@@ -154,18 +157,12 @@ class RacingGame {
 		}
 		function Team(teamInfo: TeamInfo): void {
 
-			console.log("In team");
-
-			console.log("I am " + apg.playerName);
-
 			// ?
 			if (that.mySpot != -1) return;
 
 			if (teamInfo.part1 == apg.playerName) that.mySpot = 0;
 			if (teamInfo.part2 == apg.playerName) that.mySpot = 1;
 			if (teamInfo.part3 == apg.playerName) that.mySpot = 2;
-
-			console.log("my spot is " + that.mySpot );
 
 			if (that.mySpot == -1) return;
 
@@ -208,20 +205,17 @@ class RacingGame {
 			}
 		}
 
-		var handlers: NetworkMessageHandler = new NetworkMessageHandler();
+		apg.ResetServerMessageRegistry();
 		// also handle join acknowledge
-		handlers.Add<JoinAwk>("joinawk", JoinAcknowledge);
-		handlers.Add<TeamInfo>("team", Team);
-		handlers.AddPeerMessage<ChosenPart>("select", PlayerChoice);
-		apg.SetHandlers( handlers );
+		apg.Register<JoinAwk>("joinawk", JoinAcknowledge);
+		apg.Register<TeamInfo>("team", Team);
+		apg.RegisterPeer<ChosenPart>("select", PlayerChoice);
 	}
 
-	constructor(apg: APGSys ) {
+	constructor(apg: APGSys) {
 		enum PlayerChoice {
 			bodyHood = 0, bodySide, bodyTrunk, defense, nitro, offense, case, pistons, plugs, airfreshner, seat, steering, tireBolts, tireBrand, tire
 		}
-
-		apg.WriteToServer<JoinParms>("join", {});
 
 		var endOfRoundSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
 		this.warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
@@ -237,7 +231,7 @@ class RacingGame {
 
 		var joinTimer:number = 0;
 
-		var bkg: ent = new ent(apg.w, 0, 0, 'racinggame/audienceInterfaceBG.png', {
+		var bkg: ent = new ent(apg.g.world, 0, 0, 'racinggame/audienceInterfaceBG.png', {
 			scalex: sc, scaley: sc,
 			upd: e => {
 				if (!this.haveJoined) {

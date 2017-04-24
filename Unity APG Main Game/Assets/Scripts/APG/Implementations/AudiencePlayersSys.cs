@@ -17,12 +17,12 @@ namespace APG {
 			chatSys = new ChatSys( this );
 		}
 
-		public void WriteLocal( string user, string msg, object parms = null ) {
+		public void WriteLocal<T>( string user, string msg, T parms ) {
 			RunHandler( user, msg+"###"+JsonUtility.ToJson(parms) );
 		}
 
-		public void WriteToClients( string msg, object parms = null ) {
-			network.SendMsg( msg, parms );
+		public void WriteToClients<T>( string msg, T parms ) {
+			network.WriteMessageToClient( msg, parms );
 		}
 		public void WriteToChat( string msg ) {
 			network.SendChatText( msg );

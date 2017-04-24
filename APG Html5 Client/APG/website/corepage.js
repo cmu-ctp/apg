@@ -8,61 +8,45 @@
 
 // This is the only script referenced by the web page.
 
-function onLoadEnd() {
+function onLoadEnd( gameLaunchFunction, devParms, appParms ) {
 
-    var devParms = {
-        disableNetworking: true,
+    var isMobile= true;
+    var appFailedWithoutRecovery= false;
+    var appFailMessage= '';
 
-        skipAuthentication: true,
-        forceChatIRCChannelName: "",
-        forceLogicIRCChannelName: "",
-        forcePlayerName: "",
-        forcePlayerOauth: "",
-        forceMobile: true,
-    }
-
-    var appParms = {
-        // The Client-ID is used by Twitch.init .  See https://github.com/justintv/twitch-js-sdk - It was generated here: https://www.twitch.tv/kraken/oauth2/clients/new
-        // You need to register a new game with Twitch to get your own Client-ID. - The Client-ID is public - there is no need to hide it.  It should be a string of 31 alpha-numeric digits.
-        clientID: 'hjgrph2akqwki1617ac5rdq9rqiep0k',
-
-        gameWidth: 800,
-        gameHeight: 450,
-        landscapeOnly: true,
-        portraitOnly: false,
-    };
-
+    var chatIRCChannelName = "";
+    var logicIRCChannelName = "";
+    
     var engineParms = {
-        isMobile: true,
         chat: null,
         chatLoadedFunction: null,
-        appFailedWithoutRecovery: false,
-        appFailMessage: ''
+        playerName :"",
+        playerOauth : ""
     };
 
     function FatalError() { Error.apply(this, arguments); this.name = "FatalError"; }
     FatalError.prototype = Object.create(Error.prototype);
 
     function AppFail(s) {
-        engineParms.appFailMessage = s;
-        engineParms.appFailedWithoutRecovery = true;
+        appFailMessage = s;
+        appFailedWithoutRecovery = true;
     }
 
     function CreateTwitchApp() {
 
         if (/Mobi/.test(navigator.userAgent)) {
-            engineParms.isMobile = true;
+            isMobile = true;
         }
         else {
-            engineParms.isMobile = false;
+            isMobile = false;
         }
         if (devParms.forceMobile === true) {
-            engineParms.isMobile = true;
+            isMobile = true;
         }
 
         if (devParms.skipAuthentication === true ) {
-            engineParms.chatIRCChannelName = devParms.forceChatIRCChannelName;
-            engineParms.logicIRCChannelName = devParms.forceLogicIRCChannelName;
+            chatIRCChannelName = devParms.forceChatIRCChannelName;
+            logicIRCChannelName = devParms.forceLogicIRCChannelName;
             engineParms.playerName = devParms.forcePlayerName;
             engineParms.playerOauth = devParms.forcePlayerOauth;
         }
@@ -71,16 +55,16 @@ function onLoadEnd() {
             var lochash = location.hash.substr(1);
             var stateVals = lochash.substr(lochash.indexOf('state=')).split('&')[0].split('=')[1];
             var stateValTable = stateVals.split("+");
-            engineParms.chatIRCChannelName = stateValTable[1];
-            engineParms.logicIRCChannelName = stateValTable[2];
+            chatIRCChannelName = stateValTable[1];
+            logicIRCChannelName = stateValTable[2];
         }
 
         if (!devParms.disableNetworking) {
-            if (engineParms.logicIRCChannelName === '') {
+            if (logicIRCChannelName === '') {
                 AppFail('Logic IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
             }
 
-            if (engineParms.chatIRCChannelName === '') {
+            if (chatIRCChannelName === '') {
                 AppFail('Chat IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
             }
         }
@@ -99,7 +83,7 @@ function onLoadEnd() {
                             engineParms.playerOauth = "oauth:" + Twitch.getToken();
                         }
 
-                        if (engineParms.logicIRCChannelName === engineParms.playerName) {
+                        if (logicIRCChannelName === engineParms.playerName) {
                             AppFail('' + engineParms.playerName + ' is the same as the streamers networking channel.');
                         }
 
@@ -107,7 +91,7 @@ function onLoadEnd() {
                             options: { debug: true },
                             connection: { reconnect: true },
                             identity: { username: engineParms.playerName, password: engineParms.playerOauth },
-                            channels: ["#" + engineParms.logicIRCChannelName]
+                            channels: ["#" + logicIRCChannelName]
                         };
                         engineParms.chat = new tmi.client(options);
                         if (engineParms.chatLoadedFunction !== null) {
@@ -181,16 +165,15 @@ function onLoadEnd() {
             }
         }, 1000 / 30);
     }
-
-    if (!engineParms.isMobile) {
+    if (!isMobile && appParms.allowClientReposition ) {
         AddAppReposition();
     }
 
-    if (engineParms.appFailedWithoutRecovery === true) {
+    if (appFailedWithoutRecovery === true) {
         document.getElementById('loadLabel').style.display = 'none';
         document.getElementById("orientationWarning").style.display = 'none';
         document.getElementById("appErrorMessage").style.display = '';
-        document.getElementById("appErrorMessage").textContent = 'Unrecoverable Error: ' + engineParms.appFailMessage;
+        document.getElementById("appErrorMessage").textContent = 'Unrecoverable Error: ' + appFailMessage;
         throw new FatalError();
     }
 
@@ -200,7 +183,7 @@ function onLoadEnd() {
 
     function addTwitchIFrames() {
 
-        if (engineParms.isMobile) {
+        if (isMobile) {
             $('.browser').removeClass();
             return;
         }
@@ -211,16 +194,16 @@ function onLoadEnd() {
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("scrolling", "no");
         iframe.setAttribute("id", "chat_embed");
-        iframe.setAttribute("src", "http://www.twitch.tv/" + engineParms.chatIRCChannelName + "/chat");
-        iframe.setAttribute("width", "400");
-        iframe.setAttribute("height", "720");
+        iframe.setAttribute("src", "http://www.twitch.tv/" + chatIRCChannelName + "/chat");
+        iframe.setAttribute("width", appParms.chatWidth);
+        iframe.setAttribute("height", appParms.chatHeight);
         document.getElementById("TwitchChat").appendChild(iframe);
 
         iframe = document.createElement('iframe');
         iframe.setAttribute("allowfullscreen", "true");
-        iframe.setAttribute("src", "http://player.twitch.tv/?channel=" + engineParms.chatIRCChannelName);
-        iframe.setAttribute("width", "1024");
-        iframe.setAttribute("height", "768");
+        iframe.setAttribute("src", "http://player.twitch.tv/?channel=" + chatIRCChannelName);
+        iframe.setAttribute("width", ""+appParms.videoWidth);
+        iframe.setAttribute("height", ""+appParms.videoHeight);
         document.getElementById("TwitchVideo").appendChild(iframe);
     }
     addTwitchIFrames();
@@ -228,16 +211,16 @@ function onLoadEnd() {
     var isFullScreen = false;
     var phaserDivName = "APGInputWidget";
 
-    if (engineParms.isMobile) {
+    if (isMobile) {
         phaserDivName = "APGInputWidgetMobile";
     }
 
-    if (engineParms.isMobile) {
+    if (isMobile) {
         isFullScreen = true;
     }
 
     document.getElementById(phaserDivName).style.display = 'none';
-    ApgSetup(devParms.disableNetworking, engineParms.isMobile, appParms.gameWidth, appParms.gameHeight, engineParms.logicIRCChannelName, engineParms.playerName, phaserDivName, isFullScreen, engineParms, function () {
+    ApgSetup(gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isFullScreen, engineParms, function () {
         if (preloaderFunction !== null) {
             clearInterval(preloaderFunction);
             preloaderFunction = null;

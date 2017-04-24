@@ -179,9 +179,7 @@ public class TwitchNetworking:MonoBehaviour {
 	static readonly int splitterLength = "%%".Length;
 	StringBuilder bufferedCommands = new StringBuilder( maxIRCMsgLength + 1 );
 
-	public void SendMsg( string msg, object parms ) {
-		if( parms == null )parms = emptyMsg;
-
+	public void WriteMessageToClient<T>( string msg, T parms ) {
 		var s = msg+"###"+JsonUtility.ToJson(parms);
 
 		if( bufferedCommands.Length + splitterLength + s.Length > maxIRCMsgLength ) {
@@ -229,6 +227,9 @@ public class TwitchNetworking:MonoBehaviour {
 	}
 	void Update() {
 		time++;
+		if( (time % 60 * 15) == 0 ) {
+			WriteMessageToClient("alive", new EmptyMsg());
+		}
 		if( bufferedCommands.Length > 0 ) {
 			IRCLogic.SendMsg( bufferedCommands.ToString() );
 			bufferedCommands.Length = 0;

@@ -19,82 +19,12 @@ if (typeof Object.assign != 'function') {
 
 /*______________________________________________________________________________________________
 
-															Asset Caching
-
-______________________________________________________________________________________________*/
-
-declare var WebFontConfig: Object;
-
-var phaserAssetCacheList: { (loader: Phaser.Loader): void; }[];
-var phaserImageList: string[];
-var phaserSoundList: string[];
-
-function cachePhaserAssets(cacheFunction: (loader: Phaser.Loader) => void): void {
-
-	if (phaserAssetCacheList == undefined) {
-		phaserAssetCacheList = [];
-	}
-
-	phaserAssetCacheList.push(cacheFunction);
-}
-
-function cacheImages(dir: string, imageList: string[]): void {
-	if (phaserImageList == undefined) {
-		phaserImageList = [];
-	}
-
-	for (var k = 0; k < imageList.length; k++) {
-		phaserImageList.push(dir + "/" + imageList[k]);
-	}
-}
-
-function cacheSounds( dir:string, soundList: string[]): void {
-	if (phaserSoundList == undefined) {
-		phaserSoundList = [];
-	}
-
-	for (var k = 0; k < soundList.length; k++) {
-		phaserSoundList.push(dir+"/"+soundList[k]);
-	}
-}
-
-// Phaser supports a number of font styles with different performance and ease-of-use characteristics.
-// At present, for our prototypes, I am relying exclusively on google's own web fonts, which can be found here: https://fonts.google.com/
-// 
-var phaserGoogleWebFontList: string[];
-
-function cacheGoogleWebFonts(googleWebFontNames: string[]): void {
-	if (phaserGoogleWebFontList == undefined) {
-		phaserGoogleWebFontList = [];
-	}
-
-	for (var k = 0; k < googleWebFontNames.length; k++) {
-		phaserGoogleWebFontList.push(googleWebFontNames[k]);
-	}
-}
-
-var jsonAssetCacheNameList: string[];
-
-function cacheJSONs(fileNames:string[]): void {
-
-	if (jsonAssetCacheNameList == undefined) {
-		jsonAssetCacheNameList = [];
-	}
-
-	for (var k = 0; k < fileNames.length; k++) {
-		jsonAssetCacheNameList.push(fileNames[k]);
-	}
-}
-
-
-/*______________________________________________________________________________________________
-
 															App Initialization
 
 ______________________________________________________________________________________________*/
 
 
-function ApgSetup(disableNetworking:boolean, isMobile:boolean, gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, playerName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any, onLoadEnd ) {
+function ApgSetup(gameLaunchFunction:(APGSys)=>void, disableNetworking:boolean, isMobile:boolean, gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any, onLoadEnd ) {
 
 	if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
 		ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", "  + gameHeight +".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
@@ -104,10 +34,6 @@ function ApgSetup(disableNetworking:boolean, isMobile:boolean, gameWidth: number
 	if (disableNetworking == false) {
 		if (logicIRCChannelName == undefined || logicIRCChannelName == "") {
 			ConsoleOutput.debugError("ApgSetup: logicIRCChannelName is not set.  The game cannot work without this.  This should be set to the name of a Twitch IRC channel, with no leading #.", "sys");
-			return;
-		}
-		if (playerName == undefined || playerName == "") {
-			ConsoleOutput.debugError("ApgSetup: playerName is not set.  The game cannot work without this.  This should be set to the name of a valid Twitch account.", "sys");
 			return;
 		}
 	}
@@ -200,30 +126,31 @@ function ApgSetup(disableNetworking:boolean, isMobile:boolean, gameWidth: number
 
 		function launchGame() {
 			onLoadEnd();
-			var apg: APGSys = new APGSys(game, logicIRCChannelName, playerName, engineParms.chat, JSONAssets);
+			var apg: APGFullSystem = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, JSONAssets);
 			var showingOrientationWarning = false;
 			setInterval(function () {
-				if (isMobile) {
-					var width = window.innerWidth || document.body.clientWidth;
-					var height = window.innerHeight || document.body.clientHeight;
-					if (height > width) {
-						if (!showingOrientationWarning) {
-							showingOrientationWarning = true;
-							document.getElementById("orientationWarning").style.display = '';
-							document.getElementById(APGInputWidgetDivName).style.display = 'none';
-						}
+				if (!isMobile) return;
+
+				var width = window.innerWidth || document.body.clientWidth;
+				var height = window.innerHeight || document.body.clientHeight;
+				if (height > width) {
+					if (!showingOrientationWarning) {
+						showingOrientationWarning = true;
+						document.getElementById("orientationWarning").style.display = '';
+						document.getElementById(APGInputWidgetDivName).style.display = 'none';
 					}
-					else {
-						if (showingOrientationWarning) {
-							showingOrientationWarning = false;
-							document.getElementById("orientationWarning").style.display = 'none';
-							document.getElementById(APGInputWidgetDivName).style.display = '';
-						}
+				}
+				else {
+					if (showingOrientationWarning) {
+						showingOrientationWarning = false;
+						document.getElementById("orientationWarning").style.display = 'none';
+						document.getElementById(APGInputWidgetDivName).style.display = '';
 					}
 				}
 				apg.update();
 			}, 1000 / 60);
-			StartGame( apg );
+			gameLaunchFunction(apg);
+			//StartGame( apg );
 		}
 	}
 }

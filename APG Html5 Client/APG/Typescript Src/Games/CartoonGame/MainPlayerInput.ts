@@ -22,6 +22,8 @@ interface PlayerUpdate{
 
 
 function MainPlayerInput(apg: APGSys): void {
+	var w = apg.g.world;
+
 	var fontName: string = "Caveat Brush";
 
 	var actions: any = apg.JSONAssets['cartoongame/json/TestActions.json'];
@@ -65,19 +67,19 @@ function MainPlayerInput(apg: APGSys): void {
 	var choices: number[] = [1, 1, 1, 1, 1, 1];
 	var myStats: PlayerUpdate = { nm: "", hp: 3, money: 0 };
 
-	apg.SetHandlers(new NetworkMessageHandler()
-		.Add<RoundUpdate>("time", p => {
+	apg.ResetServerMessageRegistry()
+		.Register<RoundUpdate>("time", p => {
 			timer = p.time;
 			roundNumber = p.round;
 			if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
 		})
-		.Add<PlayerUpdate>("pl", p => {
+		.Register<PlayerUpdate>("pl", p => {
 			if (p.nm != apg.playerName) return;
 			myStats = p;
 		})
-		.Add<SelectionParms>("submit", p => {
+		.Register<SelectionParms>("submit", p => {
 			apg.WriteToServer<SelectionParms>("upd", { choices: choices });
-		}));
+		});
 
 	var toolTip: string = "";
 	function setToolTip(str: string): void { toolTip = str; }
@@ -87,7 +89,7 @@ function MainPlayerInput(apg: APGSys): void {
 	var roundLabel: enttx, toolTipLabel: enttx, nextChoiceLabel: enttx;
 	var lastRoundUpdate: number = 0;
 
-	new ent(apg.w, 0, 0, 'cartoongame/imgs/ClientUI4.png', {
+	new ent(w, 0, 0, 'cartoongame/imgs/ClientUI4.png', {
 		upd: e => {
 			if (roundNumber != lastRoundUpdate) {
 				roundLabel.text = "Choices for Round " + roundNumber;
@@ -99,19 +101,19 @@ function MainPlayerInput(apg: APGSys): void {
 			nextChoiceLabel.text = "" + timer;
 		}
 	});
-	roundLabel = new enttx(apg.w, 220, 25, "Choices for Round ", { font: '54px ' + fontName, fill: '#688' });
-	toolTipLabel = new enttx(apg.w, 340, 150, "ToolTip", { font: '20px ' + fontName, fill: '#233', wordWrap: true, wordWrapWidth: 330 });
-	nextChoiceLabel = new enttx(apg.w, 650, 350, "", { font: '40px ' + fontName, fill: '#688' });
+	roundLabel = new enttx(w, 220, 25, "Choices for Round ", { font: '54px ' + fontName, fill: '#688' });
+	toolTipLabel = new enttx(w, 340, 150, "ToolTip", { font: '20px ' + fontName, fill: '#233', wordWrap: true, wordWrapWidth: 330 });
+	nextChoiceLabel = new enttx(w, 650, 350, "", { font: '40px ' + fontName, fill: '#688' });
 	tabButtons = addActionSet(setToolTip);
 	choiceButtons = addActions(choices, setToolTip);
 
 	function category(msg: string, x: number, y: number ):void {
-		new enttx(apg.w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
+		new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
 	}
 
 	function inCategory(x: number, y: number, add: number, labels: string[]): void {
 		for (var k = 0; k < labels.length; k++) {
-			new enttx(apg.w, x, y + k*add, labels[k], { font: '14px ' + fontName, fill: '#211' });
+			new enttx(w, x, y + k*add, labels[k], { font: '14px ' + fontName, fill: '#211' });
 		}
 	}
 

@@ -1,8 +1,6 @@
-﻿class APGSys {
+﻿class APGFullSystem implements APGSys {
 
 	g: Phaser.Game;
-
-	w: Phaser.World;
 
 	playerName: string;
 
@@ -11,7 +9,6 @@
 	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any) {
 
 		this.g = g;
-		this.w = g.world;
 		this.JSONAssets = JSONAssets;
 		this.playerName = playerName;
 		this.network = new IRCNetwork(() => this.handlers, playerName, logicIRCChannelName, chat);
@@ -25,8 +22,16 @@
 		this.network.sendMessageToServer(msgName, parmsForMessageToServer);
 	}
 
-	SetHandlers(theHandlers: NetworkMessageHandler): void {
-		this.handlers = theHandlers;
+	ResetServerMessageRegistry(): APGSys { this.handlers = new NetworkMessageHandler(); return this; }
+
+	Register<T>(msgName: string, handlerForServerMessage: (parmsForHandler: T) => void ): APGSys {
+		this.handlers.Add<T>(msgName, handlerForServerMessage);
+		return this;
+	}
+
+	RegisterPeer<T>(msgName: string, handlerForServerMessage: (user: string, parmsForHandler: T) => void): APGSys {
+		this.handlers.AddPeerMessage<T>(msgName, handlerForServerMessage);
+		return this;
 	}
 
 	//____________________________________________________

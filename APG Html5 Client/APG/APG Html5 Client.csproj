@@ -27,10 +27,11 @@
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Typescript Src\APGSys.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\APGFullSystem.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\Caching.ts" />
     <TypeScriptCompile Include="Typescript Src\Games\Phaser\ent.ts" />
     <TypeScriptCompile Include="Typescript Src\Games\Phaser\enttx.ts" />
-    <TypeScriptCompile Include="Typescript Src\StartGame.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\APGSys.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\APGCore.ts" />
     <TypeScriptCompile Include="Typescript Src\Games\CartoonGame\ButtonCollection.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\ConsoleOutput.ts" />
@@ -40,7 +41,7 @@
     <TypeScriptCompile Include="Typescript Src\Core\Libraries\phaser.d.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\Libraries\pixi.comments.d.ts" />
     <TypeScriptCompile Include="Typescript Src\Games\Racing\RacingMainInput.ts" />
-    <TypeScriptCompile Include="Typescript Src\Settings.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\Settings.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\NetworkMessageHandler.ts" />
     <TypeScriptCompile Include="Typescript Src\Games\CartoonGame\MainPlayerInput.ts" />
     <TypeScriptCompile Include="Typescript Src\Games\CartoonGame\ShowSubmitted.ts" />
@@ -85,8 +86,8 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
-    <TypeScriptOutFile>website\game.js</TypeScriptOutFile>
-    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptOutFile>website\APGApp.js</TypeScriptOutFile>
+    <TypeScriptTarget>ES6</TypeScriptTarget>
     <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
     <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>

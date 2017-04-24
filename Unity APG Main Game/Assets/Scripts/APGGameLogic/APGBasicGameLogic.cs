@@ -229,7 +229,7 @@ namespace APG {
 			}
 
 			if( nextAudiencePlayerChoice == 0 ) {
-				apg.WriteToClients("submit");
+				apg.WriteToClients("submit", new EmptyParms() );
 				roundNumber++;
 
 				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber+1});
