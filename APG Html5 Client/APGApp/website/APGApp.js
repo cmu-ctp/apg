@@ -349,4 +349,154 @@ var debugPrintMessages = false;
 var debugLogIncomingIRCChat = true;
 var debugLogOutgoingIRCChat = true;
 var debugShowAssetMessages = false;
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+if (typeof Object.assign != 'function') {
+    (function () {
+        Object.assign = function (target) {
+            'use strict';
+            if (target === undefined || target === null) {
+                throw new TypeError('Cannot convert undefined or null to object');
+            }
+            var output = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+                var source = arguments[index];
+                if (source !== undefined && source !== null)
+                    for (var nextKey in source)
+                        if (source.hasOwnProperty(nextKey))
+                            output[nextKey] = source[nextKey];
+            }
+            return output;
+        };
+    })();
+}
+var ent = (function (_super) {
+    __extends(ent, _super);
+    function ent(t, x, y, key, fields) {
+        _super.call(this, t.game, x, y, key);
+        this.upd = null;
+        if (fields)
+            Object.assign(this, fields);
+        this.exists = true;
+        this.visible = true;
+        this.alive = true;
+        this.z = t.children.length;
+        t.addChild(this);
+        if (t.enableBody) {
+            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+        }
+        if (t.cursor === null) {
+            t.cursor = this;
+        }
+    }
+    ent.prototype.update = function () { if (this.upd != null)
+        this.upd(this); };
+    Object.defineProperty(ent.prototype, "scalex", {
+        set: function (value) { this.scale.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "scaley", {
+        set: function (value) { this.scale.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "anchorx", {
+        set: function (value) { this.anchor.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "anchory", {
+        set: function (value) { this.anchor.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    ent.prototype.ix = function (value, speed) { this.x = this.x * (1 - speed) + speed * value; return this; };
+    ent.prototype.iy = function (value, speed) { this.y = this.y * (1 - speed) + speed * value; return this; };
+    ent.prototype.ixy = function (x, y, speed) { this.x = this.x * (1 - speed) + speed * x; this.y = this.y * (1 - speed) + speed * y; return this; };
+    ent.prototype.iscaley = function (value, speed) { this.scale.y = this.scale.y * (1 - speed) + speed * value; return this; };
+    ent.prototype.ialpha = function (value, speed) { this.alpha = this.alpha * (1 - speed) + speed * value; return this; };
+    ent.prototype.irotation = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
+    Object.defineProperty(ent.prototype, "tex", {
+        set: function (value) { this.loadTexture(value); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "src", {
+        set: function (value) { value.addChild(this); },
+        enumerable: true,
+        configurable: true
+    });
+    return ent;
+}(Phaser.Sprite));
+var enttx = (function (_super) {
+    __extends(enttx, _super);
+    function enttx(t, x, y, text, style, fields) {
+        _super.call(this, t.game, x, y, text, style);
+        this.upd = null;
+        if (fields)
+            Object.assign(this, fields);
+        this.exists = true;
+        this.visible = true;
+        this.alive = true;
+        this.z = t.children.length;
+        t.addChild(this);
+        if (t.enableBody) {
+            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+        }
+        if (t.cursor === null) {
+            t.cursor = this;
+        }
+    }
+    enttx.prototype.update = function () { if (this.upd != null)
+        this.upd(this); };
+    Object.defineProperty(enttx.prototype, "scx", {
+        set: function (value) { this.scale.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(enttx.prototype, "scy", {
+        set: function (value) { this.scale.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(enttx.prototype, "anchorx", {
+        set: function (value) { this.anchor.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(enttx.prototype, "anchory", {
+        set: function (value) { this.anchor.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    enttx.prototype.ix = function (value, speed) { this.x = this.x * (1 - speed) + speed * value; return this; };
+    enttx.prototype.iy = function (value, speed) { this.y = this.y * (1 - speed) + speed * value; return this; };
+    enttx.prototype.ixy = function (x, y, speed) { this.x = this.x * (1 - speed) + speed * x; this.y = this.y * (1 - speed) + speed * y; return this; };
+    enttx.prototype.iscx = function (value, speed) { this.scale.x = this.scale.x * (1 - speed) + speed * value; return this; };
+    enttx.prototype.iscy = function (value, speed) { this.scale.y = this.scale.y * (1 - speed) + speed * value; return this; };
+    enttx.prototype.ial = function (value, speed) { this.alpha = this.alpha * (1 - speed) + speed * value; return this; };
+    enttx.prototype.irot = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
+    Object.defineProperty(enttx.prototype, "src", {
+        set: function (value) { value.addChild(this); },
+        enumerable: true,
+        configurable: true
+    });
+    return enttx;
+}(Phaser.Text));
+function CacheTestGame(c) {
+    c.images('assets', ['ClientUI3.png']);
+}
+var TestGame = (function () {
+    function TestGame(apg) {
+        var bkg = new ent(apg.g.world, 0, 0, 'assets/ClientUI3.png');
+    }
+    return TestGame;
+}());
+function TestInput(apg) {
+    new TestGame(apg);
+}
 //# sourceMappingURL=APGApp.js.map

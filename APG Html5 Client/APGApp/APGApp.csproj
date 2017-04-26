@@ -23,6 +23,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="web.config" />
+    <Content Include="website\corepage.js" />
+    <Content Include="website\Test.htm" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Typescript Src\APGSys.ts" />
@@ -37,6 +39,8 @@
     <TypeScriptCompile Include="Typescript Src\Core\Libraries\pixi.comments.d.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\NetworkMessageHandler.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\Settings.ts" />
+    <TypeScriptCompile Include="Typescript Src\ent.ts" />
+    <TypeScriptCompile Include="Typescript Src\Test.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">
@@ -80,7 +84,7 @@
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
     <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
     <TypeScriptModuleKind>None</TypeScriptModuleKind>
-    <TypeScriptOutFile>APGApp.js</TypeScriptOutFile>
+    <TypeScriptOutFile>website/APGApp.js</TypeScriptOutFile>
     <TypeScriptOutDir />
     <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
     <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
