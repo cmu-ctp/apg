@@ -23,7 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="web.config" />
-    <Content Include="website\corepage.js" />
     <Content Include="website\Test.htm" />
   </ItemGroup>
   <ItemGroup>
@@ -39,6 +38,7 @@
     <TypeScriptCompile Include="Typescript Src\Core\Libraries\pixi.comments.d.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\NetworkMessageHandler.ts" />
     <TypeScriptCompile Include="Typescript Src\Core\Settings.ts" />
+    <TypeScriptCompile Include="Typescript Src\Core\Webpage.ts" />
     <TypeScriptCompile Include="Typescript Src\ent.ts" />
     <TypeScriptCompile Include="Typescript Src\Test.ts" />
   </ItemGroup>

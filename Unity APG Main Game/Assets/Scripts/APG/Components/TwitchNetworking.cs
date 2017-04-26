@@ -104,10 +104,10 @@ public class TwitchNetworking:MonoBehaviour {
 
 		var forceSettingsWrite = false;
 
-		if( settings.BitlyLink != "" ) {
+		if( false ) {// settings.BitlyLink != "" ) {
 		}
 		else {
-			var longUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+"B+"+settings.ChatChannelName+"+"+settings.LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
+			var longUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+settings.GameClientID+"+"+settings.ChatChannelName+"+"+settings.LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
 
 			Debug.Log( "Use the following URL for a bitly link:" + longUrl );
 
@@ -227,11 +227,15 @@ public class TwitchNetworking:MonoBehaviour {
 		InitIRCChat();
 		InitIRCLogicChannel();
 	}
-	void Update() {
+
+	void FixedUpdate() {
 		time++;
-		if( (time % 60 * 15) == 0 ) {
+		if( (time % (50 * 20)) == 0 ) {
 			WriteMessageToClient("alive", new EmptyMsg());
 		}
+	}
+
+	void Update() {
 		if( bufferedCommands.Length > 0 ) {
 			IRCLogic.SendMsg( bufferedCommands.ToString() );
 			bufferedCommands.Length = 0;

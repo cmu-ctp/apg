@@ -1,8 +1,3 @@
-var Greeter = (function () {
-    function Greeter() {
-    }
-    return Greeter;
-}());
 function ApgSetup(assetCacheFunction, gameLaunchFunction, disableNetworking, isMobile, gameWidth, gameHeight, logicIRCChannelName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd, handleOrientation) {
     if (gameWidth === void 0) { gameWidth = 400; }
     if (gameHeight === void 0) { gameHeight = 300; }
@@ -354,4 +349,358 @@ var debugPrintMessages = false;
 var debugLogIncomingIRCChat = true;
 var debugLogOutgoingIRCChat = true;
 var debugShowAssetMessages = false;
+function AddAppReposition(divName, width) {
+    var mouseDown = false;
+    var startx = 0, starty = 0;
+    var mx = 0, my = 0;
+    var curx = 0, cury = 0;
+    var clickx, clicky;
+    var d = null;
+    var dragging = false;
+    document.onmousedown = function () {
+        if (mouseDown === false) {
+            if (mx > curx && mx < curx + width && my > cury && my < cury + 32) {
+                startx = mx;
+                starty = my;
+                clickx = curx;
+                clicky = cury;
+                dragging = true;
+            }
+        }
+        mouseDown = true;
+    };
+    document.onmouseup = function () {
+        dragging = false;
+        mouseDown = false;
+    };
+    document.onmousemove = function (e) {
+        mx = e.clientX;
+        my = e.clientY;
+    };
+    setInterval(function () {
+        if (dragging) {
+            if (d === null) {
+                d = document.getElementById(divName);
+            }
+            d.style.position = "absolute";
+            curx = clickx + (mx - startx);
+            cury = clicky + (my - starty);
+            d.style.left = "" + curx + 'px';
+            d.style.top = "" + cury + 'px';
+        }
+    }, 1000 / 30);
+}
+function setTwitchIFrames(isMobile, chatIRCChannelName, chatWidth, chatHeight, videoWidth, videoHeight) {
+    if (isMobile) {
+        $('.browser').removeClass();
+        return;
+    }
+    $('.mobile').removeClass();
+    var iframe = document.createElement('iframe');
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("scrolling", "no");
+    iframe.setAttribute("id", "chat_embed");
+    iframe.setAttribute("src", "http://www.twitch.tv/" + chatIRCChannelName + "/chat");
+    iframe.setAttribute("width", '' + chatWidth);
+    iframe.setAttribute("height", '' + chatHeight);
+    document.getElementById("TwitchChat").appendChild(iframe);
+    iframe = document.createElement('iframe');
+    iframe.setAttribute("allowfullscreen", "true");
+    iframe.setAttribute("src", "http://player.twitch.tv/?channel=" + chatIRCChannelName);
+    iframe.setAttribute("width", "" + '' + videoWidth);
+    iframe.setAttribute("height", "" + '' + videoHeight);
+    document.getElementById("TwitchVideo").appendChild(iframe);
+}
+function AddPreloader(phaserDivName) {
+    var tick = 0;
+    var preloaderFunction = setInterval(function () {
+        tick++;
+        var s = "Please wait while the audience app loads ";
+        for (var k = 0; k < tick; k++) {
+            s += '.';
+        }
+        document.getElementById('loadLabel').textContent = s;
+    }, 1000 / 6);
+    return function () {
+        if (preloaderFunction !== null) {
+            clearInterval(preloaderFunction);
+            preloaderFunction = null;
+        }
+        document.getElementById('loadLabel').style.display = 'none';
+        document.getElementById(phaserDivName).style.display = '';
+    };
+}
+function MakeOrientationWarning(isMobile, phaserDivName) {
+    document.getElementById("orientationWarning").style.display = 'none';
+    document.getElementById("orientationWarning").textContent = 'This game only works in landscape mode.  Please reposition your phone or tablet.';
+    if (isMobile) {
+        var showingOrientationWarning = false;
+        return function () {
+            var width = window.innerWidth || document.body.clientWidth;
+            var height = window.innerHeight || document.body.clientHeight;
+            if (height > width) {
+                if (!showingOrientationWarning) {
+                    showingOrientationWarning = true;
+                    document.getElementById("orientationWarning").style.display = '';
+                    document.getElementById(phaserDivName).style.display = 'none';
+                }
+            }
+            else {
+                if (showingOrientationWarning) {
+                    showingOrientationWarning = false;
+                    document.getElementById("orientationWarning").style.display = 'none';
+                    document.getElementById(phaserDivName).style.display = '';
+                }
+            }
+        };
+    }
+    else
+        return function () { };
+}
+function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appParms) {
+    var isMobile = true;
+    var chatIRCChannelName = "";
+    var logicIRCChannelName = "";
+    var engineParms = {
+        chat: null,
+        chatLoadedFunction: null,
+        playerName: "",
+        playerOauth: ""
+    };
+    var appFailMessage = '';
+    var appFailedWithoutRecovery = false;
+    function AppFail(s) {
+        appFailMessage = s;
+        appFailedWithoutRecovery = true;
+    }
+    isMobile = (/Mobi/.test(navigator.userAgent)) ? true : false;
+    if (devParms.forceMobile === true)
+        isMobile = true;
+    if (devParms.skipAuthentication === true) {
+        chatIRCChannelName = devParms.forceChatIRCChannelName;
+        logicIRCChannelName = devParms.forceLogicIRCChannelName;
+        engineParms.playerName = devParms.forcePlayerName;
+        engineParms.playerOauth = devParms.forcePlayerOauth;
+    }
+    if (location.hash !== null && location.hash !== "") {
+        var lochash = location.hash.substr(1);
+        var stateVals = lochash.substr(lochash.indexOf('state=')).split('&')[0].split('=')[1];
+        var stateValTable = stateVals.split("+");
+        chatIRCChannelName = stateValTable[1];
+        logicIRCChannelName = stateValTable[2];
+    }
+    if (!devParms.disableNetworking) {
+        if (logicIRCChannelName === '') {
+            AppFail('Logic IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
+        }
+        if (chatIRCChannelName === '') {
+            AppFail('Chat IRC Twitch Channel Name was empty.  The client app needs this field to be set.');
+        }
+    }
+    if (devParms.disableNetworking) {
+        engineParms.chat = null;
+    }
+    else {
+        Twitch.init({ clientId: appParms.clientID }, function (error, status) {
+            if (status.authenticated || devParms.skipAuthentication) {
+                Twitch.api({ method: 'user' }, function (error, user) {
+                    if (!devParms.skipAuthentication) {
+                        if (user === null)
+                            alert(error);
+                        engineParms.playerName = user.display_name;
+                        engineParms.playerOauth = "oauth:" + Twitch.getToken();
+                    }
+                    if (logicIRCChannelName === engineParms.playerName) {
+                        AppFail('' + engineParms.playerName + ' is the same as the streamers networking channel.');
+                    }
+                    var options = {
+                        options: { debug: true },
+                        connection: { reconnect: true },
+                        identity: { username: engineParms.playerName, password: engineParms.playerOauth },
+                        channels: ["#" + logicIRCChannelName]
+                    };
+                    engineParms.chat = new tmi.client(options);
+                    if (engineParms.chatLoadedFunction !== null) {
+                        engineParms.chatLoadedFunction();
+                        engineParms.chatLoadedFunction = null;
+                    }
+                    engineParms.chat.connect().then(function (data) {
+                    }).catch(function (err) {
+                        AppFail('Twitch Chat Initialization Error: ' + err);
+                        console.log("Error: " + err);
+                    });
+                });
+            }
+        });
+    }
+    var phaserDivName = (isMobile ? "APGInputWidgetMobile" : "APGInputWidget");
+    document.getElementById(phaserDivName).style.display = 'none';
+    var ClearOnLoadEnd = AddPreloader(phaserDivName);
+    if (!isMobile && appParms.allowClientReposition) {
+        AddAppReposition("APGInputWidget", appParms.gameWidth);
+    }
+    function FatalError() { Error.apply(this, arguments); this.name = "FatalError"; }
+    FatalError.prototype = Object.create(Error.prototype);
+    if (appFailedWithoutRecovery === true) {
+        document.getElementById('loadLabel').style.display = 'none';
+        document.getElementById("orientationWarning").style.display = 'none';
+        document.getElementById("appErrorMessage").style.display = '';
+        document.getElementById("appErrorMessage").textContent = 'Unrecoverable Error: ' + appFailMessage;
+        throw new FatalError();
+    }
+    document.getElementById("appErrorMessage").style.display = 'none';
+    setTwitchIFrames(isMobile, chatIRCChannelName, appParms.chatWidth, appParms.chatHeight, appParms.videoWidth, appParms.videoHeight);
+    var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
+    ApgSetup(assetCacheFunction, gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
+}
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+if (typeof Object.assign != 'function') {
+    (function () {
+        Object.assign = function (target) {
+            'use strict';
+            if (target === undefined || target === null) {
+                throw new TypeError('Cannot convert undefined or null to object');
+            }
+            var output = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+                var source = arguments[index];
+                if (source !== undefined && source !== null)
+                    for (var nextKey in source)
+                        if (source.hasOwnProperty(nextKey))
+                            output[nextKey] = source[nextKey];
+            }
+            return output;
+        };
+    })();
+}
+var ent = (function (_super) {
+    __extends(ent, _super);
+    function ent(t, x, y, key, fields) {
+        _super.call(this, t.game, x, y, key);
+        this.upd = null;
+        if (fields)
+            Object.assign(this, fields);
+        this.exists = true;
+        this.visible = true;
+        this.alive = true;
+        this.z = t.children.length;
+        t.addChild(this);
+        if (t.enableBody) {
+            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+        }
+        if (t.cursor === null) {
+            t.cursor = this;
+        }
+    }
+    ent.prototype.update = function () { if (this.upd != null)
+        this.upd(this); };
+    Object.defineProperty(ent.prototype, "scalex", {
+        set: function (value) { this.scale.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "scaley", {
+        set: function (value) { this.scale.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "anchorx", {
+        set: function (value) { this.anchor.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "anchory", {
+        set: function (value) { this.anchor.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    ent.prototype.ix = function (value, speed) { this.x = this.x * (1 - speed) + speed * value; return this; };
+    ent.prototype.iy = function (value, speed) { this.y = this.y * (1 - speed) + speed * value; return this; };
+    ent.prototype.ixy = function (x, y, speed) { this.x = this.x * (1 - speed) + speed * x; this.y = this.y * (1 - speed) + speed * y; return this; };
+    ent.prototype.iscaley = function (value, speed) { this.scale.y = this.scale.y * (1 - speed) + speed * value; return this; };
+    ent.prototype.ialpha = function (value, speed) { this.alpha = this.alpha * (1 - speed) + speed * value; return this; };
+    ent.prototype.irotation = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
+    Object.defineProperty(ent.prototype, "tex", {
+        set: function (value) { this.loadTexture(value); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "src", {
+        set: function (value) { value.addChild(this); },
+        enumerable: true,
+        configurable: true
+    });
+    return ent;
+}(Phaser.Sprite));
+var enttx = (function (_super) {
+    __extends(enttx, _super);
+    function enttx(t, x, y, text, style, fields) {
+        _super.call(this, t.game, x, y, text, style);
+        this.upd = null;
+        if (fields)
+            Object.assign(this, fields);
+        this.exists = true;
+        this.visible = true;
+        this.alive = true;
+        this.z = t.children.length;
+        t.addChild(this);
+        if (t.enableBody) {
+            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+        }
+        if (t.cursor === null) {
+            t.cursor = this;
+        }
+    }
+    enttx.prototype.update = function () { if (this.upd != null)
+        this.upd(this); };
+    Object.defineProperty(enttx.prototype, "scx", {
+        set: function (value) { this.scale.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(enttx.prototype, "scy", {
+        set: function (value) { this.scale.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(enttx.prototype, "anchorx", {
+        set: function (value) { this.anchor.x = value; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(enttx.prototype, "anchory", {
+        set: function (value) { this.anchor.y = value; },
+        enumerable: true,
+        configurable: true
+    });
+    enttx.prototype.ix = function (value, speed) { this.x = this.x * (1 - speed) + speed * value; return this; };
+    enttx.prototype.iy = function (value, speed) { this.y = this.y * (1 - speed) + speed * value; return this; };
+    enttx.prototype.ixy = function (x, y, speed) { this.x = this.x * (1 - speed) + speed * x; this.y = this.y * (1 - speed) + speed * y; return this; };
+    enttx.prototype.iscx = function (value, speed) { this.scale.x = this.scale.x * (1 - speed) + speed * value; return this; };
+    enttx.prototype.iscy = function (value, speed) { this.scale.y = this.scale.y * (1 - speed) + speed * value; return this; };
+    enttx.prototype.ial = function (value, speed) { this.alpha = this.alpha * (1 - speed) + speed * value; return this; };
+    enttx.prototype.irot = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
+    Object.defineProperty(enttx.prototype, "src", {
+        set: function (value) { value.addChild(this); },
+        enumerable: true,
+        configurable: true
+    });
+    return enttx;
+}(Phaser.Text));
+function CacheTestGame(c) {
+    c.images('assets', ['ClientUI3.png']);
+}
+var TestGame = (function () {
+    function TestGame(apg) {
+        var bkg = new ent(apg.g.world, 0, 0, 'assets/ClientUI3.png');
+    }
+    return TestGame;
+}());
+function TestInput(apg) {
+    new TestGame(apg);
+}
 //# sourceMappingURL=APGApp.js.map

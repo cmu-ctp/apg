@@ -25,6 +25,15 @@ namespace APG {
 			But it should also be convenient.
 		 */
 
+			/*
+			 * Think this through: 
+			 * so for my game, I wanted to have a bridge between existing entities in the game world and then players joining in real time and taking them over.
+			 * also, a layer between the apg basic game logic and then the actual audience players... right?
+			 * This seems to muddle two concepts.
+			 * 
+			 * In Rachel's game, we just want players to join and not be duplicated.
+			 */
+
 		List<AudiencePlayerEventsHandler> playerEvents = new List<AudiencePlayerEventsHandler>();
 		List<string> playerNames = new List<string>();
 		List<int[]> playerInput = new List<int[]>();

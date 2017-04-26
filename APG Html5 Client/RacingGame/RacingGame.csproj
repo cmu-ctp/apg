@@ -24,9 +24,8 @@
   <ItemGroup>
     <Content Include="web.config" />
     <Content Include="Website\APGApp.js" />
-    <Content Include="Website\Racing.htm" />
+    <Content Include="Website\racing.html" />
     <Content Include="Website\client.css" />
-    <Content Include="Website\corepage.js" />
     <Content Include="Website\phaser.js" />
     <Content Include="Website\phaser.min.js" />
   </ItemGroup>

@@ -1,6 +1,4 @@
-﻿declare var WebFontConfig: Object;
-
-function ApgSetup(assetCacheFunction:( Cacher )=>void, gameLaunchFunction:(APGSys)=>void, disableNetworking:boolean, isMobile:boolean, gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any, onLoadEnd:()=>void, handleOrientation:()=>void ) {
+﻿function ApgSetup(assetCacheFunction:( Cacher )=>void, gameLaunchFunction:(APGSys)=>void, disableNetworking:boolean, isMobile:boolean, gameWidth: number = 400, gameHeight: number = 300, logicIRCChannelName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms:any, onLoadEnd:()=>void, handleOrientation:()=>void ) {
 
 	if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
 		ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", "  + gameHeight +".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");

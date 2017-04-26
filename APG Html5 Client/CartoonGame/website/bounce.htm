@@ -10,7 +10,6 @@
     <script src="http://cdn.tmijs.org/js/latest/1.x/tmi.min.js"></script>
     <script src="phaser.min.js"></script>
     <script src="APGApp.js"></script>
-    <script src="corepage.js"></script>
     <script src="CartoonGame.js"></script>
 
     <link rel="stylesheet" href="client.css" type="text/css" />
@@ -25,15 +24,12 @@
             forceLogicIRCChannelName: "",
             forcePlayerName: "",
             forcePlayerOauth: "",
+            forceClientID: '',
 
             forceMobile: true
         };
 
         appParms = {
-            // The Client-ID is used by Twitch.init .  See https://github.com/justintv/twitch-js-sdk - It was generated here: https://www.twitch.tv/kraken/oauth2/clients/new
-            // You need to register a new game with Twitch to get your own Client-ID. - The Client-ID is public - there is no need to hide it.  It should be a string of 31 alpha-numeric digits.
-            clientID: 'hjgrph2akqwki1617ac5rdq9rqiep0k',
-
             allowClientReposition: true,
 
             gameWidth: 800,
