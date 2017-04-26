@@ -27,8 +27,6 @@ public class TwitchNetworking:MonoBehaviour {
 	[Tooltip("")]
 	public string RedirectLink;
 
-	string BitlyLink = "";
-
 	[Tooltip("Name of file to save network settings in, relative Assets folder.  If this file exists, the fields set in the Unity Editor will be ignored.")]
 	public string NetworkSettingPath;
 
@@ -92,7 +90,7 @@ public class TwitchNetworking:MonoBehaviour {
 	}
 
 	void LoadNetworkSettings() {
-		settings = new NetworkSettings { ChatChannelName = ChatChannelName, LogicChannelName = LogicChannelName, LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = BitlyLink };
+		settings = new NetworkSettings { ChatChannelName = ChatChannelName, LogicChannelName = LogicChannelName, LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = "" };
 
 		var settingPath = Application.dataPath+"\\"+ NetworkSettingPath;
 
@@ -111,9 +109,13 @@ public class TwitchNetworking:MonoBehaviour {
 		else {
 			var longUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+"B+"+settings.ChatChannelName+"+"+settings.LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
 
-			settings.BitlyLink = ShortenUri( new Uri( longUrl ), "kenzidelx", "R_9945fa5fc55249e28f45da879047ba24", false ).ToString();
+			Debug.Log( "Use the following URL for a bitly link:" + longUrl );
 
-			forceSettingsWrite = true;
+			//settings.BitlyLink = ShortenUri( new Uri( longUrl ), "kenzidelx", "R_9945fa5fc55249e28f45da879047ba24", false ).ToString();
+
+			//Debug.Log( "So link is " + settings.BitlyLink );
+
+			//forceSettingsWrite = true;
 		}
 
 		if( forceSettingsWrite || (!File.Exists( settingPath ) && ( settings.LogicChannelName != "" && settings.ChatChannelName != "" && settings.LogicOauth != "" && settings.ChatOauth != "" ))) {
