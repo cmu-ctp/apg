@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{0D6E6BF0-DD42-4003-8071-2E10B5597A98}</ProjectGuid>
+    <ProjectGuid>{1749B07A-0EAA-49FF-A741-D770FCFA551C}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <OutputPath>bin</OutputPath>
@@ -23,25 +23,19 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="web.config" />
-    <Content Include="website\client.css" />
-    <Content Include="website\Test.htm" />
+    <Content Include="Website\APGApp.js" />
+    <Content Include="Website\game.html" />
+    <Content Include="Website\client.css" />
+    <Content Include="Website\phaser.js" />
+    <Content Include="Website\phaser.min.js" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Typescript Src\APGSys.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\APGCore.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\APGFullSystem.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Caching.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\ConsoleOutput.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\IRCNetwork.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Libraries\jquery.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Libraries\p2.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Libraries\phaser.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Libraries\pixi.comments.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\NetworkMessageHandler.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Settings.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Webpage.ts" />
-    <TypeScriptCompile Include="Typescript Src\ent.ts" />
-    <TypeScriptCompile Include="Typescript Src\Test.ts" />
+    <TypeScriptCompile Include="Typescript Src\Libraries\jquery.d.ts" />
+    <TypeScriptCompile Include="Typescript Src\Libraries\p2.d.ts" />
+    <TypeScriptCompile Include="Typescript Src\Libraries\phaser.d.ts" />
+    <TypeScriptCompile Include="Typescript Src\Libraries\pixi.comments.d.ts" />
+    <TypeScriptCompile Include="Typescript Src\ExampleGameFile.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">
@@ -55,7 +49,7 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>APGApp</RootNamespace>
+    <RootNamespace>BasicClient</RootNamespace>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets')" />
@@ -65,9 +59,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>59167</DevelopmentServerPort>
+          <DevelopmentServerPort>59295</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:59167/</IISUrl>
+          <IISUrl>http://localhost:59295/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -84,8 +78,8 @@
     <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
     <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
-    <TypeScriptModuleKind>None</TypeScriptModuleKind>
-    <TypeScriptOutFile>website/APGApp.js</TypeScriptOutFile>
+    <TypeScriptModuleKind>System</TypeScriptModuleKind>
+    <TypeScriptOutFile>website/GameLogic.js</TypeScriptOutFile>
     <TypeScriptOutDir />
     <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
     <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>

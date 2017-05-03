@@ -10,21 +10,23 @@
     <script src="http://cdn.tmijs.org/js/latest/1.x/tmi.min.js"></script>
     <script src="phaser.min.js"></script>
     <script src="APGApp.js"></script>
+    <script src="GameLogic.js"></script>
 
     <link rel="stylesheet" href="client.css" type="text/css" />
 
     <script>
+
         devParms = {
-            disableNetworking: true,
+            disableNetworking: false,
 
             skipAuthentication: false,
             forceChatIRCChannelName: "",
             forceLogicIRCChannelName: "",
             forcePlayerName: "",
             forcePlayerOauth: "",
-            forceClientID: '',
+            forceClientID:'',
 
-            forceMobile: true
+            forceMobile: false
         };
 
         appParms = {
@@ -44,7 +46,7 @@
     </script>
 
 </head>
-<body onload="launchAPGClient(CacheTestGame, TestInput, devParms, appParms);">
+<body onload="launchAPGClient(CacheGameAssets, InitializeGame, devParms, appParms);">
     <h1><div id="loadLabel">Please wait while the audience app loads</div></h1>
     <h1><div id="orientationWarning"></div></h1>
     <h1><div id="appErrorMessage"></div></h1>
