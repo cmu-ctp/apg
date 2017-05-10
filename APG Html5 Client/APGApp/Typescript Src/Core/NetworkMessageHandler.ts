@@ -59,7 +59,7 @@ class NetworkMessageHandler {
 		var msgName: string = msgTemp[0];
 		var unparsedParms: string = msgTemp[1];
 
-		if (this.inputs[msgName] == undefined) {
+		if (this.peerInputs[msgName] == undefined) {
 			ConsoleOutput.debugError("Unknown Network Message: " + msgName + " with parameters " + unparsedParms, "network");
 			return false;
 		}

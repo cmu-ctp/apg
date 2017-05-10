@@ -24,6 +24,10 @@ class IRCNetwork{
 		this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
 	}
 
+	sendServerMessageLocally<T>(message: string, parms: T): void {
+		this.handleInputMessage(this.logicChannelName, message + "###" + JSON.stringify(parms));
+	}
+
 	update(): void {
 		this.lastMessageTime--;
 

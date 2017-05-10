@@ -85,10 +85,10 @@ class RacingGame {
 
 		// ______________________
 
-		new enttx(w, sc * 12, sc * 228, "CASING TECH", { font: fnt(20), fill: '#fff' });
+		this.categoryLabel1 = new enttx(w, sc * 12, sc * 228, "CASING TECH", { font: fnt(18), fill: '#fff' });
 
-		new enttx(w, sc * 15, sc * 256, "Piston Tech:", { font: fnt(16), fill: '#fff' });
-		new enttx(w, sc * 15, sc * 275, "Sparkplug Tech:", { font: fnt(16), fill: '#fff' });
+		this.categoryLabel2 = new enttx(w, sc * 15, sc * 250, "Piston Tech:", { font: fnt(14), fill: '#fff' });
+		this.categoryLabel3 = new enttx(w, sc * 15, sc * 265, "Sparkplug Tech:", { font: fnt(14), fill: '#fff' });
 
 		// ______________________
 
@@ -117,6 +117,10 @@ class RacingGame {
 
 		this.joinText = new enttx(w, sc * 40, sc * 178, "Tap Anywhere to Join Game", { font: fnt(18), fill: '#0' });
 	}
+
+	categoryLabel1: enttx;
+	categoryLabel2: enttx;
+	categoryLabel3: enttx;
 
 	joinBkg: ent;
 	joinText: enttx;
@@ -151,6 +155,7 @@ class RacingGame {
 		var that = this;
 
 		function JoinAcknowledge(joinInfo: JoinAwk): void {
+			console.log("In join awk");
 			if (joinInfo.user == apg.playerName) {
 				if (that.haveJoined == false) {
 					that.joinText.text = "Joined Streamer's game!  Waiting for game to start...";
@@ -159,7 +164,7 @@ class RacingGame {
 			}
 		}
 		function Team(teamInfo: TeamInfo): void {
-
+			console.log("In team");
 			// ?
 			if (that.mySpot != -1) return;
 
@@ -183,18 +188,25 @@ class RacingGame {
 			that.carPart2.loadTexture(carParts[that.pitstopID][1][0]);
 			that.carPart3.loadTexture(carParts[that.pitstopID][2][0]);
 
+			that.categoryLabel1.text = "Casing Tech: " + teamInfo.part1;
+			that.categoryLabel2.text = "Piston Tech: " + teamInfo.part2;
+			that.categoryLabel3.text = "Sparkplug Tech: " + teamInfo.part3;
+
 			if (that.mySpot == 0) {
+				that.categoryLabel1.text = "CASING TECH: " + teamInfo.part1;
 				that.myPart = that.carPart1;
 			}
 			if (that.mySpot == 1) {
+				that.categoryLabel2.text = "PISTON TECH: " + teamInfo.part2;
 				that.myPart = that.carPart2;
 			}
 			if (that.mySpot == 2) {
+				that.categoryLabel3.text = "SPARKPLUG TECH: " + teamInfo.part3;
 				that.myPart = that.carPart3;
 			}
-
 		}
 		function PlayerChoice(user: string, partInfo: ChosenPart): void {
+			console.log("in player choice " + user);
 			if (partInfo.pitstopID == that.pitstopID) {
 				if (partInfo.partID == 0) {
 					that.carPart1.loadTexture(carParts[that.pitstopID][0][partInfo.currentPart]);
@@ -203,7 +215,7 @@ class RacingGame {
 					that.carPart2.loadTexture(carParts[that.pitstopID][1][partInfo.currentPart]);
 				}
 				if (partInfo.partID == 2) {
-					that.carPart2.loadTexture(carParts[that.pitstopID][2][partInfo.currentPart]);
+					that.carPart3.loadTexture(carParts[that.pitstopID][2][partInfo.currentPart]);
 				}
 			}
 		}
@@ -234,9 +246,27 @@ class RacingGame {
 
 		var joinTimer:number = 0;
 
+		var tc: number = 0;
+
 		var bkg: ent = new ent(apg.g.world, 0, 0, 'racinggame/audienceInterfaceBG.png', {
 			scalex: sc, scaley: sc,
 			upd: e => {
+
+				/*tc++;
+				if (tc == 60) {
+					apg.WriteLocalAsServer<JoinAwk>("joinawk", { msg: "", user: apg.playerName });
+				}
+				if (tc == 62) {
+					apg.WriteLocalAsServer<TeamInfo>("team", { pitStopID: 1, part1: apg.playerName, part2: "Fireface", part3: "wex3l" });
+				}
+				if (tc > 90 && (tc % 120 == 0)) {
+					apg.WriteLocal<ChosenPart>( "Fireface", "select", { pitstopID: this.pitstopID, partID: 1, currentPart: Math.floor( Math.random()*3) });
+				}
+				if (tc > 90 && (tc % 120 == 60)) {
+					apg.WriteLocal<ChosenPart>("wex3l", "select", { pitstopID: this.pitstopID, partID: 2, currentPart: Math.floor(Math.random() * 3) });
+				}*/
+
+
 				if (!this.haveJoined) {
 					if (!this.tryingToJoin) {
 						if (apg.g.input.activePointer.isDown == true) {
@@ -281,7 +311,6 @@ class RacingGame {
 							this.select1.alpha = .5;
 							this.select2.alpha = 1;
 							this.select3.alpha = .5;
-
 						}
 						if (apg.g.input.x > 237 && apg.g.input.x < 285 && apg.g.input.y > 225 && apg.g.input.y < 276) {
 							if (this.curPlayerChoice != 3) apg.WriteToServer<ChosenPart>("select", { pitstopID: this.pitstopID, partID: this.mySpot, currentPart: 2 });

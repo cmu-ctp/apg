@@ -21,6 +21,10 @@ interface APGSys {
 
 	WriteToServer<T>(msgName: string, parmsForMessageToServer: T): void;
 
+	WriteLocalAsServer<T>(msgName: string, parmsForMessageToServer: T): void;
+
+	WriteLocal<T>(user: string, msgName: string, parmsForMessageToServer: T): void;
+
 	ResetServerMessageRegistry(): APGSys;
 
 	Register<T>(msgName: string, funcForServerMessage: (parmsForHandler: T) => void ): APGSys;

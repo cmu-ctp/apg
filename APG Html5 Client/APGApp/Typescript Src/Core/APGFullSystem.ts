@@ -22,6 +22,15 @@
 		this.network.sendMessageToServer(msgName, parmsForMessageToServer);
 	}
 
+	WriteLocalAsServer<T>(msgName: string, parmsForMessageToServer: T): void {
+		this.network.sendServerMessageLocally(msgName, parmsForMessageToServer);
+	}
+
+	WriteLocal<T>(user:string, msgName: string, parmsForMessageToServer: T): void {
+		this.network.sendMessageLocally(user, msgName, parmsForMessageToServer);
+	}
+
+
 	ResetServerMessageRegistry(): APGSys { this.handlers = new NetworkMessageHandler(); return this; }
 
 	Register<T>(msgName: string, handlerForServerMessage: (parmsForHandler: T) => void ): APGSys {
