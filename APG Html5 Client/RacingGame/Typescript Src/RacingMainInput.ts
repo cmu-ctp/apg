@@ -155,7 +155,6 @@ class RacingGame {
 		var that = this;
 
 		function JoinAcknowledge(joinInfo: JoinAwk): void {
-			console.log("In join awk");
 			if (joinInfo.user == apg.playerName) {
 				if (that.haveJoined == false) {
 					that.joinText.text = "Joined Streamer's game!  Waiting for game to start...";
@@ -164,8 +163,6 @@ class RacingGame {
 			}
 		}
 		function Team(teamInfo: TeamInfo): void {
-			console.log("In team");
-			// ?
 			if (that.mySpot != -1) return;
 
 			if (teamInfo.part1 == apg.playerName) that.mySpot = 0;
@@ -206,7 +203,6 @@ class RacingGame {
 			}
 		}
 		function PlayerChoice(user: string, partInfo: ChosenPart): void {
-			console.log("in player choice " + user);
 			if (partInfo.pitstopID == that.pitstopID) {
 				if (partInfo.partID == 0) {
 					that.carPart1.loadTexture(carParts[that.pitstopID][0][partInfo.currentPart]);
@@ -265,7 +261,6 @@ class RacingGame {
 				if (tc > 90 && (tc % 120 == 60)) {
 					apg.WriteLocal<ChosenPart>("wex3l", "select", { pitstopID: this.pitstopID, partID: 2, currentPart: Math.floor(Math.random() * 3) });
 				}*/
-
 
 				if (!this.haveJoined) {
 					if (!this.tryingToJoin) {

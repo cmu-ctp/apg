@@ -5,7 +5,6 @@ using v3 = UnityEngine.Vector3;
 
 public struct TouchInfo {
 	public int strength;
-	public UseType useType;
 	public ent src;
 }
 
@@ -40,6 +39,7 @@ public class ent {
 	public Action<ent, ent, TouchInfo> breathTouch;
 	public Action<ent, ent, TouchInfo> playerTouch;
 	public Action<ent, ent, TouchInfo> buddyTouch;
+	public Action<ent, ent, TouchInfo> shotTouch;
 
 	[SerializeField] int sortOrder;
 
@@ -105,6 +105,7 @@ public class ent {
 		breathTouch = (e, user, info) => { };
 		playerTouch = (e, user, info) => { };
 		buddyTouch = (e, user, info) => { };
+		shotTouch = (e, user, info) => { };
 		onHurt = (me, source, damage) => { };
 
 		leader = shadowEnt = null;
@@ -144,6 +145,7 @@ public class ent {
 		breathTouch = (e, user, info) => { };
 		playerTouch = (e, user, info) => { };
 		buddyTouch = (e, user, info) => { };
+		shotTouch = (e, user, info) => { };
 
 		leader = shadowEnt = null;
 	}
@@ -278,6 +280,7 @@ class PoolEnt {
 	public Action<ent, ent, TouchInfo> breathTouch {set { e.breathTouch=value;} }
 	public Action<ent, ent, TouchInfo> playerTouch {set { e.playerTouch=value;} }
 	public Action<ent, ent, TouchInfo> buddyTouch {set { e.buddyTouch=value;} }
+	public Action<ent, ent, TouchInfo> shotTouch {set { e.shotTouch=value;} }
 	public Action<ent> update {set { e.update = value;}}
 	public bool inGrid {set { e.inGrid = value; }}
 	public ent shadow { set { e.shadow= value; } }

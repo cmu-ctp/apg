@@ -63,6 +63,11 @@ class FullGame {
 
 	GameBuilder assets;
 
+	void InitSpawnsTest() {
+		//beardGuy, plantGuy, trashGuy, microwaveGuy, mustacheGuy;
+		spawnSys.Add(1, foeSys.beardGuy);
+	}
+
 	void InitSpawns() {
 
 		var turnEnd= new SpawnEntry { icon = assets.incomingWaveHUD.phaseDivider, spawn = () => { }, message="", scale=5 };
@@ -363,7 +368,8 @@ class FullGame {
 		playerSys.Setup(gameSys, assets.players, foeSys, reactSys);
 		audiencePlayerSys.Setup(gameSys, assets.players, foeSys, assets.basicGameLogic.GetPlayers(), playerSys, assets.gameLogicChat.GetAudienceSys() );
 		buildingPos = assets.backgrounds.Setup(gameSys);
-		InitSpawnsDemo();
+		InitSpawns();
+		//InitSpawnsTest();
 
 		waveHUD = new WaveHUD( gameSys, assets.incomingWaveHUD, src, spawnSys, audiencePlayerSys );
 

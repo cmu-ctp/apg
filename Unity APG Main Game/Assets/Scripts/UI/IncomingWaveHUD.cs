@@ -3,7 +3,7 @@ using UnityEngine;
 using v3 = UnityEngine.Vector3;
 
 public class IncomingWaveHUD : MonoBehaviour {
-	public Sprite uiBackground, player, phaseDivider, cutsceneEdges, whiteSquare, whiteSquareBottomCenter, timelineBackground, timeUI, chargeBar1, chargeBar2, healthBar1, healthBar2;
+	public Sprite uiBackground, player, phaseDivider, cutsceneEdges, whiteSquare, whiteSquareBottomCenter, timelineBackground, timeUI, chargeBar1, chargeBar2, healthBar1, healthBar2, titlePic;
 	public Sprite[] roundNums;
 	public GameObject textName;
 

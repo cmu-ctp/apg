@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
+
 [RequireComponent(typeof(TwitchNetworking))]
 public class TwitchIRC:MonoBehaviour {
 	string server = "irc.twitch.tv";
@@ -52,6 +53,14 @@ public class TwitchIRC:MonoBehaviour {
 				continue;
 			buffer = input.ReadLine();
 			//was message?
+
+			//Debug.Log( "buffer is " + buffer );
+
+			if(buffer.Contains("Login authentication failed")) {
+				// do what?  Something.
+				Debug.Log( "Failure to login to IRC Channel " + channelNameFunc + " with oauth " + channelNameFunc() );
+			}
+
 			if(buffer.Contains("PRIVMSG #")) {
 				lock(recievedMsgs) {
 					recievedMsgs.Add(buffer);

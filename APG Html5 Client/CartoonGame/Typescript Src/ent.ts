@@ -52,6 +52,8 @@ class enttx extends Phaser.Text {
 	upd: (m: enttx) => void = null;
 	update() { if (this.upd != null) this.upd(this); }
 
+	set tx(value: string) { this.text = value; }
+
 	set scx(value: number) { this.scale.x = value; }
 	set scy(value: number) { this.scale.y = value; }
 	set anchorx(value: number) { this.anchor.x = value; }

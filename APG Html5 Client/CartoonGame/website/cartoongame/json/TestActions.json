@@ -2,13 +2,21 @@
   {
     "name": "Move",
     "choices": [
-      {"name": "Stay Put","tip": "Don't move!"},
-      {"name": "Foundry","tip": ""},
-      {"name": "Hospital","tip": ""},
-      {"name": "Bank","tip": ""},
-      {"name": "Airport","tip": ""},
-      {"name": "Food Cart","tip": ""},
-      {"name": "Supermarket","tip": ""}
+      {"name": "", "pic": "","tip":"" },
+		  {"name": "Move Left", "pic": "leftarrow","tip": ""},
+      {"name": "Assist", "pic": "assist","tip": "Aid other players who are harvesting, building, or activating at the same building as you.  Only on player can do this per building."},
+      { "name": "Build",  "pic": "build","tip":"Build or repair the building you're at.  This can upgrade buildings.  No more than 2 players can do this at a building each turn." },
+		  {"name": "Item 1","pic": "bag1","tip": ""},
+      {"name": "Move Back", "pic": "movein","tip": ""},
+      {"name": "Move Forward", "pic": "moveback","tip": ""},
+		  { "name": "Activate", "pic": "activate","tip":"Use the special ability of the building you're at.  Depending on the building, this might require that it is built and charged.  This might require more than one player to work, depending on the kind of building." },
+      {"name": "Heal","pic": "heal","tip": ""},
+      {"name": "Item 2","pic": "bag2","tip": ""},
+      {"name": "", "pic": "","tip":"" },
+      {"name": "Move Right","pic": "rightarrow","tip": ""},
+		  { "name": "Harvest", "pic": "harvest","tip":"Extract resources from the building you're at.  What is extracted depends on the building type.  Buildings have limits on how many players can harvest from them per turn.  No more than 3 players can do this at a building each turn." },      
+      {"name": "Defend", "pic": "defend","tip":"Protect yourself and all players standing at the same building as you.  You will all take less damage.  Only on player can do this per building." },
+      {"name": "Item 3","pic": "bag3","tip": ""}
     ] },
   {
     "name": "Action", 
@@ -18,42 +26,28 @@
 		    { "name":"Harvest", "tip":"Extract resources from the building you're at.  What is extracted depends on the building type.  Buildings have limits on how many players can harvest from them per turn.  No more than 3 players can do this at a building each turn." },
 		    { "name":"Activate", "tip":"Use the special ability of the building you're at.  Depending on the building, this might require that it is built and charged.  This might require more than one player to work, depending on the kind of building." },
         {"name": "Assist","tip": "Aid other players who are harvesting, building, or activating at the same building as you.  Only on player can do this per building."},
-        {"name": "Hide","tip": "Hide in a cowardly fashion.  This will protect you from damage but doesn't help anyone else."},
-        {"name": "Mystery Action!","tip": "Do something odd.  No telling what will happen if you do..."}
+        {"name": "Heal","tip": ""}
       ]},
-  {
-    "name": "Stance",
-    "choices": [
-      {"name": "Industrious","tip": "Boosts the building and harvesting effectiveness of everyone at the same building as you."},
-      {"name": "Aggressive","tip": "Increases the activating effectiveness of everyone at the same building as you."},
-      {"name": "Defensive","tip": "Improves the defense of everyone at the same building as you."},
-      {"name": "Soothing","tip": "Boosts the effective of healing for everyone at the same building as you."},
-      {"name": "Acquisitive","tip": "Increases the amount of resources people get from treats they collect for everyone at the same building as you."},
-      {"name": "Stylish","tip": "Improves the effectiveness of equipment for the turn for everyone at the same building as you."}
-    ]
-  },
   {
     "name": "Items",
     "choices": [
-      {"name": "Not Done Yet","tip": ""}
-    ]
-  },
-  {
-    "name": "Equip",
-    "choices": [
-      {"name": "Not Done Yet","tip": ""}
+      {"name": "Item 1","tip": ""},
+      {"name": "Item 2","tip": ""},
+      {"name": "Item 3","tip": ""},
+      {"name": "Item 4","tip": ""}
     ]
   },
  {
-    "name": "Team",
+    "name": "",
     "choices": [
-      {"name": "Not Done Yet","tip": ""}
+      {"name": "Confirm Actions","tip": ""},
+      {"name": "Redo Actions","tip": ""}
     ]
   },
  {
-    "name": "Hints",
+    "name": "",
     "choices": [
-      {"name": "Not Done Yet","tip": ""}
+      {"name": "","tip": ""}
     ]
   }
  ]}

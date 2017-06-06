@@ -82,6 +82,12 @@ var APGFullSystem = (function () {
     APGFullSystem.prototype.WriteToServer = function (msgName, parmsForMessageToServer) {
         this.network.sendMessageToServer(msgName, parmsForMessageToServer);
     };
+    APGFullSystem.prototype.WriteLocalAsServer = function (msgName, parmsForMessageToServer) {
+        this.network.sendServerMessageLocally(msgName, parmsForMessageToServer);
+    };
+    APGFullSystem.prototype.WriteLocal = function (user, msgName, parmsForMessageToServer) {
+        this.network.sendMessageLocally(user, msgName, parmsForMessageToServer);
+    };
     APGFullSystem.prototype.ResetServerMessageRegistry = function () { this.handlers = new NetworkMessageHandler(); return this; };
     APGFullSystem.prototype.Register = function (msgName, handlerForServerMessage) {
         this.handlers.Add(msgName, handlerForServerMessage);
@@ -235,6 +241,9 @@ var IRCNetwork = (function () {
     IRCNetwork.prototype.sendMessageLocally = function (user, message, parms) {
         this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
     };
+    IRCNetwork.prototype.sendServerMessageLocally = function (message, parms) {
+        this.handleInputMessage(this.logicChannelName, message + "###" + JSON.stringify(parms));
+    };
     IRCNetwork.prototype.update = function () {
         this.lastMessageTime--;
         if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {
@@ -331,7 +340,7 @@ var NetworkMessageHandler = (function () {
         }
         var msgName = msgTemp[0];
         var unparsedParms = msgTemp[1];
-        if (this.inputs[msgName] == undefined) {
+        if (this.peerInputs[msgName] == undefined) {
             ConsoleOutput.debugError("Unknown Network Message: " + msgName + " with parameters " + unparsedParms, "network");
             return false;
         }
@@ -462,6 +471,7 @@ function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appPa
     var chatIRCChannelName = "";
     var logicIRCChannelName = "";
     var engineParms = {
+        clientID: '',
         chat: null,
         chatLoadedFunction: null,
         playerName: "",
@@ -477,6 +487,7 @@ function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appPa
     if (devParms.forceMobile === true)
         isMobile = true;
     if (devParms.skipAuthentication === true) {
+        engineParms.clientID = devParms.forceClientID;
         chatIRCChannelName = devParms.forceChatIRCChannelName;
         logicIRCChannelName = devParms.forceLogicIRCChannelName;
         engineParms.playerName = devParms.forcePlayerName;
@@ -486,6 +497,7 @@ function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appPa
         var lochash = location.hash.substr(1);
         var stateVals = lochash.substr(lochash.indexOf('state=')).split('&')[0].split('=')[1];
         var stateValTable = stateVals.split("+");
+        engineParms.clientID = stateValTable[0];
         chatIRCChannelName = stateValTable[1];
         logicIRCChannelName = stateValTable[2];
     }
@@ -501,7 +513,7 @@ function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appPa
         engineParms.chat = null;
     }
     else {
-        Twitch.init({ clientId: appParms.clientID }, function (error, status) {
+        Twitch.init({ clientId: engineParms.clientID }, function (error, status) {
             if (status.authenticated || devParms.skipAuthentication) {
                 Twitch.api({ method: 'user' }, function (error, user) {
                     if (!devParms.skipAuthentication) {

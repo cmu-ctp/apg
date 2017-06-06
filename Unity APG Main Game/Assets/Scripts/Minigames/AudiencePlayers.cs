@@ -20,7 +20,7 @@ using APG;
 	// distribute aplayers better
 
 	/*
-
+	 
 	Get in rest of audiece player actions.
 
 	Get in high level structure.  Game start, game end.
@@ -73,6 +73,8 @@ using APG;
 
 public class AudiencePlayerSys {
 
+	enum BuddyInputs { MoveLeft, Empty1, Assist, Build, Harvest, Activate, Heal, MoveBack, MoveForward, Defend, Item1, Item2, Item3, Item4, MoveRight };
+
 	enum BuddyChoice { MoveTo = 0, Action, Stance, Item, Equip, END };
 	enum BuddyMoveTo { StayPut = 0, Foundry, Hospital, Bank, Airport, Foodcart, SuperMarket, END };
 	enum BuddyAction { Defend = 0, Harvest, Activate, ChargeUp, Assist, Hide, Give, END };
@@ -102,7 +104,8 @@ public class AudiencePlayerSys {
 				if( tick > 60 * 7 ) {
 					tick = 0;
 					for( var k = 0; k < names.Length; k++ ) {
-						apg.WriteLocal( names[k], "upd", new APGBasicGameLogic.SelectionParms{ choices= new int[] {rd.i(0,6),rd.i(0,5),rd.i(0,5),4,5, 6 } } );
+						//apg.WriteLocal( names[k], "upd", new APGBasicGameLogic.SelectionParms{ choices= new int[] {rd.i(0,6),rd.i(0,5),rd.i(0,5),4,5, 6 } } );
+						apg.WriteLocal( names[k], "upd", new APGBasicGameLogic.SelectionParms{ choices= new int[] {rd.i(0,14),rd.i(0,14),rd.i(0,14), 1, 1, 1 } } );
 					}
 				}
 			}
@@ -264,7 +267,7 @@ public class AudiencePlayerSys {
 					gameSys.grid.Find(e.pos - new v3(0,.7f,0), 1, e, (me, targ) => { targ.buddyTouch(targ, me, new TouchInfo {strength=1 });});
 
 					if(parms[(int)BuddyChoice.MoveTo] != (int)BuddyMoveTo.StayPut) {
-						var goalposx = goalx;//(-10 + 9 * (parms[(int)BuddyChoice.MoveTo]/6f)) * ((buddyID < 10) ? 1 : -1);
+						var goalposx = goalx;
 						var goal = new v3(goalposx, -5f, goalz);
 						var immediateGoal = e.pos * .99f + .01f * goal;
 						var dir = goal-e.pos;

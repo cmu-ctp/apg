@@ -56,5 +56,4 @@ function WaitingToJoin(apg: APGSys, previousMessage:string = "" ): void {
 			else e.visible = true;
 		}
 	});
-
 }

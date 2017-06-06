@@ -1,6 +1,15 @@
 ﻿using UnityEngine;
 using v3 = UnityEngine.Vector3;
 
+// turn beard guy into treat
+// powerup shots with bouncing
+
+// microwave - bowls. or cups.
+// Mustache guy - hats.
+// plants - knives and spoons - move horizontally, dropping stuff on a timer.
+// trash guy - random stuff.
+// cloud boss - socks + shoes
+
 public class Foes:MonoBehaviour {
 	public Sprite[] shoes, socks, bowls, cups, spoons, knives, hats;
 	public Sprite beardguy, beardguy2, plantguy, boulder, foeTrash, foeMicrowave, foeMustache, shadow;
@@ -69,6 +78,8 @@ public class FoeSys {
 					if( Mathf.Abs(e.vel.y )< .001f )e.remove();
 				}
 
+				gameSys.grid.Find(e.pos - nm.v3y( .7f ), 1, e, (me, targ) => { targ.shotTouch(targ, me, new TouchInfo {});});
+
 				e.removeIfOffScreen();
 			},
 			playerTouch = (e, user, info) => {
@@ -134,6 +145,9 @@ public class FoeSys {
 					e.pos = e.pos * .98f + .02f * goal;
 					e.ang = angAnim.Val(tick) + rd.f(-shakeAmount, shakeAmount);
 					nm.ease(ref shakeAmount, 0f, .05f);
+				},
+				shotTouch = (e, user, info ) => {
+
 				},
 				breathTouch = (e, user, info) => {
 					if(e.pos.z > 5)return;
@@ -222,12 +236,6 @@ public class FoeSys {
 			};
 		}
 	}
-
-	// microwave - bowls. or cups.
-	// Mustache guy - hats.
-	// plants - knives and spoons - move horizontally, dropping stuff on a timer.
-	// trash guy - random stuff.
-	// cloud boss - socks + shoes
 
 	void TrashGuy() {
 		var startTime = tick;

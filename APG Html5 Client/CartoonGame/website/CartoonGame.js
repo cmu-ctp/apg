@@ -4,29 +4,30 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 function ButtonCache(c) {
-    c.images('cartoongame/imgs', ['blueorb.png']);
+    c.images('cartoongame/imgs', ['blueorb.png', 'buttontest.png', 'activate.png', 'assist.png', 'bag1.png', 'bag2.png', 'bag3.png', 'build.png', 'defend.png', 'harvest.png', 'heal.png', 'leftarrow.png', 'moveback.png', 'movein.png', 'rightarrow.png']);
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 }
 var ActionEntry = (function () {
-    function ActionEntry(label, tooltip) {
+    function ActionEntry(label, tooltip, pic) {
         this.label = label;
         this.tooltip = tooltip;
+        this.pic = pic;
     }
     return ActionEntry;
 }());
 var ButtonCollection = (function () {
     function ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit) {
-        var fx1 = 0, fx2 = 0, fy1 = 0, fy2 = 0, updateActive = false;
+        var fx1 = 0, fx2 = 0, fy1 = 0, fy2 = 0, updateActive = false, startX = baseX, startY = baseY;
         var w = apg.g.world;
         var big = this;
-        this.selected = 0;
+        this.selected = -1;
         this.update = function (active) {
             updateActive = active;
         };
         var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
         var fontName = "Caveat Brush";
-        function addOption(id, str, x, y, toolTip) {
-            var highlighted = false, highlightVertical = size * 3 / 4, highlightHorizontal = size * 16 / 40, x1 = x, x2 = x + str.length * highlightHorizontal, y1 = y - highlightVertical, y2 = y + 10, mul = 1, spd = .07 + .26 * Math.random(), lastHighlight = false, inputUsed = false;
+        function addOption(id, str, x, y, toolTip, pic) {
+            var highlighted = false, highlightVertical = 56, highlightHorizontal = size * 16 / 40, x1 = x, x2 = x + 56, y1 = y - highlightVertical / 2 + 8, y2 = y + highlightVertical / 2 + 8, mul = 1, spd = .07 + .26 * Math.random(), lastHighlight = false, inputUsed = false;
             if (id == 0) {
                 fx1 = x1;
                 fx2 = x2;
@@ -34,13 +35,17 @@ var ButtonCollection = (function () {
                 fy2 = y2;
             }
             var textColor = { font: '18px ' + fontName, fill: '#222' };
-            new enttx(w, 60, 50 + 20, str, textColor, {
+            var bkg = new ent(w, x, y - 20, 'cartoongame/imgs/' + pic, {});
+            if (str === '')
+                bkg.visible = false;
+            new enttx(w, 60, 50 + 20, "", textColor, {
                 upd: function (e) {
                     mul = mul * (1 - spd) + spd * (updateActive ? 1 : 0);
-                    e.x = x + 10 * 1.5 * (1 - mul);
-                    e.y = y - 14 * 1.5 + 20 * 1.5 * (1 - mul);
+                    e.x = x + 10 + 10 * 1.5 * (1 - mul);
+                    e.y = y + 35 - 14 * 1.5 + 20 * 1.5 * (1 - mul);
                     e.alpha = mul;
                     e.scx = e.scy = size * mul * .05;
+                    bkg.scalex = bkg.scaley = mul;
                     if (e.alpha < .01) {
                         if (e.visible == true)
                             e.visible = false;
@@ -63,14 +68,20 @@ var ButtonCollection = (function () {
                         return;
                     }
                     highlighted = true;
-                    if (apg.g.input.x < x1 || apg.g.input.x > x2 || apg.g.input.y < y1 || apg.g.input.y > y2)
+                    if (apg.g.input.x < x1 || apg.g.input.x > x2 || apg.g.input.y < y1 || apg.g.input.y > y2 || str == "")
                         highlighted = false;
                     if (highlighted) {
                         setToolTip(toolTip);
+                        fx1 = x1;
+                        fx2 = x2;
+                        fy1 = y1;
+                        fy2 = y2;
                     }
-                    if (highlighted && apg.g.input.activePointer.isDown && inputUsed == false) {
+                    if (highlighted && (sysTick - lastMouseUpTime < 5) && !apg.g.input.activePointer.isDown && inputUsed == false) {
+                        lastMouseUpTime = -1000;
                         clickSound.play();
                         big.selected = id;
+                        big.selectedName = str;
                         inputUsed = true;
                         setOption(id);
                         fx1 = x1;
@@ -83,19 +94,44 @@ var ButtonCollection = (function () {
         }
         for (var k = 0; k < buttonsInit.length; k++) {
             var b = buttonsInit[k];
-            addOption(k, b.label, baseX, baseY, b.tooltip);
+            addOption(k, b.label, baseX, baseY, b.tooltip, b.pic + '.png');
             baseX += xAdd;
             baseY += yAdd;
+            if (k == 1 || k == 6 || k == 11)
+                baseY += 10;
+            if (k == 4 || k == 9) {
+                baseY = startY;
+                baseX += 60;
+            }
         }
+        var sysTick = 0;
+        var lastMouseUpTime = -1000;
+        var mouseDown = false;
         function addSelector() {
             var goalx = 0, goaly = 0, mul = 1, tick = Math.random() * Math.PI * 2, tickScale = Math.random() * .8 + .4;
-            new ent(w, 50, 50, 'cartoongame/imgs/blueorb.png', { scalex: .24, scaley: .24,
+            new ent(w, 50, 50, 'cartoongame/imgs/blueorb.png', { scalex: .3, scaley: .3,
                 upd: function (e) {
                     e.x = goalx;
                     e.y = goaly;
-                    e.alpha = mul * (.5 + .2 * Math.cos(tick * tickScale));
+                    e.alpha = mul * (.3 + .1 * Math.cos(tick * tickScale));
                     tick += .05;
                     mul = mul * .8 + .2 * (updateActive ? 1 : 0);
+                    if (updateActive) {
+                        sysTick++;
+                        if (apg.g.input.activePointer.isDown == false) {
+                            if (mouseDown == true) {
+                                lastMouseUpTime = sysTick;
+                            }
+                            mouseDown = false;
+                        }
+                        else {
+                            mouseDown = true;
+                        }
+                    }
+                    else {
+                        lastMouseUpTime = -1000;
+                        mouseDown = false;
+                    }
                     if (e.alpha < .01) {
                         if (e.visible == true)
                             e.visible = false;
@@ -104,8 +140,8 @@ var ButtonCollection = (function () {
                         e.visible = true;
                     if (mul < .05)
                         return;
-                    goalx = goalx * .9 + .1 * ((fx1) - 16);
-                    goaly = goaly * .9 + .1 * ((fy1 + fy2) / 2 - 12);
+                    goalx = goalx * .6 + .4 * ((fx1 + fx2) / 2 - 16);
+                    goaly = goaly * .6 + .4 * ((fy1 + fy2) / 2 - 12);
                 }
             });
         }
@@ -212,6 +248,11 @@ var enttx = (function (_super) {
     }
     enttx.prototype.update = function () { if (this.upd != null)
         this.upd(this); };
+    Object.defineProperty(enttx.prototype, "tx", {
+        set: function (value) { this.text = value; },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(enttx.prototype, "scx", {
         set: function (value) { this.scale.x = value; },
         enumerable: true,
@@ -247,7 +288,7 @@ var enttx = (function (_super) {
     return enttx;
 }(Phaser.Text));
 function CartoonAssetCache(c) {
-    c.images('cartoongame/imgs', ['ClientUI4.png']);
+    c.images('cartoongame/imgs', ['ClientUI3.png']);
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
     c.json(['cartoongame/json/TestActions.json']);
     WaitingToJoinCache(c);
@@ -264,27 +305,24 @@ function MainPlayerInput(apg) {
     function makeButtonSet(baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit) {
         return new ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
     }
-    function addActionSet(setToolTip) {
-        var o = [];
-        for (var j = 0; j < actions.length; j++)
-            o.push(new ActionEntry(actions[j].name, ""));
-        return makeButtonSet(200, 120, 81, 0, 28, '#F00000', '#200000', setToolTip, function (v) { }, o);
-    }
     function addActions(srcChoices, setToolTip) {
-        var choiceLeft = 200, choiceUp = 170;
+        var choiceLeft = 170, choiceUp = 130;
         var curCollection = 0;
         function add(choiceSet) {
             var id = curCollection;
             curCollection++;
-            return makeButtonSet(choiceLeft, choiceUp, 0, 40, 22, '#F00000', '#200000', setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
+            return makeButtonSet(choiceLeft, choiceUp, 0, 60, 22, '#F00000', '#200000', setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
         }
-        function st(name, tip) { return new ActionEntry(name, tip); }
+        function st(name, tip, pic) { return new ActionEntry(name, tip, pic); }
         var o = [];
         for (var j = 0; j < actions.length; j++) {
             var p = [];
-            for (var k = 0; k < actions[j].choices.length; k++) {
-                var r = actions[j].choices[k];
-                p.push(st(r.name, r.tip));
+            var j2 = j;
+            if (j2 == 1 || j2 == 2)
+                j2 = 0;
+            for (var k = 0; k < actions[j2].choices.length; k++) {
+                var r = actions[j2].choices[k];
+                p.push(st(r.name, r.tip, r.pic));
             }
             o.push(add(p));
         }
@@ -306,49 +344,69 @@ function MainPlayerInput(apg) {
         if (p.nm != apg.playerName)
             return;
         myStats = p;
+        choiceButtons[5].selected = -1;
+        choiceButtons[4].selected = -1;
+        choiceButtons[3].selected = -1;
+        selected = 0;
+        for (var j = 0; j < 3; j++) {
+            actionLabels[j].tx = "Action " + (j + 1) + ": ";
+            choiceButtons[j].selected = -1;
+        }
     })
         .Register("submit", function (p) {
         apg.WriteToServer("upd", { choices: choices });
     });
     var toolTip = "";
     function setToolTip(str) { toolTip = str; }
-    var tick = 0, choiceLeft = 50, choiceUp = 118, tabButtons, choiceButtons, bkg = new Image();
-    bkg.src = 'ClientUI4.png';
+    var tick = 0, choiceLeft = 50, choiceUp = 118, tabButtons, choiceButtons, actionLabels;
     var labelColor = '#608080';
     var roundLabel, toolTipLabel, nextChoiceLabel;
     var lastRoundUpdate = 0;
-    new ent(w, 0, 0, 'cartoongame/imgs/ClientUI4.png', {
+    var selected = 0;
+    new ent(w, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
         upd: function (e) {
             if (roundNumber != lastRoundUpdate) {
                 roundLabel.text = "Choices for Round " + roundNumber;
                 lastRoundUpdate = roundNumber;
             }
-            tabButtons.update(true);
             for (var j = 0; j < choiceButtons.length; j++)
-                choiceButtons[j].update(tabButtons.selected == j);
+                choiceButtons[j].update(selected == j);
+            if (selected == 3 && choiceButtons[selected].selected == 1) {
+                choiceButtons[selected].selected = -1;
+                selected = 0;
+                for (var j = 0; j < 3; j++) {
+                    actionLabels[j].tx = "Action " + (j + 1) + ": ";
+                    choiceButtons[j].selected = -1;
+                }
+            }
+            if (choiceButtons[selected].selected != -1) {
+                if (selected < 3) {
+                    actionLabels[selected].tx = "Action " + (selected + 1) + ": " + choiceButtons[selected].selectedName;
+                }
+                selected++;
+            }
             toolTipLabel.text = toolTip;
             nextChoiceLabel.text = "" + timer;
         }
     });
-    roundLabel = new enttx(w, 220, 25, "Choices for Round ", { font: '54px ' + fontName, fill: '#688' });
-    toolTipLabel = new enttx(w, 340, 150, "ToolTip", { font: '20px ' + fontName, fill: '#233', wordWrap: true, wordWrapWidth: 330 });
+    roundLabel = new enttx(w, 220, 25, "Actions for Round ", { font: '54px ' + fontName, fill: '#688' });
+    toolTipLabel = new enttx(w, 420, 160, "ToolTip", { font: '20px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 330 });
     nextChoiceLabel = new enttx(w, 650, 350, "", { font: '40px ' + fontName, fill: '#688' });
-    tabButtons = addActionSet(setToolTip);
     choiceButtons = addActions(choices, setToolTip);
     function category(msg, x, y) {
         new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
     }
     function inCategory(x, y, add, labels) {
+        var labelEnts = [];
         for (var k = 0; k < labels.length; k++) {
-            new enttx(w, x, y + k * add, labels[k], { font: '14px ' + fontName, fill: '#211' });
+            labelEnts.push(new enttx(w, x, y + k * add, labels[k], { font: '14px ' + fontName, fill: '#211' }));
         }
+        return labelEnts;
     }
     category("RESOURCES", 40, 100);
     inCategory(50, 120, 16, ["Health:", "Gold:", "Tacos:", "Silver:"]);
-    category("STATS", 40, 120 + 64 + 8);
-    inCategory(50, 120 + 64 + 8 + 20, 16, ["Defense:", "Action+", "Heal+", "Item Get+", "Work+"]);
-    category("SELECTED CHOICES", 40, 300);
-    inCategory(50, 320, 16, ["Move:", "Action:", "Stance:", "Item:"]);
+    category("Actions", 40, 300);
+    actionLabels = inCategory(50, 320, 16, ["Action 1:", "Action 2:", "Action 3:"]);
 }
 function ShowSubmittedCache(c) {
     c.images('cartoongame/imgs', ['ClientUI3.png']);

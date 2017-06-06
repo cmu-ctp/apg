@@ -30,7 +30,6 @@
 		this.network.sendMessageLocally(user, msgName, parmsForMessageToServer);
 	}
 
-
 	ResetServerMessageRegistry(): APGSys { this.handlers = new NetworkMessageHandler(); return this; }
 
 	Register<T>(msgName: string, handlerForServerMessage: (parmsForHandler: T) => void ): APGSys {

@@ -49,7 +49,7 @@ public class PlayerSys {
 					e.ang += cloudRot;
 					e.vel = b;
 					if(cloudNum == 0 && blowing && e.scale > .1f) {
-						gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.breathTouch(targ, me, new TouchInfo { useType= UseType.PlayerBlowing, strength=(int)chargeStrength, src=owner });});
+						gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.breathTouch(targ, me, new TouchInfo { strength=(int)chargeStrength, src=owner });});
 					}
 				}
 			};
@@ -266,7 +266,7 @@ public class PlayerSys {
 				if( e.pos.x < -10.25f )e.MoveTo(-10.25f, e.pos.y, e.pos.z);
 				if( e.pos.x > 10.25f )e.MoveTo(10.25f, e.pos.y, e.pos.z);
 				e.ang = -rot * .1f;
-				gameSys.grid.Find(e.pos - nm.v3y( .7f ), 1, e, (me, targ) => { targ.playerTouch(targ, me, new TouchInfo {useType= UseType.PlayerPush, strength= 1 });});
+				gameSys.grid.Find(e.pos - nm.v3y( .7f ), 1, e, (me, targ) => { targ.playerTouch(targ, me, new TouchInfo {strength= 1 });});
 
 			},
 			breathTouch = (e, user, info) => {
