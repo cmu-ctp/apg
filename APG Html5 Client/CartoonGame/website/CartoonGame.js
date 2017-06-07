@@ -1,8 +1,13 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 function ButtonCache(c) {
     c.images('cartoongame/imgs', ['blueorb.png', 'buttontest.png', 'activate.png', 'assist.png', 'bag1.png', 'bag2.png', 'bag3.png', 'build.png', 'defend.png', 'harvest.png', 'heal.png', 'leftarrow.png', 'moveback.png', 'movein.png', 'rightarrow.png']);
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
@@ -171,21 +176,22 @@ if (typeof Object.assign != 'function') {
 var ent = (function (_super) {
     __extends(ent, _super);
     function ent(t, x, y, key, fields) {
-        _super.call(this, t.game, x, y, key);
-        this.upd = null;
+        var _this = _super.call(this, t.game, x, y, key) || this;
+        _this.upd = null;
         if (fields)
-            Object.assign(this, fields);
-        this.exists = true;
-        this.visible = true;
-        this.alive = true;
-        this.z = t.children.length;
-        t.addChild(this);
+            Object.assign(_this, fields);
+        _this.exists = true;
+        _this.visible = true;
+        _this.alive = true;
+        _this.z = t.children.length;
+        t.addChild(_this);
         if (t.enableBody) {
-            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+            t.game.physics.enable(_this, t.physicsBodyType, t.enableBodyDebug);
         }
         if (t.cursor === null) {
-            t.cursor = this;
+            t.cursor = _this;
         }
+        return _this;
     }
     ent.prototype.update = function () { if (this.upd != null)
         this.upd(this); };
@@ -230,21 +236,22 @@ var ent = (function (_super) {
 var enttx = (function (_super) {
     __extends(enttx, _super);
     function enttx(t, x, y, text, style, fields) {
-        _super.call(this, t.game, x, y, text, style);
-        this.upd = null;
+        var _this = _super.call(this, t.game, x, y, text, style) || this;
+        _this.upd = null;
         if (fields)
-            Object.assign(this, fields);
-        this.exists = true;
-        this.visible = true;
-        this.alive = true;
-        this.z = t.children.length;
-        t.addChild(this);
+            Object.assign(_this, fields);
+        _this.exists = true;
+        _this.visible = true;
+        _this.alive = true;
+        _this.z = t.children.length;
+        t.addChild(_this);
         if (t.enableBody) {
-            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+            t.game.physics.enable(_this, t.physicsBodyType, t.enableBodyDebug);
         }
         if (t.cursor === null) {
-            t.cursor = this;
+            t.cursor = _this;
         }
+        return _this;
     }
     enttx.prototype.update = function () { if (this.upd != null)
         this.upd(this); };

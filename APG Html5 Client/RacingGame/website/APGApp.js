@@ -466,7 +466,7 @@ function MakeOrientationWarning(isMobile, phaserDivName) {
     else
         return function () { };
 }
-function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appParms) {
+function launchAPGClient(devParms, appParms) {
     var isMobile = true;
     var chatIRCChannelName = "";
     var logicIRCChannelName = "";
@@ -553,7 +553,7 @@ function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appPa
     }
     function FatalError() { Error.apply(this, arguments); this.name = "FatalError"; }
     FatalError.prototype = Object.create(Error.prototype);
-    if (appFailedWithoutRecovery === true) {
+    if (appFailedWithoutRecovery) {
         document.getElementById('loadLabel').style.display = 'none';
         document.getElementById("orientationWarning").style.display = 'none';
         document.getElementById("appErrorMessage").style.display = '';
@@ -563,13 +563,18 @@ function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appPa
     document.getElementById("appErrorMessage").style.display = 'none';
     setTwitchIFrames(isMobile, chatIRCChannelName, appParms.chatWidth, appParms.chatHeight, appParms.videoWidth, appParms.videoHeight);
     var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
-    ApgSetup(assetCacheFunction, gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
+    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
 }
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 if (typeof Object.assign != 'function') {
     (function () {
         Object.assign = function (target) {
@@ -592,21 +597,22 @@ if (typeof Object.assign != 'function') {
 var ent = (function (_super) {
     __extends(ent, _super);
     function ent(t, x, y, key, fields) {
-        _super.call(this, t.game, x, y, key);
-        this.upd = null;
+        var _this = _super.call(this, t.game, x, y, key) || this;
+        _this.upd = null;
         if (fields)
-            Object.assign(this, fields);
-        this.exists = true;
-        this.visible = true;
-        this.alive = true;
-        this.z = t.children.length;
-        t.addChild(this);
+            Object.assign(_this, fields);
+        _this.exists = true;
+        _this.visible = true;
+        _this.alive = true;
+        _this.z = t.children.length;
+        t.addChild(_this);
         if (t.enableBody) {
-            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+            t.game.physics.enable(_this, t.physicsBodyType, t.enableBodyDebug);
         }
         if (t.cursor === null) {
-            t.cursor = this;
+            t.cursor = _this;
         }
+        return _this;
     }
     ent.prototype.update = function () { if (this.upd != null)
         this.upd(this); };
@@ -651,21 +657,22 @@ var ent = (function (_super) {
 var enttx = (function (_super) {
     __extends(enttx, _super);
     function enttx(t, x, y, text, style, fields) {
-        _super.call(this, t.game, x, y, text, style);
-        this.upd = null;
+        var _this = _super.call(this, t.game, x, y, text, style) || this;
+        _this.upd = null;
         if (fields)
-            Object.assign(this, fields);
-        this.exists = true;
-        this.visible = true;
-        this.alive = true;
-        this.z = t.children.length;
-        t.addChild(this);
+            Object.assign(_this, fields);
+        _this.exists = true;
+        _this.visible = true;
+        _this.alive = true;
+        _this.z = t.children.length;
+        t.addChild(_this);
         if (t.enableBody) {
-            t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug);
+            t.game.physics.enable(_this, t.physicsBodyType, t.enableBodyDebug);
         }
         if (t.cursor === null) {
-            t.cursor = this;
+            t.cursor = _this;
         }
+        return _this;
     }
     enttx.prototype.update = function () { if (this.upd != null)
         this.upd(this); };

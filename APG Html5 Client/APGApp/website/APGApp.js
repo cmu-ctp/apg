@@ -80,20 +80,64 @@ var APGFullSystem = (function () {
         this.network.update();
     };
     APGFullSystem.prototype.WriteToServer = function (msgName, parmsForMessageToServer) {
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteToServer : ", "sys");
+            return;
+        }
+        if (parmsForMessageToServer == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteToServer : ", "sys");
+            return;
+        }
         this.network.sendMessageToServer(msgName, parmsForMessageToServer);
     };
     APGFullSystem.prototype.WriteLocalAsServer = function (msgName, parmsForMessageToServer) {
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocalAsServer : ", "sys");
+            return;
+        }
+        if (parmsForMessageToServer == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocalAsServer : ", "sys");
+            return;
+        }
         this.network.sendServerMessageLocally(msgName, parmsForMessageToServer);
     };
     APGFullSystem.prototype.WriteLocal = function (user, msgName, parmsForMessageToServer) {
+        if (user == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
+            return;
+        }
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
+            return;
+        }
+        if (parmsForMessageToServer == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
+            return;
+        }
         this.network.sendMessageLocally(user, msgName, parmsForMessageToServer);
     };
     APGFullSystem.prototype.ResetServerMessageRegistry = function () { this.handlers = new NetworkMessageHandler(); return this; };
     APGFullSystem.prototype.Register = function (msgName, handlerForServerMessage) {
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.Register : ", "sys");
+            return;
+        }
+        if (handlerForServerMessage == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.Register : ", "sys");
+            return;
+        }
         this.handlers.Add(msgName, handlerForServerMessage);
         return this;
     };
     APGFullSystem.prototype.RegisterPeer = function (msgName, handlerForServerMessage) {
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.RegisterPeer : ", "sys");
+            return;
+        }
+        if (handlerForServerMessage == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.RegisterPeer : ", "sys");
+            return;
+        }
         this.handlers.AddPeerMessage(msgName, handlerForServerMessage);
         return this;
     };
@@ -110,24 +154,44 @@ var AssetCacher = (function () {
         this.JSONAssets = {};
     }
     AssetCacher.prototype.assets = function (cacheFunction) {
+        if (cacheFunction == null) {
+            ConsoleOutput.debugWarn("AssetCacher.assets : bad caching function", "sys");
+            return;
+        }
         this.phaserAssetCacheList.push(cacheFunction);
     };
     AssetCacher.prototype.images = function (dir, imageList) {
+        if (imageList == null || imageList.length < 1 || ) {
+            ConsoleOutput.debugWarn("AssetCacher.images : bad image list", "sys");
+            return;
+        }
         for (var k = 0; k < imageList.length; k++) {
             this.phaserImageList.push(dir + "/" + imageList[k]);
         }
     };
     AssetCacher.prototype.sounds = function (dir, soundList) {
+        if (soundList == null || soundList.length < 1 || ) {
+            ConsoleOutput.debugWarn("AssetCacher.sounds : bad sound list", "sys");
+            return;
+        }
         for (var k = 0; k < soundList.length; k++) {
             this.phaserSoundList.push(dir + "/" + soundList[k]);
         }
     };
     AssetCacher.prototype.googleWebFonts = function (googleWebFontNames) {
+        if (googleWebFontNames == null || googleWebFontNames.length < 1 || ) {
+            ConsoleOutput.debugWarn("AssetCacher.googleWebFonts : bad font list", "sys");
+            return;
+        }
         for (var k = 0; k < googleWebFontNames.length; k++) {
             this.phaserGoogleWebFontList.push(googleWebFontNames[k]);
         }
     };
     AssetCacher.prototype.json = function (fileNames) {
+        if (fileNames == null || fileNames.length < 1 || ) {
+            ConsoleOutput.debugWarn("AssetCacher.json : bad json asset list", "sys");
+            return;
+        }
         for (var k = 0; k < fileNames.length; k++) {
             this.jsonAssetCacheNameList.push(fileNames[k]);
         }

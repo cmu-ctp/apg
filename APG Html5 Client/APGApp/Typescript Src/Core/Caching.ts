@@ -5,17 +5,32 @@
 	phaserGoogleWebFontList: string[] = [];
 	jsonAssetCacheNameList: string[] = [];
 
-	assets(cacheFunction: (loader: Phaser.Loader) => void): void {
+    assets(cacheFunction: (loader: Phaser.Loader) => void): void {
+        if (cacheFunction == null) {
+            ConsoleOutput.debugWarn("AssetCacher.assets : bad caching function", "sys");
+            return;
+        }
+
 		this.phaserAssetCacheList.push(cacheFunction);
 	}
 
-	images(dir: string, imageList: string[]): void {
+    images(dir: string, imageList: string[]): void {
+        if (imageList == null || imageList.length < 1 || ) {
+            ConsoleOutput.debugWarn("AssetCacher.images : bad image list", "sys");
+            return;
+        }
+
 		for (var k = 0; k < imageList.length; k++) {
 			this.phaserImageList.push(dir + "/" + imageList[k]);
 		}
 	}
 
-	sounds(dir: string, soundList: string[]): void {
+    sounds(dir: string, soundList: string[]): void {
+        if ( soundList == null || soundList.length < 1 || ) {
+            ConsoleOutput.debugWarn("AssetCacher.sounds : bad sound list", "sys");
+            return;
+        }
+
 		for (var k = 0; k < soundList.length; k++) {
 			this.phaserSoundList.push(dir + "/" + soundList[k]);
 		}
@@ -23,12 +38,23 @@
 
 	googleWebFonts(googleWebFontNames: string[]): void {
 
+        if (googleWebFontNames == null || googleWebFontNames.length < 1 || ) {
+            ConsoleOutput.debugWarn("AssetCacher.googleWebFonts : bad font list", "sys");
+            return;
+        }
+
 		for (var k = 0; k < googleWebFontNames.length; k++) {
 			this.phaserGoogleWebFontList.push(googleWebFontNames[k]);
 		}
 	}
 
-	json(fileNames: string[]): void {
+    json(fileNames: string[]): void {
+
+        if (fileNames == null || fileNames.length < 1 || ) {
+            ConsoleOutput.debugWarn("AssetCacher.json : bad json asset list", "sys");
+            return;
+        }
+
 		for (var k = 0; k < fileNames.length; k++) {
 			this.jsonAssetCacheNameList.push(fileNames[k]);
 		}

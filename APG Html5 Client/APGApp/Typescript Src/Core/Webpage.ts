@@ -141,7 +141,11 @@ function MakeOrientationWarning(isMobile:boolean, phaserDivName:string):()=>void
 	else return function () { };
 }
 
-function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appParms) {
+/**
+* Entry point for launching the APG Client HTML5 App from a containing web page.
+* The fields of devParms and appParms are specified in the .html file.
+*/
+function launchAPGClient(devParms, appParms) {
 
 	var isMobile = true;
 
@@ -245,7 +249,7 @@ function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appPa
 
 	function FatalError() { Error.apply(this, arguments); this.name = "FatalError"; }
 	FatalError.prototype = Object.create(Error.prototype);
-	if (appFailedWithoutRecovery === true) {
+	if (appFailedWithoutRecovery) {
 		document.getElementById('loadLabel').style.display = 'none';
 		document.getElementById("orientationWarning").style.display = 'none';
 		document.getElementById("appErrorMessage").style.display = '';
@@ -258,5 +262,5 @@ function launchAPGClient(assetCacheFunction, gameLaunchFunction, devParms, appPa
 
 	var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
 
-	ApgSetup(assetCacheFunction, gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
+    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
 }

@@ -30,6 +30,11 @@
         };
 
         appParms = {
+
+            cacheFunction: CacheRacingGame,
+
+            gameLaunchFunction: RacingInput,
+
             allowClientReposition: true,
 
             gameWidth: 800,
@@ -46,7 +51,7 @@
     </script>
 
 </head>
-<body onload="launchAPGClient(CacheRacingGame, RacingInput, devParms, appParms);">
+<body onload="launchAPGClient(devParms, appParms);">
     <h1><div id="loadLabel">Please wait while the audience app loads</div></h1>
     <h1><div id="orientationWarning"></div></h1>
     <h1><div id="appErrorMessage"></div></h1>
