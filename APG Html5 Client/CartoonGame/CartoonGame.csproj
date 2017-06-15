@@ -30,17 +30,17 @@
     <Content Include="website\phaser.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Typescript Src\APGSys.ts" />
-    <TypeScriptCompile Include="Typescript Src\ButtonCollection.ts" />
-    <TypeScriptCompile Include="Typescript Src\ent.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\jquery.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\p2.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\phaser.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\pixi.comments.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\MainPlayerInput.ts" />
-    <TypeScriptCompile Include="Typescript Src\ShowSubmitted.ts" />
-    <TypeScriptCompile Include="Typescript Src\WaitingForJoinAcknowledgement.ts" />
-    <TypeScriptCompile Include="Typescript Src\WaitingToJoin.ts" />
+    <TypeScriptCompile Include="gamesrc\APGSys.ts" />
+    <TypeScriptCompile Include="gamesrc\ButtonCollection.ts" />
+    <TypeScriptCompile Include="gamesrc\ent.ts" />
+    <TypeScriptCompile Include="gamesrc\Libraries\jquery.d.ts" />
+    <TypeScriptCompile Include="gamesrc\Libraries\p2.d.ts" />
+    <TypeScriptCompile Include="gamesrc\Libraries\phaser.d.ts" />
+    <TypeScriptCompile Include="gamesrc\Libraries\pixi.comments.d.ts" />
+    <TypeScriptCompile Include="gamesrc\MainPlayerInput.ts" />
+    <TypeScriptCompile Include="gamesrc\ShowSubmitted.ts" />
+    <TypeScriptCompile Include="gamesrc\WaitingForJoinAcknowledgement.ts" />
+    <TypeScriptCompile Include="gamesrc\WaitingToJoin.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">

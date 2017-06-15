@@ -13,6 +13,10 @@ interface EmptyParms {
 
 declare var ticksPerSecond: any;
 
+function WaitingForJoinAcknowledgeTestSequence(apg: APGSys): void {
+    apg.WriteLocalAsServer<ClientJoinParms>(1, "join", {name:apg.playerName});
+}
+
 function WaitingForJoinAcknowledement(apg: APGSys): void {
 	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
 	var endSubgame: boolean = false, timeOut: number = 0, retry:number = 0;
@@ -25,6 +29,10 @@ function WaitingForJoinAcknowledement(apg: APGSys): void {
 			endOfRoundSound.play();
 			MainPlayerInput(apg);
 		});
+
+    if (apg.networkTestSequence) {
+        WaitingForJoinAcknowledgeTestSequence(apg);
+    }
 
 	new ent(apg.g.world, 60, 0, 'cartoongame/imgs/ClientUI3.png', {
 		alpha: 0,

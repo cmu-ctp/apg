@@ -19,6 +19,8 @@
         devParms = {
             disableNetworking: true,
 
+            networkingTestSequence: true,
+
             skipAuthentication: false,
             forceChatIRCChannelName: "",
             forceLogicIRCChannelName: "",
@@ -33,7 +35,8 @@
 
             cacheFunction: CartoonAssetCache,
 
-            gameLaunchFunction: MainPlayerInput,
+            //gameLaunchFunction: MainPlayerInput,
+            gameLaunchFunction: WaitingToJoin,
 
             allowClientReposition: true,
 
@@ -50,10 +53,6 @@
 
     </script>
 </head>
-<!--
-	MainPlayerInput(apg);
-	WaitingToJoin(apg);
--->
 <body onload="launchAPGClient(devParms, appParms);">
     <h1><div id="loadLabel">Please wait while the audience app loads</div></h1>
     <h1><div id="orientationWarning"></div></h1>

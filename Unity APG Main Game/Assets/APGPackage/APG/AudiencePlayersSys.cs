@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
+using System;
 
 namespace APG {
-	public class AudiencePlayersSys : AudienceInterface {
+	public class AudiencePlayersSys : APGSys {
 
 		ChatSys chatSys;
 		NetworkMessageHandler handlers;
@@ -10,31 +11,37 @@ namespace APG {
 		TwitchNetworking network;
 		IRCNetworkRecorder recorder;
 
-		public AudiencePlayersSys ( TwitchNetworking theNetwork, IRCNetworkRecorder theRecorder ) {
+		public AudiencePlayersSys(TwitchNetworking theNetwork, IRCNetworkRecorder theRecorder) {
 			network = theNetwork;
 			recorder = theRecorder;
 
-			chatSys = new ChatSys( this );
+			chatSys = new ChatSys(this);
 		}
 
-		public void WriteLocal<T>( string user, string msg, T parms ) {
-			RunHandler( user, msg+"###"+JsonUtility.ToJson(parms) );
+		public void WriteLocal<T>(string user, string msg, T parms) {
+			RunHandler(user, msg + "###" + JsonUtility.ToJson(parms));
 		}
 
-		public void WriteToClients<T>( string msg, T parms ) {
-			network.WriteMessageToClient( msg, parms );
+		public void WriteToClients<T>(string msg, T parms) {
+			network.WriteMessageToClient(msg, parms);
 		}
-		public void WriteToChat( string msg ) {
-			network.SendChatText( msg );
+		public void WriteToChat(string msg) {
+			network.SendChatText(msg);
 		}
 		public string LaunchAPGClientURL() {
 			return network.LaunchAPGClientURL();
 		}
-		public void SetHandlers( NetworkMessageHandler theHandlers ) {
-			handlers = theHandlers;
-		}
 		public ChatterInterface Chatters() {
 			return chatSys;
+		}
+
+		public APGSys ResetClientMessageRegistry() {
+			handlers = new NetworkMessageHandler();
+			return this;
+		}
+		public APGSys Register<T>(string msgName, Action<string, T> funcForClientMessage){
+			handlers.Register<T>(msgName, funcForClientMessage);
+			return this;
 		}
 
 		public void RunHandler( string user, string msgString ) {

@@ -5,6 +5,13 @@
 	on(evt: string, exec: Function): any;
 }
 
+class DelayedMessage {
+    time: number;
+    sender: string;
+    message: string;
+    next: DelayedMessage;
+}
+
 class IRCNetwork{
 
 	constructor(getHandlers: () => NetworkMessageHandler, player: string, logicChannelName: string, chat: tmiClient) {
@@ -20,16 +27,59 @@ class IRCNetwork{
 		this.writeToChat(message + "###" + JSON.stringify(parms));
 	}
 
-	sendMessageLocally<T>(user: string, message: string, parms: T): void {
-		this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
+    sendMessageLocally<T>(delay: number, user: string, message: string, parms: T): void {
+        if (delay == 0) {
+            this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
+        }
+        else {
+            var msg: DelayedMessage = new DelayedMessage();
+            msg.time = this.tick + delay * ticksPerSecond ;
+            msg.sender = user;
+            msg.message = message + "###" + JSON.stringify(parms);
+
+            if (this.localMessageHead== null) {
+                this.localMessageHead = msg;
+                msg.next = null;
+            }
+            else {
+                var head: DelayedMessage = this.localMessageHead;
+                var added: boolean = false;
+                while (!added) {
+                    if (head.next == null) {
+                        head.next = msg;
+                        msg.next = null;
+                        added = true;
+                    }
+                    else if( head.next.time > msg.time ){
+                        msg.next = head.next;
+                        head.next = msg;
+                        added = true;
+                    }
+                    else {
+                        head = head.next;
+                    }
+                }
+            }
+        }
 	}
 
-	sendServerMessageLocally<T>(message: string, parms: T): void {
-		this.handleInputMessage(this.logicChannelName, message + "###" + JSON.stringify(parms));
-	}
+    sendServerMessageLocally<T>(delay: number, message: string, parms: T): void {
+        this.sendMessageLocally(delay, this.logicChannelName, message, parms);
+    }
+
+    clearLocalMessages(): void {
+        this.localMessageHead = null;
+        this.tick = 0;
+    }
 
 	update(): void {
-		this.lastMessageTime--;
+        this.lastMessageTime--;
+        this.tick++;
+
+        while (this.localMessageHead != null && this.localMessageHead.time < this.tick ) {
+            this.handleInputMessage(this.localMessageHead.sender, this.localMessageHead.message);
+            this.localMessageHead = this.localMessageHead.next;
+        }
 
 		if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {
 
@@ -48,8 +98,11 @@ class IRCNetwork{
 	private chat: tmiClient;
 
 	private channelName: string;
-	private lastMessageTime: number = 0;
+    private lastMessageTime: number = 0;
+    private tick: number = 0;
 	private messageQueue: string[] = [];
+
+    private localMessageHead: DelayedMessage = null;
 
 	private getHandlers: () => NetworkMessageHandler;
 	private playerName: string;

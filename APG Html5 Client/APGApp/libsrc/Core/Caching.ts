@@ -15,7 +15,7 @@
 	}
 
     images(dir: string, imageList: string[]): void {
-        if (imageList == null || imageList.length < 1 || ) {
+        if (imageList == null || imageList.length < 1 ) {
             ConsoleOutput.debugWarn("AssetCacher.images : bad image list", "sys");
             return;
         }
@@ -26,7 +26,7 @@
 	}
 
     sounds(dir: string, soundList: string[]): void {
-        if ( soundList == null || soundList.length < 1 || ) {
+        if ( soundList == null || soundList.length < 1 ) {
             ConsoleOutput.debugWarn("AssetCacher.sounds : bad sound list", "sys");
             return;
         }
@@ -38,7 +38,7 @@
 
 	googleWebFonts(googleWebFontNames: string[]): void {
 
-        if (googleWebFontNames == null || googleWebFontNames.length < 1 || ) {
+        if (googleWebFontNames == null || googleWebFontNames.length < 1 ) {
             ConsoleOutput.debugWarn("AssetCacher.googleWebFonts : bad font list", "sys");
             return;
         }
@@ -50,7 +50,7 @@
 
     json(fileNames: string[]): void {
 
-        if (fileNames == null || fileNames.length < 1 || ) {
+        if (fileNames == null || fileNames.length < 1 ) {
             ConsoleOutput.debugWarn("AssetCacher.json : bad json asset list", "sys");
             return;
         }

@@ -1,4 +1,4 @@
-function ApgSetup(assetCacheFunction, gameLaunchFunction, disableNetworking, isMobile, gameWidth, gameHeight, logicIRCChannelName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd, handleOrientation) {
+function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence, disableNetworking, isMobile, gameWidth, gameHeight, logicIRCChannelName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd, handleOrientation) {
     if (gameWidth === void 0) { gameWidth = 400; }
     if (gameHeight === void 0) { gameHeight = 300; }
     if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
@@ -58,7 +58,7 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, disableNetworking, isM
         }
         function launchGame() {
             onLoadEnd();
-            var apg = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets);
+            var apg = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence);
             var showingOrientationWarning = false;
             setInterval(function () {
                 handleOrientation();
@@ -69,31 +69,81 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, disableNetworking, isM
     }
 }
 var APGFullSystem = (function () {
-    function APGFullSystem(g, logicIRCChannelName, playerName, chat, JSONAssets) {
+    function APGFullSystem(g, logicIRCChannelName, playerName, chat, JSONAssets, networkTestSequence) {
         var _this = this;
         this.g = g;
         this.JSONAssets = JSONAssets;
+        if (playerName == "")
+            playerName = "defaultPlayerName";
         this.playerName = playerName;
+        this.networkTestSequence = networkTestSequence;
         this.network = new IRCNetwork(function () { return _this.handlers; }, playerName, logicIRCChannelName, chat);
     }
     APGFullSystem.prototype.update = function () {
         this.network.update();
     };
     APGFullSystem.prototype.WriteToServer = function (msgName, parmsForMessageToServer) {
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteToServer : ", "sys");
+            return;
+        }
+        if (parmsForMessageToServer == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteToServer : ", "sys");
+            return;
+        }
         this.network.sendMessageToServer(msgName, parmsForMessageToServer);
     };
-    APGFullSystem.prototype.WriteLocalAsServer = function (msgName, parmsForMessageToServer) {
-        this.network.sendServerMessageLocally(msgName, parmsForMessageToServer);
+    APGFullSystem.prototype.WriteLocalAsServer = function (delay, msgName, parmsForMessageToServer) {
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocalAsServer : ", "sys");
+            return;
+        }
+        if (parmsForMessageToServer == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocalAsServer : ", "sys");
+            return;
+        }
+        this.network.sendServerMessageLocally(delay, msgName, parmsForMessageToServer);
     };
-    APGFullSystem.prototype.WriteLocal = function (user, msgName, parmsForMessageToServer) {
-        this.network.sendMessageLocally(user, msgName, parmsForMessageToServer);
+    APGFullSystem.prototype.WriteLocal = function (delay, user, msgName, parmsForMessageToServer) {
+        if (user == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
+            return;
+        }
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
+            return;
+        }
+        if (parmsForMessageToServer == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
+            return;
+        }
+        this.network.sendMessageLocally(delay, user, msgName, parmsForMessageToServer);
+    };
+    APGFullSystem.prototype.ClearLocalMessages = function () {
+        this.network.clearLocalMessages();
     };
     APGFullSystem.prototype.ResetServerMessageRegistry = function () { this.handlers = new NetworkMessageHandler(); return this; };
     APGFullSystem.prototype.Register = function (msgName, handlerForServerMessage) {
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.Register : ", "sys");
+            return;
+        }
+        if (handlerForServerMessage == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.Register : ", "sys");
+            return;
+        }
         this.handlers.Add(msgName, handlerForServerMessage);
         return this;
     };
     APGFullSystem.prototype.RegisterPeer = function (msgName, handlerForServerMessage) {
+        if (msgName == "") {
+            ConsoleOutput.debugWarn("APGFullSystem.RegisterPeer : ", "sys");
+            return;
+        }
+        if (handlerForServerMessage == null) {
+            ConsoleOutput.debugWarn("APGFullSystem.RegisterPeer : ", "sys");
+            return;
+        }
         this.handlers.AddPeerMessage(msgName, handlerForServerMessage);
         return this;
     };
@@ -110,24 +160,44 @@ var AssetCacher = (function () {
         this.JSONAssets = {};
     }
     AssetCacher.prototype.assets = function (cacheFunction) {
+        if (cacheFunction == null) {
+            ConsoleOutput.debugWarn("AssetCacher.assets : bad caching function", "sys");
+            return;
+        }
         this.phaserAssetCacheList.push(cacheFunction);
     };
     AssetCacher.prototype.images = function (dir, imageList) {
+        if (imageList == null || imageList.length < 1) {
+            ConsoleOutput.debugWarn("AssetCacher.images : bad image list", "sys");
+            return;
+        }
         for (var k = 0; k < imageList.length; k++) {
             this.phaserImageList.push(dir + "/" + imageList[k]);
         }
     };
     AssetCacher.prototype.sounds = function (dir, soundList) {
+        if (soundList == null || soundList.length < 1) {
+            ConsoleOutput.debugWarn("AssetCacher.sounds : bad sound list", "sys");
+            return;
+        }
         for (var k = 0; k < soundList.length; k++) {
             this.phaserSoundList.push(dir + "/" + soundList[k]);
         }
     };
     AssetCacher.prototype.googleWebFonts = function (googleWebFontNames) {
+        if (googleWebFontNames == null || googleWebFontNames.length < 1) {
+            ConsoleOutput.debugWarn("AssetCacher.googleWebFonts : bad font list", "sys");
+            return;
+        }
         for (var k = 0; k < googleWebFontNames.length; k++) {
             this.phaserGoogleWebFontList.push(googleWebFontNames[k]);
         }
     };
     AssetCacher.prototype.json = function (fileNames) {
+        if (fileNames == null || fileNames.length < 1) {
+            ConsoleOutput.debugWarn("AssetCacher.json : bad json asset list", "sys");
+            return;
+        }
         for (var k = 0; k < fileNames.length; k++) {
             this.jsonAssetCacheNameList.push(fileNames[k]);
         }
@@ -221,11 +291,18 @@ var ConsoleOutput = (function () {
     };
     return ConsoleOutput;
 }());
+var DelayedMessage = (function () {
+    function DelayedMessage() {
+    }
+    return DelayedMessage;
+}());
 var IRCNetwork = (function () {
     function IRCNetwork(getHandlers, player, logicChannelName, chat) {
         var _this = this;
         this.lastMessageTime = 0;
+        this.tick = 0;
         this.messageQueue = [];
+        this.localMessageHead = null;
         this.toggleSpace = false;
         this.getHandlers = getHandlers;
         this.playerName = player;
@@ -238,14 +315,54 @@ var IRCNetwork = (function () {
     IRCNetwork.prototype.sendMessageToServer = function (message, parms) {
         this.writeToChat(message + "###" + JSON.stringify(parms));
     };
-    IRCNetwork.prototype.sendMessageLocally = function (user, message, parms) {
-        this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
+    IRCNetwork.prototype.sendMessageLocally = function (delay, user, message, parms) {
+        if (delay == 0) {
+            this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
+        }
+        else {
+            var msg = new DelayedMessage();
+            msg.time = this.tick + delay * ticksPerSecond;
+            msg.sender = user;
+            msg.message = message + "###" + JSON.stringify(parms);
+            if (this.localMessageHead == null) {
+                this.localMessageHead = msg;
+                msg.next = null;
+            }
+            else {
+                var head = this.localMessageHead;
+                var added = false;
+                while (!added) {
+                    if (head.next == null) {
+                        head.next = msg;
+                        msg.next = null;
+                        added = true;
+                    }
+                    else if (head.next.time > msg.time) {
+                        msg.next = head.next;
+                        head.next = msg;
+                        added = true;
+                    }
+                    else {
+                        head = head.next;
+                    }
+                }
+            }
+        }
     };
-    IRCNetwork.prototype.sendServerMessageLocally = function (message, parms) {
-        this.handleInputMessage(this.logicChannelName, message + "###" + JSON.stringify(parms));
+    IRCNetwork.prototype.sendServerMessageLocally = function (delay, message, parms) {
+        this.sendMessageLocally(delay, this.logicChannelName, message, parms);
+    };
+    IRCNetwork.prototype.clearLocalMessages = function () {
+        this.localMessageHead = null;
+        this.tick = 0;
     };
     IRCNetwork.prototype.update = function () {
         this.lastMessageTime--;
+        this.tick++;
+        while (this.localMessageHead != null && this.localMessageHead.time < this.tick) {
+            this.handleInputMessage(this.localMessageHead.sender, this.localMessageHead.message);
+            this.localMessageHead = this.localMessageHead.next;
+        }
         if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {
             var delayedMessage = this.messageQueue.shift();
             this.toggleSpace = !this.toggleSpace;
@@ -563,7 +680,7 @@ function launchAPGClient(devParms, appParms) {
     document.getElementById("appErrorMessage").style.display = 'none';
     setTwitchIFrames(isMobile, chatIRCChannelName, appParms.chatWidth, appParms.chatHeight, appParms.videoWidth, appParms.videoHeight);
     var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
-    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
+    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.networkingTestSequence, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
 }
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||

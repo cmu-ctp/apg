@@ -250,16 +250,16 @@ class RacingGame {
 
 				/*tc++;
 				if (tc == 60) {
-					apg.WriteLocalAsServer<JoinAwk>("joinawk", { msg: "", user: apg.playerName });
+					apg.WriteLocalAsServer<JoinAwk>( 0, "joinawk", { msg: "", user: apg.playerName });
 				}
 				if (tc == 62) {
-					apg.WriteLocalAsServer<TeamInfo>("team", { pitStopID: 1, part1: apg.playerName, part2: "Fireface", part3: "wex3l" });
+					apg.WriteLocalAsServer<TeamInfo>(0, "team", { pitStopID: 1, part1: apg.playerName, part2: "Fireface", part3: "wex3l" });
 				}
 				if (tc > 90 && (tc % 120 == 0)) {
-					apg.WriteLocal<ChosenPart>( "Fireface", "select", { pitstopID: this.pitstopID, partID: 1, currentPart: Math.floor( Math.random()*3) });
+					apg.WriteLocal<ChosenPart>( 0, "Fireface", "select", { pitstopID: this.pitstopID, partID: 1, currentPart: Math.floor( Math.random()*3) });
 				}
 				if (tc > 90 && (tc % 120 == 60)) {
-					apg.WriteLocal<ChosenPart>("wex3l", "select", { pitstopID: this.pitstopID, partID: 2, currentPart: Math.floor(Math.random() * 3) });
+					apg.WriteLocal<ChosenPart>( 0, "wex3l", "select", { pitstopID: this.pitstopID, partID: 2, currentPart: Math.floor(Math.random() * 3) });
 				}*/
 
 				if (!this.haveJoined) {

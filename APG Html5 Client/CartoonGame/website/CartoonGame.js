@@ -9,7 +9,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 function ButtonCache(c) {
-    c.images('cartoongame/imgs', ['blueorb.png', 'buttontest.png', 'activate.png', 'assist.png', 'bag1.png', 'bag2.png', 'bag3.png', 'build.png', 'defend.png', 'harvest.png', 'heal.png', 'leftarrow.png', 'moveback.png', 'movein.png', 'rightarrow.png']);
+    c.images('cartoongame/imgs', ['blueorb.png', 'buttontest.png', 'activate.png', 'assist.png', 'bag1.png', 'bag2.png', 'bag3.png', 'build.png', 'defend.png', 'harvest.png', 'heal.png', 'leftarrow.png', 'moveback.png', 'movein.png', 'rightarrow.png', 'accept.png', 'redo.png']);
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 }
 var ActionEntry = (function () {
@@ -303,6 +303,15 @@ function CartoonAssetCache(c) {
     ShowSubmittedCache(c);
     ButtonCache(c);
 }
+function MainInputTestSequence(apg) {
+    for (var j = 1; j <= 10; j++) {
+        var roundTimeOffset = (j - 1) * 45;
+        for (var k = 0; k < 50; k += 5)
+            apg.WriteLocalAsServer(roundTimeOffset + k, "time", { round: j, time: 45 - k });
+        apg.WriteLocalAsServer(roundTimeOffset + 45, "submit", { choices: [] });
+        apg.WriteLocalAsServer(roundTimeOffset + 45, "pl", { nm: apg.playerName, hp: 10, money: 100 });
+    }
+}
 function MainPlayerInput(apg) {
     var w = apg.g.world;
     var fontName = "Caveat Brush";
@@ -351,7 +360,6 @@ function MainPlayerInput(apg) {
         if (p.nm != apg.playerName)
             return;
         myStats = p;
-        choiceButtons[5].selected = -1;
         choiceButtons[4].selected = -1;
         choiceButtons[3].selected = -1;
         selected = 0;
@@ -414,6 +422,9 @@ function MainPlayerInput(apg) {
     inCategory(50, 120, 16, ["Health:", "Gold:", "Tacos:", "Silver:"]);
     category("Actions", 40, 300);
     actionLabels = inCategory(50, 320, 16, ["Action 1:", "Action 2:", "Action 3:"]);
+    if (apg.networkTestSequence) {
+        MainInputTestSequence(apg);
+    }
 }
 function ShowSubmittedCache(c) {
     c.images('cartoongame/imgs', ['ClientUI3.png']);
@@ -440,6 +451,9 @@ function JoinAcknowledgeCache(c) {
     c.sounds('cartoongame/snds/fx', ['strokeup4.mp3']);
     c.googleWebFonts(['Caveat Brush']);
 }
+function WaitingForJoinAcknowledgeTestSequence(apg) {
+    apg.WriteLocalAsServer(1, "join", { name: apg.playerName });
+}
 function WaitingForJoinAcknowledement(apg) {
     var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
     var endSubgame = false, timeOut = 0, retry = 0;
@@ -451,6 +465,9 @@ function WaitingForJoinAcknowledement(apg) {
         endOfRoundSound.play();
         MainPlayerInput(apg);
     });
+    if (apg.networkTestSequence) {
+        WaitingForJoinAcknowledgeTestSequence(apg);
+    }
     new ent(apg.g.world, 60, 0, 'cartoongame/imgs/ClientUI3.png', {
         alpha: 0,
         upd: function (e) {

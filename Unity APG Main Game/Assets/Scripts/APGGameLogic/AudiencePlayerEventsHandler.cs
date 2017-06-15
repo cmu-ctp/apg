@@ -14,6 +14,6 @@ namespace APG {
 
 		public Func<PlayerEndOfRoundInfo> getEndOfRoundInfo = () => new PlayerEndOfRoundInfo();
 
-		public Action<AudienceInterface, string> updateToClient = (apg, userName) => { };
+		public Action<APGSys, string> updateToClient = (apg, userName) => { };
 	}
 }

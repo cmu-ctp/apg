@@ -27,21 +27,21 @@
     <Content Include="website\Test.htm" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Typescript Src\APGSys.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\APGCore.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\APGFullSystem.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Caching.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\ConsoleOutput.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\IRCNetwork.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Libraries\jquery.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Libraries\p2.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Libraries\phaser.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Libraries\pixi.comments.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\NetworkMessageHandler.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Settings.ts" />
-    <TypeScriptCompile Include="Typescript Src\Core\Webpage.ts" />
-    <TypeScriptCompile Include="Typescript Src\ent.ts" />
-    <TypeScriptCompile Include="Typescript Src\Test.ts" />
+    <TypeScriptCompile Include="libsrc\APGSys.ts" />
+    <TypeScriptCompile Include="libsrc\Core\APGCore.ts" />
+    <TypeScriptCompile Include="libsrc\Core\APGFullSystem.ts" />
+    <TypeScriptCompile Include="libsrc\Core\Caching.ts" />
+    <TypeScriptCompile Include="libsrc\Core\ConsoleOutput.ts" />
+    <TypeScriptCompile Include="libsrc\Core\IRCNetwork.ts" />
+    <TypeScriptCompile Include="libsrc\Core\Libraries\jquery.d.ts" />
+    <TypeScriptCompile Include="libsrc\Core\Libraries\p2.d.ts" />
+    <TypeScriptCompile Include="libsrc\Core\Libraries\phaser.d.ts" />
+    <TypeScriptCompile Include="libsrc\Core\Libraries\pixi.comments.d.ts" />
+    <TypeScriptCompile Include="libsrc\Core\NetworkMessageHandler.ts" />
+    <TypeScriptCompile Include="libsrc\Core\Settings.ts" />
+    <TypeScriptCompile Include="libsrc\Core\Webpage.ts" />
+    <TypeScriptCompile Include="libsrc\ent.ts" />
+    <TypeScriptCompile Include="libsrc\Test.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">
@@ -97,4 +97,13 @@
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Y /D "$(ProjectDir)website\APGApp.js" "$(ProjectDir)..\CartoonGame\website"
+xcopy /Y /D "$(ProjectDir)website\APGApp.js.map" "$(ProjectDir)..\CartoonGame\website"
+xcopy /Y /D "$(ProjectDir)libsrc\APGSys.ts" "$(ProjectDir)..\CartoonGame\gamesrc"
+xcopy /Y /D /E "$(ProjectDir)libsrc" "$(ProjectDir)..\CartoonGame\libsrc"
+xcopy /Y /D "$(ProjectDir)website\APGApp.js" "$(ProjectDir)..\RacingGame\website"
+xcopy /Y /D "$(ProjectDir)website\APGApp.js.map" "$(ProjectDir)..\RacingGame\website"
+xcopy /Y /D "$(ProjectDir)libsrc\APGSys.ts" "$(ProjectDir)..\RacingGame\gamesrc"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

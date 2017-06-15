@@ -39,7 +39,11 @@ public class GameBuilder:MonoBehaviour {
 	}
 
 	void Update() {
-		fullGame.RunUpdate( transform );
+		
+	}
+
+	void FixedUpdate() {
+		fullGame.RunUpdate(transform);
 	}
 }
 

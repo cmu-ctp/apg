@@ -30,13 +30,13 @@
     <Content Include="Website\phaser.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Typescript Src\APGSys.ts" />
-    <TypeScriptCompile Include="Typescript Src\ent.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\jquery.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\p2.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\phaser.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\Libraries\pixi.comments.d.ts" />
-    <TypeScriptCompile Include="Typescript Src\RacingMainInput.ts" />
+    <TypeScriptCompile Include="gamesrc\APGSys.ts" />
+    <TypeScriptCompile Include="gamesrc\ent.ts" />
+    <TypeScriptCompile Include="gamesrc\Libraries\jquery.d.ts" />
+    <TypeScriptCompile Include="gamesrc\Libraries\p2.d.ts" />
+    <TypeScriptCompile Include="gamesrc\Libraries\phaser.d.ts" />
+    <TypeScriptCompile Include="gamesrc\Libraries\pixi.comments.d.ts" />
+    <TypeScriptCompile Include="gamesrc\RacingMainInput.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">

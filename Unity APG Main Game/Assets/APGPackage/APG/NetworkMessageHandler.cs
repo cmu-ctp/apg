@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System;
 
 namespace APG {
-
+	/**
+	* A
+	*/
 	public class NetworkMessageHandler {
 		Dictionary<string, Action<string, string>> commands = new Dictionary<string, Action<string, string>>();
 
-		public NetworkMessageHandler Add<T>(string msgName, Action<string, T> handlerForClientMessage) {
+		public NetworkMessageHandler Register<T>(string msgName, Action<string, T> handlerForClientMessage) {
 			commands[msgName] = (string user, string s) => {
 				T parms = JsonUtility.FromJson<T>(s);
 				handlerForClientMessage(user, parms);

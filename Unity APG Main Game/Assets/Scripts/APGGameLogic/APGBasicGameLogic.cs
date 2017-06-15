@@ -96,7 +96,7 @@ namespace APG {
 
 		Action timerUpdater;
 	
-		AudienceInterface apg;
+		APGSys apg;
 
 		PlayerSet players = new PlayerSet();
 
@@ -118,15 +118,15 @@ namespace APG {
 
 			apg = network.GetAudienceSys();
 
-			apg.SetHandlers( new NetworkMessageHandler()
-				.Add<EmptyParms>( "join", (user, p) => {
-					if( players.AddPlayer(user )) {
+			apg.ResetClientMessageRegistry()
+				.Register<EmptyParms>("join", (user, p) => {
+					if (players.AddPlayer(user)) {
 						apg.WriteToClients("join", new ClientJoinParms { name = user });
 					}
-				} )
-				.Add<SelectionParms>( "upd", (user, p) => {
-					players.SetPlayerInput( user, p.choices );
-				} ) );
+				})
+				.Register<SelectionParms>("upd", (user, p) => {
+					players.SetPlayerInput(user, p.choices);
+				});
 		}
 
 		void InviteAudience() {
@@ -220,7 +220,7 @@ namespace APG {
 			}
 		}
 
-		void Update() {
+		void FixedUpdate() {
 
 			if( buddies.team1Health == 0 ) {
 				gameSys.gameOver=true;

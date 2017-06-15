@@ -81,6 +81,11 @@ interface APGSys {
 	g: Phaser.Game;
 
      /**
+     * If this is set to true, a client game should simulate server network traffic
+     */
+    networkTestSequence: boolean;
+
+     /**
      * The player name for the client.  This will be automatically filled in when the player logs in to Twitch.
      */
 	readonly playerName: string;
@@ -136,18 +141,25 @@ interface APGSys {
     /**
     * Simulate recieving a message from the server.
     *
-    * @param msgName The message name for this local message.
+    * @param delay The amount of time to delay before sending this message, in seconds.
+    * @param msgName The message name for this local message.  Only use this for testing and debugging.
     * @param parmsForMessageToServer The parameters connected to this message.  This field will be converted into a JSON-encoded string.
     */
-    WriteLocalAsServer<T>(msgName: string, parmsForMessageToServer: T): void;
+    WriteLocalAsServer<T>(delay:number, msgName: string, parmsForMessageToServer: T): void;
 
     /**
-    * Simulate recieving a message from another peer web client.
+    * Simulate recieving a message from another peer web client.  Only use this for testing and debugging.
     *
+    * @param delay The amount of time to delay before sending this message, in seconds.
     * @param user The user name to be used for this local message.
     * @param msgName The message name for this local message.
     * @param parmsForMessageToServer The parameters connected to this message.  This field will be converted into a JSON-encoded string.
     */
-    WriteLocal<T>(user: string, msgName: string, parmsForMessageToServer: T): void;
+    WriteLocal<T>(delay: number, user: string, msgName: string, parmsForMessageToServer: T): void;
+
+    /**
+    * When changing game modes, make sure that any delayed messages from previous modes are cleared.
+    */
+    ClearLocalMessages(): void;
 
 }

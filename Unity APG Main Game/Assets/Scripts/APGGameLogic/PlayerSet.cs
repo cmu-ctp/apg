@@ -89,7 +89,7 @@ namespace APG {
 				playerEvents[k].onRoundEnd();
 			}
 		}
-		public void UpdatePlayersToClients( AudienceInterface apg ) {
+		public void UpdatePlayersToClients( APGSys apg ) {
 			for( var k = 0; k < playerNames.Count; k++ ) {
 				playerEvents[k].updateToClient( apg, playerNames[k] );
 			}

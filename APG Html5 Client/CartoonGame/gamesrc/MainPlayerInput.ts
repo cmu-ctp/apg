@@ -33,6 +33,15 @@ interface PlayerUpdate{
 	money:number;
 }
 
+function MainInputTestSequence(apg: APGSys): void {
+    for (var j = 1; j <= 10; j++ ){
+        var roundTimeOffset: number = (j - 1) * 45;
+        for (var k = 0; k < 50; k += 5)apg.WriteLocalAsServer<RoundUpdate>(roundTimeOffset + k, "time", { round: j, time: 45 - k });
+        apg.WriteLocalAsServer<SelectionParms>(roundTimeOffset + 45, "submit", { choices: [] });
+        apg.WriteLocalAsServer<PlayerUpdate>(roundTimeOffset + 45, "pl", { nm: apg.playerName, hp: 10, money: 100 });
+    }
+}
+
 function MainPlayerInput(apg: APGSys): void {
 	var w = apg.g.world;
 
@@ -85,7 +94,7 @@ function MainPlayerInput(apg: APGSys): void {
 			if (p.nm != apg.playerName) return;
 			myStats = p;
 
-			choiceButtons[5].selected = -1;
+			//choiceButtons[5].selected = -1;
 			choiceButtons[4].selected = -1;
 			choiceButtons[3].selected = -1;
 			selected = 0;
@@ -157,5 +166,9 @@ function MainPlayerInput(apg: APGSys): void {
 	inCategory(50, 120 + 64 + 8+20, 16, ["Defense:", "Action+", "Heal+", "Item Get+", "Work+"]);
 	*/
 	category("Actions", 40, 300);
-	actionLabels = inCategory(50, 320, 16, ["Action 1:", "Action 2:", "Action 3:"] );
+    actionLabels = inCategory(50, 320, 16, ["Action 1:", "Action 2:", "Action 3:"]);
+
+    if (apg.networkTestSequence) {
+        MainInputTestSequence( apg );
+    }
 }

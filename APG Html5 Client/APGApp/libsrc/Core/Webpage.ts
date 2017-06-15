@@ -262,5 +262,5 @@ function launchAPGClient(devParms, appParms) {
 
 	var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
 
-    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
+    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.networkingTestSequence, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
 }

@@ -32,7 +32,7 @@ public class TwitchNetworking:MonoBehaviour {
 
 	//___________________________________________
 
-	public AudienceInterface GetAudienceSys() {
+	public APGSys GetAudienceSys() {
 		return apg;
 	}
 

@@ -40,8 +40,8 @@
  {
     "name": "",
     "choices": [
-      {"name": "Confirm Actions","tip": ""},
-      {"name": "Redo Actions","tip": ""}
+      {"name": "Confirm Actions","pic": "accept","tip": "Accept these choices"},
+      {"name": "Redo Actions","pic": "redo","tip": "Redo these choices"}
     ]
   },
  {

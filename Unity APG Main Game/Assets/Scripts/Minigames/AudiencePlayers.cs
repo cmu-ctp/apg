@@ -93,7 +93,7 @@ public class AudiencePlayerSys {
 	GameSys gameSys;
 	Players players;
 
-	void RunDebug(PlayerSet playerSet, AudienceInterface apg) {
+	void RunDebug(PlayerSet playerSet, APGSys apg) {
 		var names = new string[] { "Taki", "Fin", "Castral Fex", "FireTiger", "Ribaeld", "Big Tong", "Gatekeeper", "KittyKat", "Purifier", "Flaer", "Soothsayer13", "xxxBarryxxx", "PlasterPant", "Kokirei", "Fighter", "Seer", "Paninea", "Graethei", "Magesty", "Revolution" };
 		//for(var k = 0; k < 20; k++) playerSet.AddPlayer( names[k] );
 		for(var k = 0; k < 10; k++) playerSet.AddPlayer( names[k] );
@@ -112,7 +112,7 @@ public class AudiencePlayerSys {
 		};
 	}
 
-	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys, PlayerSet playerSet, PlayerSys playerSys, AudienceInterface apg) {
+	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys, PlayerSet playerSet, PlayerSys playerSys, APGSys apg) {
 		gameSys = theGameSys;
 		players = thePlayers;
 
@@ -201,7 +201,7 @@ public class AudiencePlayerSys {
 				getEndOfRoundInfo = () => new PlayerEndOfRoundInfo { pos = pl.pos, nameColor = nameColor, name = label.text, actionName = actionLabel.text, stanceIcon = stance.sprite, stanceName=stanceName, stanceColor=stanceColor, actionColor=actionColor },
 				onRoundEnd = () => {
 					parms = bufferedParms;
-					if( parms[(int)BuddyChoice.MoveTo] != (int)BuddyMoveTo.StayPut ){
+					/*if( parms[(int)BuddyChoice.MoveTo] != (int)BuddyMoveTo.StayPut ){
 						buildingGoal =  parms[(int)BuddyChoice.MoveTo] - 1;
 					}
 					goalz = actionsZ[parms[(int)BuddyChoice.Action]] +  rd.f(.3f);
@@ -216,7 +216,7 @@ public class AudiencePlayerSys {
 						actionLabel.text = "Demised";
 						stanceColor = new Color( .5f, 0, 0, .5f );
 						actionColor = new Color( .5f, 0, 0, .5f );
-					}
+					}*/
 				},
 				updateToClient = ( apg, userName ) => apg.WriteToClients( "pl", new PlayerUpdate { nm = userName, hp = pl.health, money=0 } )
 			});
