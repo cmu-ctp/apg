@@ -5,7 +5,8 @@
 }
 
 interface ClientJoinParms{
-	name:string;
+    name: string;
+    playerID: number;
 }
 
 interface EmptyParms {
@@ -14,7 +15,8 @@ interface EmptyParms {
 declare var ticksPerSecond: any;
 
 function WaitingForJoinAcknowledgeTestSequence(apg: APGSys): void {
-    apg.WriteLocalAsServer<ClientJoinParms>(1, "join", {name:apg.playerName});
+    apg.ClearLocalMessages();
+    apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", {name:apg.playerName, playerID:3});
 }
 
 function WaitingForJoinAcknowledement(apg: APGSys): void {
@@ -27,7 +29,7 @@ function WaitingForJoinAcknowledement(apg: APGSys): void {
 
 			endSubgame = true;
 			endOfRoundSound.play();
-			MainPlayerInput(apg);
+			MainPlayerInput(apg, p.playerID);
 		});
 
     if (apg.networkTestSequence) {

@@ -60,22 +60,41 @@ public class Backgrounds:MonoBehaviour {
 
 		var src = new ent(gameSys) { name="buildingSet" };
 		for( var k = 0; k < 6; k++ ) {
-			var zDist = 2.5f; var posx = -12 + 10 * (k/6f);
+			var zDist = 1f; var posx = -9.5f + 8.5f * (k/6f);
 			lookPos[k] = new v3(posx, -5f+rd.f(0, .2f), zDist);
 			lookPos[12-1-k] = new v3(-posx, -5f+rd.f(0, .2f), zDist);
-			new ent(gameSys) { sprite = buildings[k], pos = lookPos[k], scale = rd.f(.3f, .4f) * 1.7f, name="building", parent = src };
-			new ent(gameSys) { sprite = buildings[k], pos = lookPos[12-1-k], scale = rd.f(.3f, .4f) * 1.7f, name="building", parent = src };
+			new ent(gameSys) { sprite = buildings[k], pos = lookPos[k], scale = rd.f(.3f, .4f) * 1.4f, name="building", parent = src };
+			new ent(gameSys) { sprite = buildings[k], pos = lookPos[12-1-k], scale = rd.f(.3f, .4f) * 1.4f, name="building", parent = src };
 		}
 
 		return lookPos;
 	}
 	void Flags() {
+		var f1 = 7.8f;
+		var f2 = 4.8f;
+
 		var src = new ent(gameSys) { name="flagSet" };
 		new ent(gameSys) { sprite = flag1, pos=new Vector3( -1.5f, -5f, -3f ), scale = .3f, name="flags", parent = src };
 		new ent(gameSys) { sprite = flag1, pos=new Vector3( -1.5f, -5f, 3f ), scale = .3f, name="flags", parent = src };
 
+		new ent(gameSys) { sprite = flag1, pos = new Vector3(-f1, -5f, -.4f), scale = .15f, name = "flags", parent = src };
+		new ent(gameSys) { sprite = flag1, pos = new Vector3(-f1, -5f, 0f), scale = .15f, name = "flags", parent = src };
+		new ent(gameSys) { sprite = flag1, pos = new Vector3(-f1, -5f, .4f), scale = .15f, name = "flags", parent = src };
+
+		new ent(gameSys) { sprite = flag1, pos = new Vector3(-f2, -5f, -.4f), scale = .15f, name = "flags", parent = src };
+		new ent(gameSys) { sprite = flag1, pos = new Vector3(-f2, -5f, 0f), scale = .15f, name = "flags", parent = src };
+		new ent(gameSys) { sprite = flag1, pos = new Vector3(-f2, -5f, .4f), scale = .15f, name = "flags", parent = src };
+
 		new ent(gameSys) { sprite = flag2, pos=new Vector3( 1.5f, -5f, -3f ), scale = .3f, name="flags", parent = src };
 		new ent(gameSys) { sprite = flag2, pos=new Vector3( 1.5f, -5f, 3f ), scale = .3f, name="flags", parent = src };
+
+		new ent(gameSys) { sprite = flag2, pos = new Vector3(f1, -5f, -.4f), scale = .15f, name = "flags", parent = src };
+		new ent(gameSys) { sprite = flag2, pos = new Vector3(f1, -5f, 0f), scale = .15f, name = "flags", parent = src };
+		new ent(gameSys) { sprite = flag2, pos = new Vector3(f1, -5f, .4f), scale = .15f, name = "flags", parent = src };
+
+		new ent(gameSys) { sprite = flag2, pos = new Vector3(f2, -5f, -.4f), scale = .15f, name = "flags", parent = src };
+		new ent(gameSys) { sprite = flag2, pos = new Vector3(f2, -5f, 0f), scale = .15f, name = "flags", parent = src };
+		new ent(gameSys) { sprite = flag2, pos = new Vector3(f2, -5f, .4f), scale = .15f, name = "flags", parent = src };
 
 	}
 }

@@ -154,12 +154,14 @@ public class WaveHUD {
 			}
 		};
 		var roundNum = 1;
-		var theRound = new ent(gameSys, assets.textName) { text="1", textColor=nm.col( 0f, 1 ), active=true, name="round",  parent = timeui,
+		var roundColors= new Color[] { new Color(.4f, .533f, .266f, 1f), new Color(.266f, .4f, .533f, 1f), new Color(.533f, .266f, .4f, 1f) };
+		var theRound = new ent(gameSys, assets.textName) { text="1", textColor=roundColors[0], active=true, name="round",  parent = timeui,
 			update = e => {
 				int round = assets.basicGameLogic.GetRoundNumber();
 				if( round != roundNum ) {
 					roundNum = round;
 					e.text = "" + roundNum;
+					e.textColor = roundColors[roundNum % 3];
 				}
 			}
 		};

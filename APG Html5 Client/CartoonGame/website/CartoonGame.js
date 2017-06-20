@@ -9,28 +9,30 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 function ButtonCache(c) {
-    c.images('cartoongame/imgs', ['blueorb.png', 'buttontest.png', 'activate.png', 'assist.png', 'bag1.png', 'bag2.png', 'bag3.png', 'build.png', 'defend.png', 'harvest.png', 'heal.png', 'leftarrow.png', 'moveback.png', 'movein.png', 'rightarrow.png', 'accept.png', 'redo.png']);
+    c.images('cartoongame/imgs', ['blueorb.png', 'buttontest.png', 'middle.png', 'activate.png', 'assist.png', 'bag1.png', 'bag2.png', 'bag3.png', 'build.png', 'defend.png', 'harvest.png', 'heal.png', 'leftarrow.png', 'moveback.png', 'movein.png', 'rightarrow.png', 'accept.png', 'redo.png']);
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 }
 var ActionEntry = (function () {
-    function ActionEntry(label, tooltip, pic) {
+    function ActionEntry(label, tooltip, pic, x, y) {
         this.label = label;
         this.tooltip = tooltip;
         this.pic = pic;
+        this.x = x;
+        this.y = y;
     }
     return ActionEntry;
 }());
 var ButtonCollection = (function () {
-    function ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit) {
-        var fx1 = 0, fx2 = 0, fy1 = 0, fy2 = 0, updateActive = false, startX = baseX, startY = baseY;
-        var w = apg.g.world;
+    function ButtonCollection(w, apg, size, setToolTip, setOption, buttonsInit) {
+        var fx1 = 0, fx2 = 0, fy1 = 0, fy2 = 0, updateActive = false;
         var big = this;
         this.selected = -1;
         this.update = function (active) {
             updateActive = active;
         };
-        var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
+        var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', .4, false);
         var fontName = "Caveat Brush";
+        var highlightTime = 0;
         function addOption(id, str, x, y, toolTip, pic) {
             var highlighted = false, highlightVertical = 56, highlightHorizontal = size * 16 / 40, x1 = x, x2 = x + 56, y1 = y - highlightVertical / 2 + 8, y2 = y + highlightVertical / 2 + 8, mul = 1, spd = .07 + .26 * Math.random(), lastHighlight = false, inputUsed = false;
             if (id == 0) {
@@ -39,11 +41,10 @@ var ButtonCollection = (function () {
                 fy1 = y1;
                 fy2 = y2;
             }
-            var textColor = { font: '18px ' + fontName, fill: '#222' };
             var bkg = new ent(w, x, y - 20, 'cartoongame/imgs/' + pic, {});
             if (str === '')
                 bkg.visible = false;
-            new enttx(w, 60, 50 + 20, "", textColor, {
+            new enttx(w, 60, 50 + 20, "", {}, {
                 upd: function (e) {
                     mul = mul * (1 - spd) + spd * (updateActive ? 1 : 0);
                     e.x = x + 10 + 10 * 1.5 * (1 - mul);
@@ -58,14 +59,6 @@ var ButtonCollection = (function () {
                     }
                     if (e.visible == false)
                         e.visible = true;
-                    if (highlighted) {
-                        if (!lastHighlight)
-                            e.addColor(highlightColor, 0);
-                    }
-                    else {
-                        if (lastHighlight)
-                            e.addColor(baseColor, 0);
-                    }
                     lastHighlight = highlighted;
                     if (apg.g.input.activePointer.isDown == false)
                         inputUsed = false;
@@ -77,6 +70,7 @@ var ButtonCollection = (function () {
                         highlighted = false;
                     if (highlighted) {
                         setToolTip(toolTip);
+                        highlightTime = 2;
                         fx1 = x1;
                         fx2 = x2;
                         fy1 = y1;
@@ -99,15 +93,7 @@ var ButtonCollection = (function () {
         }
         for (var k = 0; k < buttonsInit.length; k++) {
             var b = buttonsInit[k];
-            addOption(k, b.label, baseX, baseY, b.tooltip, b.pic + '.png');
-            baseX += xAdd;
-            baseY += yAdd;
-            if (k == 1 || k == 6 || k == 11)
-                baseY += 10;
-            if (k == 4 || k == 9) {
-                baseY = startY;
-                baseX += 60;
-            }
+            addOption(k, b.label, b.x, b.y, b.tooltip, b.pic + '.png');
         }
         var sysTick = 0;
         var lastMouseUpTime = -1000;
@@ -138,11 +124,14 @@ var ButtonCollection = (function () {
                         mouseDown = false;
                     }
                     if (e.alpha < .01) {
-                        if (e.visible == true)
+                        if (e.visible)
                             e.visible = false;
                     }
-                    if (e.visible == false)
+                    if (!e.visible)
                         e.visible = true;
+                    highlightTime--;
+                    if (highlightTime < 0)
+                        e.visible = false;
                     if (mul < .05)
                         return;
                     goalx = goalx * .6 + .4 * ((fx1 + fx2) / 2 - 16);
@@ -193,8 +182,10 @@ var ent = (function (_super) {
         }
         return _this;
     }
-    ent.prototype.update = function () { if (this.upd != null)
-        this.upd(this); };
+    ent.prototype.update = function () {
+        if (this.upd != null)
+            this.upd(this);
+    };
     Object.defineProperty(ent.prototype, "scalex", {
         set: function (value) { this.scale.x = value; },
         enumerable: true,
@@ -223,6 +214,11 @@ var ent = (function (_super) {
     ent.prototype.irotation = function (value, speed) { this.rotation = this.rotation * (1 - speed) + speed * value; return this; };
     Object.defineProperty(ent.prototype, "tex", {
         set: function (value) { this.loadTexture(value); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ent.prototype, "color", {
+        set: function (value) { this.tint = value; },
         enumerable: true,
         configurable: true
     });
@@ -280,6 +276,11 @@ var enttx = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(enttx.prototype, "verticalSpacing", {
+        set: function (value) { this.lineSpacing = value; },
+        enumerable: true,
+        configurable: true
+    });
     enttx.prototype.ix = function (value, speed) { this.x = this.x * (1 - speed) + speed * value; return this; };
     enttx.prototype.iy = function (value, speed) { this.y = this.y * (1 - speed) + speed * value; return this; };
     enttx.prototype.ixy = function (x, y, speed) { this.x = this.x * (1 - speed) + speed * x; this.y = this.y * (1 - speed) + speed * y; return this; };
@@ -295,7 +296,10 @@ var enttx = (function (_super) {
     return enttx;
 }(Phaser.Text));
 function CartoonAssetCache(c) {
-    c.images('cartoongame/imgs', ['ClientUI3.png']);
+    c.images('cartoongame/imgs', ['blueorb.png', 'flag1small.png', 'flag2small.png', 'littleperson.png', 'littleperson2.png', 'bodyleft.png', 'bodyright.png', 'bkg_guide4.png']);
+    c.images('cartoongame/imgs/buildings', ['building1.png', 'building2.png', 'building3.png', 'building4.png', 'building5.png', 'building6.png']);
+    c.images('cartoongame/imgs/heads', ['headbig1.png', 'headbig2.png', 'headbig3.png', 'headbig4.png', 'headbig5.png', 'headbig6.png', 'headbig7.png', 'headbig8.png', 'headbig9.png', 'headbig10.png', 'headbig11.png', 'headbig12.png', 'headbig13.png', 'headbig14.png', 'headbig15.png', 'headbig16.png', 'headbig17.png', 'headbig18.png', 'headbig19.png', 'headbig20.png']);
+    c.images('cartoongame/imgs/sheads', ['shead1.png', 'shead2.png', 'shead3.png', 'shead4.png', 'shead5.png', 'shead6.png', 'shead7.png', 'shead8.png', 'shead9.png', 'shead10.png', 'shead11.png', 'shead12.png', 'shead13.png', 'shead14.png', 'shead15.png', 'shead16.png', 'shead17.png', 'shead18.png', 'shead19.png', 'shead20.png']);
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
     c.json(['cartoongame/json/TestActions.json']);
     WaitingToJoinCache(c);
@@ -304,41 +308,47 @@ function CartoonAssetCache(c) {
     ButtonCache(c);
 }
 function MainInputTestSequence(apg) {
+    apg.ClearLocalMessages();
+    var roundLength = 45;
     for (var j = 1; j <= 10; j++) {
-        var roundTimeOffset = (j - 1) * 45;
-        for (var k = 0; k < 50; k += 5)
-            apg.WriteLocalAsServer(roundTimeOffset + k, "time", { round: j, time: 45 - k });
-        apg.WriteLocalAsServer(roundTimeOffset + 45, "submit", { choices: [] });
-        apg.WriteLocalAsServer(roundTimeOffset + 45, "pl", { nm: apg.playerName, hp: 10, money: 100 });
+        var roundTimeOffset = (j - 1) * roundLength;
+        for (var k = 0; k < roundLength + 5; k += 5)
+            apg.WriteLocalAsServer(roundTimeOffset + k, "time", { round: j, time: roundLength - k });
+        apg.WriteLocalAsServer(roundTimeOffset + roundLength, "submit", { choices: [] });
+        apg.WriteLocalAsServer(roundTimeOffset + roundLength, "pl", { nm: apg.playerName, st: [10, 10, -1, -1], rs: [0, 0, 0, 0, 0, 0, 0, 0] });
     }
 }
-function MainPlayerInput(apg) {
-    var w = apg.g.world;
+function MainPlayerInput(apg, id) {
+    var w = new Phaser.Group(apg.g);
+    apg.g.world.add(w);
     var fontName = "Caveat Brush";
     var actions = apg.JSONAssets['cartoongame/json/TestActions.json'];
     var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
     var warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
-    function makeButtonSet(baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit) {
-        return new ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
-    }
+    var cols = ['#369', '#693', '#936', '#963', '#639', '#396', '#888', '#933', '#393', '#339'];
+    var cols2 = [0x306090, 0x609030, 0x903060, 0x906030, 0x603090, 0x309060, 0x808080, 0x903030, 0x309030, 0x303090];
+    var headNum = id;
+    var nameColor = cols[(id - 1) % 10];
+    var bodyColor = cols2[(id - 1) % 10];
+    var team = id > 10 ? 2 : 1;
+    var actionChoices = [0, 0, 0];
     function addActions(srcChoices, setToolTip) {
-        var choiceLeft = 170, choiceUp = 130;
         var curCollection = 0;
         function add(choiceSet) {
             var id = curCollection;
             curCollection++;
-            return makeButtonSet(choiceLeft, choiceUp, 0, 60, 22, '#F00000', '#200000', setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
+            return new ButtonCollection(w, apg, 22, setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
         }
-        function st(name, tip, pic) { return new ActionEntry(name, tip, pic); }
         var o = [];
         for (var j = 0; j < actions.length; j++) {
             var p = [];
-            var j2 = j;
-            if (j2 == 1 || j2 == 2)
-                j2 = 0;
-            for (var k = 0; k < actions[j2].choices.length; k++) {
-                var r = actions[j2].choices[k];
-                p.push(st(r.name, r.tip, r.pic));
+            for (var k2 = 0; k2 < actions[j].choices.length; k2++) {
+                var k = k2;
+                var r = actions[j].choices[k];
+                var xv = r.x;
+                if (j == 0 && team == 2)
+                    xv = 320 - xv;
+                p.push(new ActionEntry(r.name, r.tip, r.pic, actions[j].x + xv, actions[j].y + r.y));
             }
             o.push(add(p));
         }
@@ -347,10 +357,30 @@ function MainPlayerInput(apg) {
     var timer = 0;
     var roundNumber = 1;
     var choices = [1, 1, 1, 1, 1, 1];
-    var myStats = { nm: "", hp: 3, money: 0 };
+    var myStats = { nm: "", hp: 5, loc: 3, row: 1 };
+    var locationChoice = -1;
+    var stanceChoice = -1;
+    function reset() {
+        choiceButtons[0].selected = locationChoice = -1;
+        choiceButtons[1].selected = stanceChoice = -1;
+        choiceButtons[2].selected = -1;
+        choiceButtons[3].selected = -1;
+        choiceButtons[4].selected = -1;
+        selected = 0;
+        actionChoices = [-1, -1, -1];
+        choices[0] = -1;
+        choices[1] = -1;
+        actionLabel.tx = "Action 1 / 3";
+        actionLabels[0].tx = "Location:";
+        actionLabels[1].tx = "Row:";
+        for (var j = 0; j < 3; j++) {
+            actionLabels[j + 2].tx = "Action " + (j + 1) + ": ";
+        }
+    }
     apg.ResetServerMessageRegistry()
         .Register("time", function (p) {
         timer = p.time;
+        console.log("time " + timer);
         roundNumber = p.round;
         if (timer < 6) {
             warningSound.play('', 0, 1 - (timer * 15) / 100);
@@ -360,54 +390,119 @@ function MainPlayerInput(apg) {
         if (p.nm != apg.playerName)
             return;
         myStats = p;
-        choiceButtons[4].selected = -1;
-        choiceButtons[3].selected = -1;
-        selected = 0;
-        for (var j = 0; j < 3; j++) {
-            actionLabels[j].tx = "Action " + (j + 1) + ": ";
-            choiceButtons[j].selected = -1;
-        }
+        if (p.row != -1)
+            lastStance = p.row;
+        if (p.loc != -1)
+            lastLocationPos = p.loc;
+        accepted = false;
+        w.x = 0;
+        reset();
     })
         .Register("submit", function (p) {
+        for (var k = 0; k < 3; k++)
+            choices[k + 2] = actionChoices[k];
+        if (choices[0] == -1)
+            choices[0] = Math.floor(Math.random() * 6);
+        if (choices[1] == -1)
+            choices[1] = Math.floor(Math.random() * 3);
+        if (choices[2] == -1)
+            choices[2] = Math.floor(Math.random() * 6);
+        if (choices[3] == -1)
+            choices[3] = Math.floor(Math.random() * 6);
+        if (choices[4] == -1)
+            choices[4] = Math.floor(Math.random() * 6);
         apg.WriteToServer("upd", { choices: choices });
     });
     var toolTip = "";
     function setToolTip(str) { toolTip = str; }
-    var tick = 0, choiceLeft = 50, choiceUp = 118, tabButtons, choiceButtons, actionLabels;
-    var labelColor = '#608080';
-    var roundLabel, toolTipLabel, nextChoiceLabel;
+    var tick = 0, tabButtons, choiceButtons, actionLabels;
+    var actionLabel;
     var lastRoundUpdate = 0;
+    var lastLocationPos = 2;
+    var lastStance = 0;
+    var headPic = 'cartoongame/imgs/heads/headbig' + headNum + '.png';
+    var sheadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
+    var bodyPic = 'cartoongame/imgs/body' + (team == 1 ? 'right' : 'left') + '.png';
     var selected = 0;
-    new ent(w, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
+    var accepted = false;
+    new ent(w, 0, 0, 'cartoongame/imgs/bkg_guide4.png', {
         upd: function (e) {
-            if (roundNumber != lastRoundUpdate) {
-                roundLabel.text = "Choices for Round " + roundNumber;
-                lastRoundUpdate = roundNumber;
-            }
-            for (var j = 0; j < choiceButtons.length; j++)
-                choiceButtons[j].update(selected == j);
-            if (selected == 3 && choiceButtons[selected].selected == 1) {
-                choiceButtons[selected].selected = -1;
-                selected = 0;
-                for (var j = 0; j < 3; j++) {
-                    actionLabels[j].tx = "Action " + (j + 1) + ": ";
-                    choiceButtons[j].selected = -1;
+            if (choiceButtons[0].selected != -1) {
+                if (locationChoice == -1) {
+                    var labels = ['Dance Club', 'Fishing Pond', 'Bed and Breakfast', 'Commuter Airport', 'Day Spa', 'Office Park'];
+                    actionLabels[0].tx = "Location: " + labels[choiceButtons[0].selected];
+                    ;
                 }
+                locationChoice = choiceButtons[0].selected;
             }
-            if (choiceButtons[selected].selected != -1) {
+            if (choiceButtons[1].selected != -1) {
+                if (stanceChoice == -1) {
+                    var labels = ['Back Row', 'Middle Row', 'Front Row'];
+                    actionLabels[1].tx = "Row: " + labels[choiceButtons[1].selected];
+                }
+                stanceChoice = choiceButtons[1].selected;
+            }
+            choiceButtons[0].update(locationChoice == -1);
+            choiceButtons[1].update(stanceChoice == -1);
+            choiceButtons[2].update(selected < 3);
+            choiceButtons[3].update(true);
+            choiceButtons[4].update(locationChoice > -1 && stanceChoice > -1 && selected >= 3);
+            if (choiceButtons[3].selected == 0) {
+                reset();
+            }
+            if (choiceButtons[4].selected != -1) {
+                w.x = 1000;
+                accepted = true;
+                choiceButtons[4].selected = -1;
+            }
+            if (choiceButtons[2].selected != -1) {
+                actionChoices[selected] = choiceButtons[2].selected;
                 if (selected < 3) {
-                    actionLabels[selected].tx = "Action " + (selected + 1) + ": " + choiceButtons[selected].selectedName;
+                    actionLabels[selected + 2].tx = "Action " + (selected + 1) + ": " + choiceButtons[2].selectedName;
                 }
+                if (selected < 2) {
+                    actionLabels[selected + 2].tx = "Action " + (selected + 1) + ": " + choiceButtons[2].selectedName;
+                    actionLabel.tx = "Action " + (selected + 2) + " / 3";
+                }
+                else {
+                    actionLabel.tx = "";
+                }
+                choiceButtons[2].selected = -1;
                 selected++;
             }
-            toolTipLabel.text = toolTip;
-            nextChoiceLabel.text = "" + timer;
         }
     });
-    roundLabel = new enttx(w, 220, 25, "Actions for Round ", { font: '54px ' + fontName, fill: '#688' });
-    toolTipLabel = new enttx(w, 420, 160, "ToolTip", { font: '20px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 330 });
-    nextChoiceLabel = new enttx(w, 650, 350, "", { font: '40px ' + fontName, fill: '#688' });
+    var roundColors = ['#468', '#846', '#684'];
+    new enttx(w, 260, 25, "Actions for ", { font: '36px ' + fontName, fill: '#444' });
+    new enttx(w, 420, 25, "Round ", { font: '36px ' + fontName, fill: roundColors[1] }, {
+        upd: function (e) {
+            if (roundNumber != lastRoundUpdate) {
+                e.text = "Round " + roundNumber;
+                e.fill = roundColors[(roundNumber - 1) % roundColors.length];
+                lastRoundUpdate = roundNumber;
+            }
+        }
+    });
+    new ent(w, 70, 10, headPic);
+    new enttx(w, 260, 140, "ToolTip", { font: '17px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 440 }, { upd: function (e) { e.text = toolTip; } });
+    new enttx(w, 650, 354, "", { font: '40px ' + fontName, fill: '#688' }, {
+        upd: function (e) {
+            e.text = "" + timer;
+            e.fill = roundColors[(roundNumber - 1) % roundColors.length];
+        }
+    });
     choiceButtons = addActions(choices, setToolTip);
+    new enttx(w, 250, 110, "Tip", { font: '18px ' + fontName, fill: '#433' }, { upd: function (e) { e.visible = (toolTip == "") ? false : true; } });
+    actionLabel = new enttx(w, 40, 110, "Action 1 / 3", { font: '24px ' + fontName, fill: '#A00' });
+    new enttx(w, 700, 110, "Row", { font: '24px ' + fontName, fill: '#A00' }, { upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
+    new ent(w, 740, 160 + lastStance * 64, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
+    new ent(w, 731, 146 + lastStance * 64, sheadPic, { upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
+    new enttx(w, 305, 260, "Location", { font: '24px ' + fontName, fill: '#A00' }, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
+    new ent(w, 270, 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png', { scalex: 1, scaley: 1, upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
+    new ent(w, 680, 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png', { scalex: 1, scaley: 1, upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
+    new ent(w, 330 + 64 * lastLocationPos, 16 + 285, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
+    new ent(w, 320 + 64 * lastLocationPos, 16 + 271, sheadPic, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
+    new enttx(w, 320 + 64 * lastLocationPos, 16 + 320, apg.playerName, { font: '12px ' + fontName, fill: nameColor }, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
     function category(msg, x, y) {
         new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
     }
@@ -418,28 +513,27 @@ function MainPlayerInput(apg) {
         }
         return labelEnts;
     }
-    category("RESOURCES", 40, 100);
-    inCategory(50, 120, 16, ["Health:", "Gold:", "Tacos:", "Silver:"]);
-    category("Actions", 40, 300);
-    actionLabels = inCategory(50, 320, 16, ["Action 1:", "Action 2:", "Action 3:"]);
-    if (apg.networkTestSequence) {
+    category("Stats", 144, 336);
+    inCategory(154, 360, 13, ["Health:", "Stamina:", "Gold:", "Tacos:", "Silver:"]);
+    category("Choices", 370, 336);
+    actionLabels = inCategory(380, 360, 13, ["Location:", "Row:", "Action 1:", "Action 2:", "Action 3:"]);
+    if (apg.networkTestSequence)
         MainInputTestSequence(apg);
-    }
 }
 function ShowSubmittedCache(c) {
     c.images('cartoongame/imgs', ['ClientUI3.png']);
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
     c.googleWebFonts(['Caveat Brush']);
 }
-function ShowSubmitted(apg, getRoundNumber) {
+function ShowSubmitted(apg, playerID, getRoundNumber) {
     var inputUsed = false;
-    var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
+    var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', .4, false);
     apg.ResetServerMessageRegistry();
     new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
         upd: function (e) {
             if (apg.g.input.activePointer.isDown && !inputUsed) {
                 inputUsed = true;
-                MainPlayerInput(apg);
+                MainPlayerInput(apg, playerID);
                 clickSound.play();
             }
         }
@@ -452,7 +546,8 @@ function JoinAcknowledgeCache(c) {
     c.googleWebFonts(['Caveat Brush']);
 }
 function WaitingForJoinAcknowledgeTestSequence(apg) {
-    apg.WriteLocalAsServer(1, "join", { name: apg.playerName });
+    apg.ClearLocalMessages();
+    apg.WriteLocalAsServer(.1, "join", { name: apg.playerName, playerID: 3 });
 }
 function WaitingForJoinAcknowledement(apg) {
     var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
@@ -463,7 +558,7 @@ function WaitingForJoinAcknowledement(apg) {
             return;
         endSubgame = true;
         endOfRoundSound.play();
-        MainPlayerInput(apg);
+        MainPlayerInput(apg, p.playerID);
     });
     if (apg.networkTestSequence) {
         WaitingForJoinAcknowledgeTestSequence(apg);
@@ -513,11 +608,20 @@ function WaitingToJoinCache(c) {
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
     c.googleWebFonts(['Caveat Brush']);
 }
+function WaitingToJoinTestSequence(apg) {
+    apg.ClearLocalMessages();
+}
 function WaitingToJoin(apg, previousMessage) {
     if (previousMessage === void 0) { previousMessage = ""; }
-    var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
+    var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', .4, false);
     apg.ResetServerMessageRegistry();
     var inputUsed = false, endSubgame = false;
+    var curRound = { round: 1, time: 45 };
+    apg.ResetServerMessageRegistry()
+        .Register("time", function (p) {
+    })
+        .Register("pl", function (p) {
+    });
     new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
         upd: function (e) {
             if (endSubgame) {
@@ -563,5 +667,7 @@ function WaitingToJoin(apg, previousMessage) {
                 e.visible = true;
         }
     });
+    if (apg.networkTestSequence)
+        WaitingToJoinTestSequence(apg);
 }
 //# sourceMappingURL=CartoonGame.js.map

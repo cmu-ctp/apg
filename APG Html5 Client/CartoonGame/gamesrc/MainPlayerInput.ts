@@ -1,5 +1,23 @@
-﻿function CartoonAssetCache(c: Cacher): void {
-	c.images('cartoongame/imgs', ['ClientUI3.png']);
+﻿// transitions between rounds - need to make all the parts of player update work.
+// how to play - where?
+// joining a game in progress versus a waiting game?
+// game over - get kicked out!
+// need to make (FAILED TO JOIN) not bust.
+// make action icons be write in streamer game
+
+// bit.ly link on screen between rounds
+// server game ending?
+// let players pick unalloced characters?
+// variable number of choices
+// on acceptance - shrink app
+// stat update.
+// player stat update effect?
+
+function CartoonAssetCache(c: Cacher): void {
+    c.images('cartoongame/imgs', ['blueorb.png', 'flag1small.png', 'flag2small.png', 'littleperson.png', 'littleperson2.png', 'bodyleft.png', 'bodyright.png', 'bkg_guide4.png']);
+    c.images('cartoongame/imgs/buildings', ['building1.png', 'building2.png', 'building3.png', 'building4.png', 'building5.png', 'building6.png']);
+    c.images('cartoongame/imgs/heads', ['headbig1.png', 'headbig2.png', 'headbig3.png', 'headbig4.png', 'headbig5.png', 'headbig6.png', 'headbig7.png', 'headbig8.png', 'headbig9.png', 'headbig10.png', 'headbig11.png', 'headbig12.png', 'headbig13.png', 'headbig14.png', 'headbig15.png', 'headbig16.png', 'headbig17.png', 'headbig18.png', 'headbig19.png', 'headbig20.png']);
+    c.images('cartoongame/imgs/sheads', ['shead1.png', 'shead2.png', 'shead3.png', 'shead4.png', 'shead5.png', 'shead6.png', 'shead7.png', 'shead8.png', 'shead9.png', 'shead10.png', 'shead11.png', 'shead12.png', 'shead13.png', 'shead14.png', 'shead15.png', 'shead16.png', 'shead17.png', 'shead18.png', 'shead19.png', 'shead20.png']);
 	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
 	c.json(['cartoongame/json/TestActions.json']);
 
@@ -8,12 +26,6 @@
 	ShowSubmittedCache(c);
 	ButtonCache(c);
 }
-
-// 3 actions.
-
-// left right up down
-// defend build activate assist harvest heal
-// up to 4 items
 
 interface RoundUpdate {
 	round: number;
@@ -29,21 +41,25 @@ interface SelectionParms {
 
 interface PlayerUpdate{
 	nm:string;
-	hp:number;
-	money:number;
+    st: number[];
+    rs: number[];
 }
 
 function MainInputTestSequence(apg: APGSys): void {
+    apg.ClearLocalMessages();
+    var roundLength: number = 45;
     for (var j = 1; j <= 10; j++ ){
-        var roundTimeOffset: number = (j - 1) * 45;
-        for (var k = 0; k < 50; k += 5)apg.WriteLocalAsServer<RoundUpdate>(roundTimeOffset + k, "time", { round: j, time: 45 - k });
-        apg.WriteLocalAsServer<SelectionParms>(roundTimeOffset + 45, "submit", { choices: [] });
-        apg.WriteLocalAsServer<PlayerUpdate>(roundTimeOffset + 45, "pl", { nm: apg.playerName, hp: 10, money: 100 });
+        var roundTimeOffset: number = (j - 1) * roundLength;
+        for (var k = 0; k < roundLength+5; k += 5)apg.WriteLocalAsServer<RoundUpdate>(roundTimeOffset + k, "time", { round: j, time: roundLength - k });
+        apg.WriteLocalAsServer<SelectionParms>(roundTimeOffset + roundLength, "submit", { choices: [] });
+        apg.WriteLocalAsServer<PlayerUpdate>(roundTimeOffset + roundLength, "pl", { nm: apg.playerName, st: [10,10,-1, -1], rs:[0,0,0,0,0,0,0,0] });
     }
 }
 
-function MainPlayerInput(apg: APGSys): void {
-	var w = apg.g.world;
+function MainPlayerInput(apg: APGSys, id:number ): void {
+    var w = new Phaser.Group(apg.g);
+    apg.g.world.add(w);
+    //var w = apg.g.world;
 
 	var fontName: string = "Caveat Brush";
 
@@ -52,27 +68,32 @@ function MainPlayerInput(apg: APGSys): void {
 	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
 	var warningSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
 
-	function makeButtonSet(baseX: number, baseY: number, xAdd: number, yAdd: number, size: number, highlightColor: string, baseColor: string, setToolTip: (str: string) => void, setOption: (val: number) => void, buttonsInit: ActionEntry[]): ButtonCollection {
-		return new ButtonCollection(apg, baseX, baseY, xAdd, yAdd, size, highlightColor, baseColor, setToolTip, setOption, buttonsInit);
-	}
-	function addActions(srcChoices: number[], setToolTip: (str: string) => void): ButtonCollection[] {
-		var choiceLeft: number = 170, choiceUp: number = 130;
+    var cols = ['#369', '#693', '#936', '#963', '#639', '#396', '#888', '#933', '#393', '#339'];
+    var cols2 = [0x306090, 0x609030, 0x903060, 0x906030, 0x603090, 0x309060, 0x808080, 0x903030, 0x309030, 0x303090];
+
+    var headNum: number = id;
+    var nameColor: string = cols[(id - 1) % 10];
+    var bodyColor: number = cols2[(id - 1) % 10];
+    var team: number = id > 10 ? 2 : 1;
+    var actionChoices = [0, 0, 0];
+
+    function addActions(srcChoices: number[], setToolTip: (str: string) => void): ButtonCollection[] {
 		var curCollection: number = 0;
 		function add(choiceSet: ActionEntry[]): ButtonCollection {
 			var id: number = curCollection;
-			curCollection++;
-			return makeButtonSet(choiceLeft, choiceUp, 0, 60, 22, '#F00000', '#200000', setToolTip, v => srcChoices[id] = v, choiceSet);
+            curCollection++;
+            return new ButtonCollection( w, apg, 22, setToolTip, v => srcChoices[id] = v, choiceSet);
 		}
-		function st(name: string, tip: string, pic:string ): ActionEntry { return new ActionEntry(name, tip, pic); }
 
 		var o = [];
 		for (var j = 0; j < actions.length; j++) {
 			var p = [];
-			var j2 = j;
-			if (j2 == 1 || j2 == 2) j2 = 0;
-			for (var k = 0; k < actions[j2].choices.length; k++) {
-				var r = actions[j2].choices[k];
-				p.push(st(r.name, r.tip, r.pic));
+            for (var k2 = 0; k2 < actions[j].choices.length; k2++) {
+                var k = k2;
+                var r = actions[j].choices[k];
+                var xv: number = r.x;
+                if (j == 0 && team == 2) xv = 320 - xv;
+                p.push(new ActionEntry(r.name, r.tip, r.pic, actions[j].x + xv, actions[j].y + r.y));
 			}
 			o.push(add(p));
 		}
@@ -82,93 +103,183 @@ function MainPlayerInput(apg: APGSys): void {
 	var timer: number = 0;
 	var roundNumber: number = 1;
 	var choices: number[] = [1, 1, 1, 1, 1, 1];
-	var myStats: PlayerUpdate = { nm: "", hp: 3, money: 0 };
+    var myStats: PlayerUpdate = { nm: "", hp: 5, loc:3,row:1 };
+
+    var locationChoice: number = -1;
+    var stanceChoice: number = -1;
+
+    function reset():void {
+        choiceButtons[0].selected = locationChoice = -1;
+        choiceButtons[1].selected = stanceChoice = -1;
+        choiceButtons[2].selected = -1;
+        choiceButtons[3].selected = -1;
+        choiceButtons[4].selected = -1;
+
+        selected = 0;
+
+        actionChoices = [-1, -1, -1];
+        choices[0] = -1;
+        choices[1] = -1;
+
+        actionLabel.tx = "Action 1 / 3";
+        actionLabels[0].tx = "Location:";
+        actionLabels[1].tx = "Row:";
+        for (var j: number = 0; j < 3; j++) {
+            actionLabels[j + 2].tx = "Action " + (j + 1) + ": ";
+        }
+    }
 
 	apg.ResetServerMessageRegistry()
 		.Register<RoundUpdate>("time", p => {
-			timer = p.time;
+            timer = p.time;
+            console.log("time " + timer);
 			roundNumber = p.round;
 			if (timer < 6) { warningSound.play('', 0, 1 - (timer * 15) / 100); }
 		})
 		.Register<PlayerUpdate>("pl", p => {
 			if (p.nm != apg.playerName) return;
-			myStats = p;
-
-			//choiceButtons[5].selected = -1;
-			choiceButtons[4].selected = -1;
-			choiceButtons[3].selected = -1;
-			selected = 0;
-			for (var j: number = 0; j < 3; j++) {
-				actionLabels[j].tx = "Action " + (j + 1) + ": ";
-				choiceButtons[j].selected = -1;
-			}
+            myStats = p;
+            if (p.row != -1) lastStance = p.row;
+            if (p.loc != -1) lastLocationPos = p.loc;
+            accepted = false;
+            w.x = 0;
+            reset();
 		})
-		.Register<SelectionParms>("submit", p => {
+        .Register<SelectionParms>("submit", p => {
+            for (var k = 0; k < 3; k++)choices[k + 2] = actionChoices[k];
+            if (choices[0] == - 1) choices[0] = Math.floor(Math.random() * 6);
+            if (choices[1] == - 1) choices[1] = Math.floor(Math.random() * 3);
+            if (choices[2] == - 1) choices[2] = Math.floor(Math.random() * 6);
+            if (choices[3] == - 1) choices[3] = Math.floor(Math.random() * 6);
+            if (choices[4] == - 1) choices[4] = Math.floor(Math.random() * 6);
+            //console.log("choices are " + choices);
 			apg.WriteToServer<SelectionParms>("upd", { choices: choices });
 		});
 
 	var toolTip: string = "";
 	function setToolTip(str: string): void { toolTip = str; }
 
-	var tick: number = 0, choiceLeft: number = 50, choiceUp: number = 118, tabButtons: ButtonCollection, choiceButtons: ButtonCollection[], actionLabels:enttx[];
-	var labelColor: string = '#608080';
-	var roundLabel: enttx, toolTipLabel: enttx, nextChoiceLabel: enttx;
+	var tick: number = 0, tabButtons: ButtonCollection, choiceButtons: ButtonCollection[], actionLabels:enttx[];
+    var actionLabel:enttx;
 	var lastRoundUpdate: number = 0;
 
-	var selected = 0;
+    var lastLocationPos: number = 2;
+    var lastStance: number = 0;
+    var headPic: string = 'cartoongame/imgs/heads/headbig'+headNum+'.png';
+    var sheadPic: string = 'cartoongame/imgs/sheads/shead' + headNum +'.png';
+    var bodyPic: string = 'cartoongame/imgs/body'+(team==1 ? 'right':'left')+'.png';
 
-	new ent(w, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
+    var selected = 0;
+
+    var accepted = false;
+
+    new ent(w, 0, 0, 'cartoongame/imgs/bkg_guide4.png', {
 		upd: e => {
-			if (roundNumber != lastRoundUpdate) {
-				roundLabel.text = "Choices for Round " + roundNumber;
-				lastRoundUpdate = roundNumber;
-			}
-			for (var j: number = 0; j < choiceButtons.length; j++)choiceButtons[j].update(selected == j);
-			if (selected == 3 && choiceButtons[selected].selected == 1) {
-				choiceButtons[selected].selected = -1;
-				selected = 0;
-				for (var j: number = 0; j < 3; j++) {
-					actionLabels[j].tx = "Action " + (j + 1) + ": ";
-					choiceButtons[j].selected = -1;
-				}
-			}
-			if (choiceButtons[selected].selected != -1) {
-				if (selected < 3) {
-					actionLabels[selected].tx = "Action " + (selected + 1) + ": " + choiceButtons[selected].selectedName;
-				}
+            if (choiceButtons[0].selected != -1) {
+                if (locationChoice == -1) {
+                    var labels = ['Dance Club','Fishing Pond','Bed and Breakfast','Commuter Airport','Day Spa','Office Park'];
+                    actionLabels[0].tx = "Location: " + labels[choiceButtons[0].selected];;
+                }
+                locationChoice = choiceButtons[0].selected;
+            }
+            if (choiceButtons[1].selected != -1) {
+                if (stanceChoice == -1) {
+                    var labels = ['Back Row', 'Middle Row', 'Front Row'];
+                    actionLabels[1].tx = "Row: " + labels[choiceButtons[1].selected];
+                }
+                stanceChoice = choiceButtons[1].selected;
+            }
+            choiceButtons[0].update( locationChoice == -1 );
+            choiceButtons[1].update(stanceChoice == -1);
+            choiceButtons[2].update(selected < 3);
+            choiceButtons[3].update(true);
+            choiceButtons[4].update(locationChoice > -1 && stanceChoice > -1 && selected >= 3 );
+
+            if (choiceButtons[3].selected == 0) {
+                reset();
+            }
+            if (choiceButtons[4].selected != -1) {
+                //w.destroy(true,true);
+                w.x = 1000;
+                accepted = true;
+                choiceButtons[4].selected = -1;
+            }
+            if (choiceButtons[2].selected != -1) {
+                // record choice here.
+                actionChoices[selected] = choiceButtons[2].selected;
+                if (selected < 3) {
+                    actionLabels[selected + 2].tx = "Action " + (selected + 1) + ": " + choiceButtons[2].selectedName;
+                }
+				if (selected < 2) {
+					actionLabels[selected+2].tx = "Action " + (selected + 1) + ": " + choiceButtons[2].selectedName;
+                    actionLabel.tx = "Action " + (selected + 2) + " / 3";
+                }
+                else {
+                    actionLabel.tx = "";
+                }
+                choiceButtons[2].selected = -1;
 				selected++;
 			}
-			toolTipLabel.text = toolTip;
-			nextChoiceLabel.text = "" + timer;
 		}
-	});
-	roundLabel = new enttx(w, 220, 25, "Actions for Round ", { font: '54px ' + fontName, fill: '#688' });
-	toolTipLabel = new enttx(w, 420, 160, "ToolTip", { font: '20px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 330 });
-	nextChoiceLabel = new enttx(w, 650, 350, "", { font: '40px ' + fontName, fill: '#688' });
-	choiceButtons = addActions(choices, setToolTip);
+    });
 
-	function category(msg: string, x: number, y: number ):void {
-		new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
-	}
+    // 4->.266f, 6->.4f, 8->.533f
+    var roundColors = ['#468', '#846', '#684'];
 
-	function inCategory(x: number, y: number, add: number, labels: string[]): enttx[] {
-		var labelEnts: enttx[] = [];
-		for (var k = 0; k < labels.length; k++) {
-			labelEnts.push( new enttx(w, x, y + k*add, labels[k], { font: '14px ' + fontName, fill: '#211' }) );
-		}
-		return labelEnts;
-	}
+    new enttx(w, 260, 25, "Actions for ", { font: '36px ' + fontName, fill: '#444' });
+    new enttx(w, 420, 25, "Round ", { font: '36px ' + fontName, fill: roundColors[1] }, {
+        upd: e => {
+            if (roundNumber != lastRoundUpdate) {
+                e.text = "Round " + roundNumber;
+                e.fill = roundColors[(roundNumber-1) % roundColors.length];
+                lastRoundUpdate = roundNumber;
+            }
+        }
+    });
 
-	category("RESOURCES", 40, 100);
-	inCategory(50, 120, 16, ["Health:", "Gold:", "Tacos:", "Silver:"]);
+    new ent(w, 70, 10, headPic);
 
-	/*category("STATS", 40, 120 + 64 + 8);
-	inCategory(50, 120 + 64 + 8+20, 16, ["Defense:", "Action+", "Heal+", "Item Get+", "Work+"]);
-	*/
-	category("Actions", 40, 300);
-    actionLabels = inCategory(50, 320, 16, ["Action 1:", "Action 2:", "Action 3:"]);
+    new enttx(w, 260, 140, "ToolTip", { font: '17px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 440 }, { upd: e => { e.text = toolTip; } });
+    new enttx(w, 650, 354, "", { font: '40px ' + fontName, fill: '#688' }, {
+        upd: e => {
+            e.text = "" + timer;
+            e.fill = roundColors[(roundNumber - 1) % roundColors.length];
+        }
+    });
+    choiceButtons = addActions(choices, setToolTip);
 
-    if (apg.networkTestSequence) {
-        MainInputTestSequence( apg );
+    new enttx(w, 250, 110, "Tip", { font: '18px ' + fontName, fill: '#433' }, {upd: e => {e.visible = (toolTip == "") ? false : true;}});
+
+    actionLabel = new enttx(w, 40, 110, "Action 1 / 3", { font: '24px ' + fontName, fill: '#A00' });
+    
+    new enttx(w, 700, 110, "Row", { font: '24px ' + fontName, fill: '#A00' }, { upd: e => { e.visible = choiceButtons[1].selected == -1 } });
+    new ent(w, 740, 160 + lastStance * 64, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: e => { e.visible = choiceButtons[1].selected == -1 } });
+    new ent(w, 731, 146 + lastStance * 64, sheadPic, { upd: e => { e.visible = choiceButtons[1].selected == -1 } });
+
+    new enttx(w, 305, 260, "Location", { font: '24px ' + fontName, fill: '#A00' }, { upd: e => { e.visible = choiceButtons[0].selected == -1 } });
+    new ent(w, 270, 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png', { scalex: 1, scaley: 1, upd: e => { e.visible = choiceButtons[0].selected == -1 } });
+    new ent(w, 680, 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2)+'small.png', { scalex: 1, scaley: 1, upd: e => { e.visible = choiceButtons[0].selected == -1 } });
+    new ent(w, 330 + 64 * lastLocationPos, 16+285, bodyPic, { scalex: 1, scaley: 1, color:bodyColor, upd: e => { e.visible = choiceButtons[0].selected == -1 } });
+    new ent(w, 320 + 64 * lastLocationPos, 16 +271, sheadPic, { upd: e => { e.visible = choiceButtons[0].selected == -1 } });
+    new enttx(w, 320 + 64 * lastLocationPos, 16 +320, apg.playerName, { font: '12px ' + fontName, fill: nameColor }, { upd: e => { e.visible = choiceButtons[0].selected == -1 } });
+
+    function category(msg: string, x: number, y: number): void {
+        new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
     }
+
+    function inCategory(x: number, y: number, add: number, labels: string[]): enttx[] {
+        var labelEnts: enttx[] = [];
+        for (var k = 0; k < labels.length; k++) {
+            labelEnts.push(new enttx(w, x, y + k * add, labels[k], { font: '14px ' + fontName, fill: '#211' }));
+        }
+        return labelEnts;
+    }
+
+    category("Stats", 144, 336);
+	inCategory(154, 360, 13, ["Health:", "Stamina:", "Gold:", "Tacos:", "Silver:"]);
+
+    category("Choices", 370, 336);
+    actionLabels = inCategory(380, 360, 13, ["Location:","Row:","Action 1:", "Action 2:", "Action 3:"]);
+
+    if (apg.networkTestSequence) MainInputTestSequence( apg );
 }

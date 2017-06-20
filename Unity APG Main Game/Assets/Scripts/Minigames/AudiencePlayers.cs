@@ -73,13 +73,6 @@ using APG;
 
 public class AudiencePlayerSys {
 
-	enum BuddyInputs { MoveLeft, Empty1, Assist, Build, Harvest, Activate, Heal, MoveBack, MoveForward, Defend, Item1, Item2, Item3, Item4, MoveRight };
-
-	enum BuddyChoice { MoveTo = 0, Action, Stance, Item, Equip, END };
-	enum BuddyMoveTo { StayPut = 0, Foundry, Hospital, Bank, Airport, Foodcart, SuperMarket, END };
-	enum BuddyAction { Defend = 0, Harvest, Activate, ChargeUp, Assist, Hide, Give, END };
-	enum BuddyStance { Industrious = 0, Reckless, Defensive, Soothing, Acquisitive, Helpful, END };
-
 	public int team1Lives = 0;
 	public int team2Lives = 0;
 
@@ -95,8 +88,8 @@ public class AudiencePlayerSys {
 
 	void RunDebug(PlayerSet playerSet, APGSys apg) {
 		var names = new string[] { "Taki", "Fin", "Castral Fex", "FireTiger", "Ribaeld", "Big Tong", "Gatekeeper", "KittyKat", "Purifier", "Flaer", "Soothsayer13", "xxxBarryxxx", "PlasterPant", "Kokirei", "Fighter", "Seer", "Paninea", "Graethei", "Magesty", "Revolution" };
-		//for(var k = 0; k < 20; k++) playerSet.AddPlayer( names[k] );
-		for(var k = 0; k < 10; k++) playerSet.AddPlayer( names[k] );
+		for(var k = 0; k < 20; k++) playerSet.AddPlayer( names[k] );
+		//for(var k = 0; k < 10; k++) playerSet.AddPlayer( names[k] );
 		var tick=0;
 		new ent( gameSys ) {
 			update = e => {
@@ -104,8 +97,7 @@ public class AudiencePlayerSys {
 				if( tick > 60 * 7 ) {
 					tick = 0;
 					for( var k = 0; k < names.Length; k++ ) {
-						//apg.WriteLocal( names[k], "upd", new APGBasicGameLogic.SelectionParms{ choices= new int[] {rd.i(0,6),rd.i(0,5),rd.i(0,5),4,5, 6 } } );
-						apg.WriteLocal( names[k], "upd", new APGBasicGameLogic.SelectionParms{ choices= new int[] {rd.i(0,14),rd.i(0,14),rd.i(0,14), 1, 1, 1 } } );
+						apg.WriteLocal( names[k], "upd", new APGBasicGameLogic.SelectionParms{ choices= new int[] {rd.i(0,6),rd.i(0,3),rd.i(0,6), rd.i(0, 7), rd.i(0, 6), 1 } } );
 					}
 				}
 			}
@@ -144,93 +136,102 @@ public class AudiencePlayerSys {
 	[Serializable]
 	struct PlayerUpdate{
 		public string nm;
-		public int hp;
-		public int money;
+		public int[] st;
+		public int[] rs;
 	}
 
 	void Buddies(PlayerSet playerEvents, PlayerSys playerSys) {
 
-		var actions = new string[]{"Defend", "Build", "Harvest", "Activate", "Assist", "Hide", "???" };
-		var stances = new string[]{"Industrious", "Aggressive", "Defensive", "Soothing", "Acquisitive", "Stylish" };
-		var actionColors = new Color[]{ new Color(.7f,.7f,1f,1f),new Color(1f,1f,.7f,1f),new Color(.7f,1f,.7f,1f),new Color(1f,.7f,.7f,1f),new Color(.7f,1f,1f,1f),new Color(1f,1f,1f,1f),new Color(1f,1f,1f,1f) };
-		var stanceColors = new Color[]{new Color(1f,1f,.7f,1f),new Color(1f,.5f,.5f,1f),new Color(.5f,.5f,1f,1f),new Color(.7f,1f,1f,1f),new Color(.7f,1f,.7f,1f),new Color(.7f,.7f,.7f,1f) };
-		var actionsZ = new float[]{-.5f, .5f, .5f, .5f, 0f, .7f, 0f };
-
 		var bsrc = new ent(gameSys) { name="buddySet" };
-		for( var k2 = 0; k2 < 20; k2++ ) {
+
+		var nameColors = new Color[] { new Color(.2f, .4f, .6f, 1f), new Color(.4f, .6f, .2f, 1f), new Color(.6f, .2f, .4f, 1f), new Color(.6f, .4f, .2f, 1f), new Color(.4f, .2f, .6f, 1f), new Color(.2f, .6f, .4f, 1f), new Color(.533f, .533f, .533f, 1f), new Color(.6f, .2f, .2f, 1f), new Color(.2f, .6f, .2f, 1f), new Color(.2f, .2f, .6f, 1f) };
+
+		for ( var k2 = 0; k2 < 20; k2++ ) {
 
 			var k = Mathf.Floor( k2 / 2 ) + (k2%2 == 1 ? 10:0);
 
 			bool inUse = false;
-			var nameColor = new Color( rd.f(0,.5f), rd.f(0,.5f), rd.f(0,.5f), 1 );
+			var nameColor = nameColors[(int)k % 10];
 
 			var label = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=nameColor };
-			var labelBack = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=new Color(0,0,0,1), children = new List<ent> { label }};
+			var action1 = new ent(gameSys) { sprite=players.actions[0], pos = new v3(0, 0, 0),scale=.5f, active=false};
+			var action2 = new ent(gameSys) { sprite = players.actions[1], pos = new v3(0, 0, 0), scale = .5f, active = false };
+			var action3 = new ent(gameSys) { sprite = players.actions[2], pos = new v3(0, 0, 0), scale = .5f, active = false };
+			var healthBar = new ent(gameSys) { sprite = players.healthBar, pos = new v3(0, 0, 0), scale=.07f, color=new Color(.33f,0,0, .5f) };
+			var staminaBar = new ent(gameSys) { sprite = players.staminaBar, pos = new v3(0, 0, 0), scale = .07f, color=new Color(.33f,.33f,.15f,.5f), active = false };
+			var labelBack = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=new Color(0,0,0,1), children = new List<ent> { label, action1, action2, action3, healthBar, staminaBar }};
 
-			var stance = new ent(gameSys) { pos = new v3(0, 0, 0), sprite = players.stances[2], color = new Color(1,1,1,0) };
-
-			var healthLabel = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=new Color(.5f,0,0,1) };
-
-			var actionLabel = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="Defend", textColor=new Color(0,0,0,0) };
+			var head = new ent(gameSys) { pos = new v3(0, 0, 0), sprite = players.heads[(int)k], color = new Color(1, 1, 1, 1) };
 
 			var parms = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 			var bufferedParms = new int[] { 0, 0, 0, 0, 0, 0, 0 };
-			var posx = (k<10) ? -10 + 9*(k/10f) : 10 - 9*((k-10)/10f);
+			var posx = (k<10) ? -9.5f + 8.5f*((k%6)/6f) : 9.5f - 8.5f*(((k-10)%6)/6f);
+			var goalz = (k<6 || (k>9&&k<16))?-.4f:.4f;
 
 			var team = (k < 10 ) ? 1:2;
 
 			ent pl = null;
 
-			var buildingGoal = 0;
-			var goalx = 0f;
-			var goalz = rd.f(.7f);
-			var stanceName = "";
-			var actionColor = new Color(1,1,1,1);
-			var stanceColor = new Color(1,1,1,1);
+			var buildingGoal = (int)((k < 10) ? (k % 6) : (k - 10) % 6);
+			var goalx = posx;
+			var goalLayer = (k < 6 || (k > 9 && k < 16)) ? 0 : 2;
+			var action1id = 0; var action2id = 0; var action3id = 0;
+			var stamina = 10;
 
 			playerEvents.RegisterHandler(new AudiencePlayerEventsHandler {
 				onJoin = name => {
 					label.text = name;
 					labelBack.text = name;
-					inUse = true;
-					actionLabel.textColor=new Color(0,0,0,.8f);
-					stance.color=new Color(1,1,1,.8f); },
+					action1.active = true; action2.active = true; action3.active = true; staminaBar.active = true;
+					healthBar.pos = new v3(-.5f, -5f, -.1f);
+					inUse = true;},
+				getName = () => label.text,
+				getHealth = () => pl.health,
 				onInput = inputs => { bufferedParms = inputs; },
 				getGoalBuilding = () => buildingGoal + ( team == 2 ? 6:0 ),
-				setGoalX = x => goalx = x,
-				getEndOfRoundInfo = () => new PlayerEndOfRoundInfo { pos = pl.pos, nameColor = nameColor, name = label.text, actionName = actionLabel.text, stanceIcon = stance.sprite, stanceName=stanceName, stanceColor=stanceColor, actionColor=actionColor },
+				getLayer = () => goalLayer,
+				setBuilding = building => { buildingGoal = building; goalx = (-9.5f + 8.5f * ((building % 6) / 6f)) * ((building < 6) ? 1 : -1); },
+				setGoalLayer = layer => { goalLayer = layer;  goalz = -.4f + .4f * layer; },
+				getEndOfRoundInfo = () => new PlayerEndOfRoundInfo { pos = pl.pos, nameColor = nameColor, name = label.text, actionName = "", stanceIcon = null, stanceName="", stanceColor=new Color(1,1,1,1), actionColor= new Color(1, 1, 1, 1) },
 				onRoundEnd = () => {
 					parms = bufferedParms;
-					/*if( parms[(int)BuddyChoice.MoveTo] != (int)BuddyMoveTo.StayPut ){
-						buildingGoal =  parms[(int)BuddyChoice.MoveTo] - 1;
-					}
-					goalz = actionsZ[parms[(int)BuddyChoice.Action]] +  rd.f(.3f);
-					stance.sprite = players.stances[parms[(int)BuddyChoice.Stance]];
-					stanceName = stances[parms[(int)BuddyChoice.Stance]];
-					actionLabel.text = actions[parms[(int)BuddyChoice.Action]];
-					stanceColor = stanceColors[parms[(int)BuddyChoice.Stance]];
-					actionColor = actionColors[parms[(int)BuddyChoice.Action]];
-
-					if( pl.health <= 0 ) {
-						stanceName = "Unhappy";
-						actionLabel.text = "Demised";
-						stanceColor = new Color( .5f, 0, 0, .5f );
-						actionColor = new Color( .5f, 0, 0, .5f );
-					}*/
+					parms[0] = nm.Between(0, parms[0], 5);
+					parms[1] = nm.Between(0, parms[1], 2);
+					parms[2] = nm.Between(0, parms[2], 8);
+					parms[3] = nm.Between(0, parms[3], 8);
+					parms[4] = nm.Between(0, parms[4], 8);
+					buildingGoal =  parms[0];
+					goalLayer = parms[1];
+					action1.sprite = players.actions[parms[2]];
+					action2.sprite = players.actions[parms[3]];
+					action3.sprite = players.actions[parms[4]];
+					action1id = parms[2];
+					action2id = parms[3];
+					action3id = parms[4];
 				},
-				updateToClient = ( apg, userName ) => apg.WriteToClients( "pl", new PlayerUpdate { nm = userName, hp = pl.health, money=0 } )
+				updateToClient = ( apg, userName ) => {
+					Debug.Log("Writing client " + userName);
+					apg.WriteToClients("pl", new PlayerUpdate { nm = userName, st=new int[] { pl.health, stamina, buildingGoal, goalLayer }, rs=new int[] { 0,0,0,0,0,0,0,0} });
+					}
 			});
 
 			
 			var buddyID = k;
 			var tick = 0;
 			var spd = 0f;
-			
+
+			var nameFlash = 0f;
+			var nameFlashColor = new Color(0, 0, 0, 0);
+
+			var healthRatio = 1f;
+			var goalHealthRatio = 1f;
+
 			pl = new ent(gameSys) {
-				sprite = rd.Sprite(players.friends), pos = new v3(posx, -5, goalz), scale = .3f * 4.5f, health = 3, children = new List<ent> { labelBack, stance, healthLabel, actionLabel }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt,
-					name = "buddy"+k, inGrid=true, parent = bsrc, shadow=gameSys.Shadow(players.shadow, null, 1, .4f, 0 ),
+				sprite = players.anims[14], pos = new v3(posx, -5, goalz), scale = .3f*.3f * 4.5f, health = 5, children = new List<ent> { labelBack, head }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt,
+					name = "buddy"+k, inGrid=true, parent = bsrc, shadow=gameSys.Shadow(players.shadow, null, 1, .4f, 0 ), color= nameColors[(int)k % 10],
 				onHurt = (e, src, dmg) => {
 					e.health--;
+					goalHealthRatio = (e.health / 5f);
 					if( team == 1 ) {
 						team1Health--;
 					}
@@ -238,9 +239,10 @@ public class AudiencePlayerSys {
 						team2Health--;
 					}
 					if(e.health > 0) {
-						healthLabel.text = ""+Mathf.Floor(e.health / 3f * 100 )+"%";
 						gameSys.Sound(players.hurtSound, 1);
 						React(e.pos + new v3(0, 0, -.2f), players.owMsg);
+						nameFlash = 1f;
+						nameFlashColor = new Color(1, 0, 0, 1);
 					}
 					else {
 						gameSys.Sound(players.dieSound, 1);
@@ -248,16 +250,43 @@ public class AudiencePlayerSys {
 						else team1Lives--;
 						label.text ="";
 						labelBack.text ="";
-						healthLabel.text = "";
-						actionLabel.text = "";
-						actionLabel.textColor = new Color(0,0,0,0);
-						stance.color = new Color(0,0,0,0);
+						action1.active = action2.active = action3.active = healthBar.active = staminaBar.active = false;
 						Ghost(e.pos, e.leader, team );
-						React(e.pos + new v3(0, 0, -.2f), players.ughMsg); e.color = new Color(1, 0, 0, .2f);
+						React(e.pos + new v3(0, 0, -.2f), players.ughMsg);
+						e.color = new Color(1, 0, 0, .2f);
+						head.color = new Color(1, 0, 0, .2f);
 					}
 				},
 				update = e => {
 					if(e.health <= 0) return;
+
+					if( healthRatio <= .25f) {
+						if( tick % 30 == 0) {
+							healthBar.color = new Color(1, 0, 0, 1);
+						}
+						if (tick % 30 == 5) {
+							healthBar.color = new Color(.33f, 0, 0, .5f);
+						}
+					}
+					if (healthRatio <= .5f) {
+						if (tick % 120 == 0) {
+							healthBar.color = new Color(1, 0, 0, 1);
+						}
+						if (tick % 120 == 5) {
+							healthBar.color = new Color(.33f, 0, 0, .5f);
+						}
+					}
+
+					if ( Math.Abs( healthRatio - goalHealthRatio ) > .01f) {
+						healthRatio = healthRatio * .93f + .07f * goalHealthRatio;
+						healthBar.scale3 = new v3(1.75f * healthRatio, 1.75f, .07f);
+					}
+
+					if( nameFlash > 0.01f) {
+						nameFlash *= .99f;
+						label.textColor = new Color( nameFlashColor.r * nameFlash + (1-nameFlash) * nameColor.r, nameFlashColor.g * nameFlash + (1 - nameFlash) * nameColor.g, nameFlashColor.b * nameFlash + (1 - nameFlash) * nameColor.b, 1 );
+						label.scale = 1 + nameFlash*.25f;
+					}
 
 					if( parms == null || parms.Length < 4 ) {
 						return;
@@ -266,24 +295,23 @@ public class AudiencePlayerSys {
 
 					gameSys.grid.Find(e.pos - new v3(0,.7f,0), 1, e, (me, targ) => { targ.buddyTouch(targ, me, new TouchInfo {strength=1 });});
 
-					if(parms[(int)BuddyChoice.MoveTo] != (int)BuddyMoveTo.StayPut) {
-						var goalposx = goalx;
-						var goal = new v3(goalposx, -5f, goalz);
-						var immediateGoal = e.pos * .99f + .01f * goal;
-						var dir = goal-e.pos;
-						e.flipped = ( dir.x < 0 ) ? true:false;
-						if(dir.magnitude > .4f) {
-							nm.ease( ref spd, .017f * 3, .07f );
-						}
-						else if(dir.magnitude < .3f) {
-							nm.ease( ref spd, 0, .05f );
-						}
-						e.MoveBy(dir.normalized * spd );
-						if(dir.magnitude > .1f) {
-							e.ang = spd * Mathf.Cos( tick * .1f );
-						}
-						else {
-						}
+					var goalposx = goalx;
+					var goal = new v3(goalposx, -5f, goalz);
+					var dir = goal-e.pos;
+					if (dir.magnitude > .2f) {
+						e.flipped = (dir.x < 0) ? true : false;
+					}
+					if(dir.magnitude > .4f) {
+						nm.ease( ref spd, .017f * 3, .07f );
+					}
+					else if(dir.magnitude < .3f) {
+						nm.ease( ref spd, 0, .05f );
+						e.flipped = team==1 ? false : true;
+					}
+					e.MoveBy(dir.normalized * spd );
+					labelBack.pos = new v3(labelBack.pos.x, -1.2f + (-.4f+e.pos.z)*1.3f, labelBack.pos.z);
+					if (dir.magnitude > .1f) {
+						e.ang = spd * Mathf.Cos( tick * .1f );
 					}
 				}
 			};
@@ -298,18 +326,18 @@ public class AudiencePlayerSys {
 				team2MaxHealth += pl.health;
 			}
 
-			labelBack.pos = new v3(0,-.4f, -.2f );
-			label.pos = new v3(-.5f,.5f,-.01f);
+			labelBack.pos = new v3(0,-1.4f, -.2f );
+			labelBack.scale *= .8f;
+			label.pos = new v3(-.5f,.5f,-.1f);
+			healthBar.pos = new v3(-.5f, 15f, -.1f);
+			staminaBar.pos = new v3(-.5f, -7f, -.1f);
+			action1.pos = new v3(17f, 0f, -.1f);
+			action2.pos = new v3(17f, -4f, -.1f);
+			action3.pos = new v3(17f, -8f, -.1f);
 
-			stance.pos = new v3(.2f, -.6f, -.2f );
-			stance.scale = .15f;
-
-			healthLabel.pos = new v3(0f, 0f, -.2f );
-			healthLabel.scale = .02f;
-
-			actionLabel.pos = new v3(-.2f, -.6f, -.2f );
-			actionLabel.scale = .02f;
-
+			head.pos = new v3(0f, 1.1f, -.001f);
+			head.scale = .5f/.3f;
+			if (k > 10) head.flipped = true;
 		}
 	}
 }

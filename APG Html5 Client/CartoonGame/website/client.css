@@ -38,10 +38,10 @@ body {
 }
 
 .chat {
-    background:#0;
-    color:white;
-    width : 400px;
-    height : 720px;
+    background: #0;
+    color: white;
+    width: 400px;
+    height: 720px;
     position: absolute;
     transform: translate(1024px, 0px);
 }

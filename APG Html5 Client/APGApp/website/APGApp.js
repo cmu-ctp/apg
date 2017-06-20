@@ -537,11 +537,11 @@ function setTwitchIFrames(isMobile, chatIRCChannelName, chatWidth, chatHeight, v
     iframe.setAttribute("height", "" + '' + videoHeight);
     document.getElementById("TwitchVideo").appendChild(iframe);
 }
-function AddPreloader(phaserDivName) {
+function AddPreloader(phaserDivName, gameName) {
     var tick = 0;
     var preloaderFunction = setInterval(function () {
         tick++;
-        var s = "Please wait while the audience app loads ";
+        var s = "Please wait while " + gameName + " loads ";
         for (var k = 0; k < tick; k++) {
             s += '.';
         }
@@ -664,7 +664,7 @@ function launchAPGClient(devParms, appParms) {
     }
     var phaserDivName = (isMobile ? "APGInputWidgetMobile" : "APGInputWidget");
     document.getElementById(phaserDivName).style.display = 'none';
-    var ClearOnLoadEnd = AddPreloader(phaserDivName);
+    var ClearOnLoadEnd = AddPreloader(phaserDivName, appParms.gameName);
     if (!isMobile && appParms.allowClientReposition) {
         AddAppReposition("APGInputWidget", appParms.gameWidth);
     }

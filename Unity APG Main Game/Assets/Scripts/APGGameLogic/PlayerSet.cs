@@ -73,6 +73,9 @@ namespace APG {
 			activePlayers++;
 			return true;
 		}
+		public int GetPlayerID( string user) {
+			return playerMap[user];
+		}
 		public bool SetPlayerInput( string user, int[] parms ) {
 			if(playerMap.ContainsKey(user) == false) return false;
 
@@ -104,22 +107,60 @@ namespace APG {
 		}
 
 		public void SetGoalPositions() {
-			var spots = new List<AudiencePlayerEventsHandler>[12];  // fixme.  Don't hardcode.
-			for( var k = 0; k < 12; k++ ) {
-				spots[k] = new List<AudiencePlayerEventsHandler>();
-			}
-			for( var k = 0; k < playerNames.Count; k++ ) {
-				spots[ playerEvents[k].getGoalBuilding() ].Add( playerEvents[k] );
-			}
-			for( var k = 0; k < spots.Length; k++ ) {
-
-				var goalposx = (-10 + 9 * ((k%6)/6f)) * ((k < 6) ? 1 : -1);
-
-				for( var j = 0; j < spots[k].Count; j++ ) {
-					var rat = 2*(float)j/(spots[k].Count -1 ) - 1;
-					spots[k][j].setGoalX( goalposx + rat * .4f );
+			var allocs = new AudiencePlayerEventsHandler[12, 3];
+			for (var k = 0; k < 12; k++) {
+				for (var j = 0; j < 3; j++) {
+					allocs[k, j] = null;
 				}
 			}
+			var offset = rd.i(0, 1000);
+			var blocked = new List<AudiencePlayerEventsHandler>();
+			for (var k2 = 0; k2 < playerNames.Count; k2++) {
+				var k = (k2 + offset) % playerNames.Count;
+				if (playerEvents[k].getHealth() <= 0) continue;
+				int building = playerEvents[k].getGoalBuilding();
+				int layer = playerEvents[k].getLayer();
+				if (allocs[building, layer] == null) allocs[building, layer] = playerEvents[k];
+				else {
+					Debug.Log("Blocked at " + building + " " + layer + " - " + playerNames[k]);
+					blocked.Add(playerEvents[k]);
+				}
+			}
+			var reallyBlocked = new List<AudiencePlayerEventsHandler>();
+			for( var k = 0; k < blocked.Count; k++) {
+				int building = blocked[k].getGoalBuilding();
+				int layer = blocked[k].getLayer();
+				var building2 = (building) % 6;
+				if (layer > 0 && allocs[building, layer - 1] == null) allocs[building, layer - 1] = blocked[k];
+				else if (layer < 2 && allocs[building, layer + 1] == null) allocs[building, layer + 1] = blocked[k];
+				else if (building2 > 0 && allocs[building - 1, layer] == null) allocs[building - 1, layer] = blocked[k];
+				else if (building2 < 5 && allocs[building + 1, layer] == null) allocs[building + 1, layer] = blocked[k];
+				else if (building2 > 0 && layer > 0 && allocs[building - 1, layer - 1] == null) allocs[building - 1, layer - 1] = blocked[k];
+				else if (building2 < 5 && layer > 0 && allocs[building + 1, layer - 1] == null) allocs[building + 1, layer - 1] = blocked[k];
+				else if (building2 > 0 && layer < 2 && allocs[building - 1, layer + 1] == null) allocs[building - 1, layer + 1] = blocked[k];
+				else if (building2 < 5 && layer < 2 && allocs[building + 1, layer + 1] == null) allocs[building + 1, layer + 1] = blocked[k];
+				else {
+					reallyBlocked.Add(blocked[k]);
+				}
+			}
+			if (reallyBlocked.Count > 0) {
+				for( var k = 0; k < reallyBlocked.Count; k++) {
+					int baseVal = blocked[k].getGoalBuilding() < 6 ? 0:6;
+					bool found = false;
+					for( var l = 0; l < 3 && !found; l++ )
+						for( var j = 0; j < 6 && !found; j++ )
+							if(allocs[j + baseVal, l] == null) {
+								found = true;
+								allocs[j + baseVal, l] = reallyBlocked[k];
+							}
+				}
+			}
+			for( var k = 0; k < 12; k++ )
+				for( var l = 0; l < 3; l++)
+					if( allocs[k,l] != null) {
+						allocs[k, l].setBuilding(k);
+						allocs[k, l].setGoalLayer(l);
+					}
 		}
 	}
 }

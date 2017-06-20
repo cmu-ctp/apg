@@ -7,11 +7,31 @@
 interface EmptyParms{
 }
 
+function WaitingToJoinTestSequence(apg: APGSys): void {
+    apg.ClearLocalMessages();
+    /*var roundLength: number = 15;
+    for (var j = 1; j <= 10; j++) {
+        var roundTimeOffset: number = (j - 1) * roundLength;
+        for (var k = 0; k < roundLength + 5; k += 5)apg.WriteLocalAsServer<RoundUpdate>(roundTimeOffset + k, "time", { round: j, time: roundLength - k });
+        apg.WriteLocalAsServer<PlayerUpdate>(roundTimeOffset + roundLength, "pl", { nm: apg.playerName, hp: 10, money: 100 });
+    }*/
+}
+
 function WaitingToJoin(apg: APGSys, previousMessage:string = "" ): void {
-	var clickSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
+	var clickSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', .4, false);
 
 	apg.ResetServerMessageRegistry();
-	var inputUsed: boolean = false, endSubgame: boolean = false;
+    var inputUsed: boolean = false, endSubgame: boolean = false;
+
+    var curRound: RoundUpdate = {round:1,time:45};
+
+    apg.ResetServerMessageRegistry()
+        .Register<RoundUpdate>("time", p => {
+
+        })
+        .Register<PlayerUpdate>("pl", p => {
+
+        });
 
 	new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
 		upd: e => {
@@ -55,5 +75,6 @@ function WaitingToJoin(apg: APGSys, previousMessage:string = "" ): void {
 			if (tc % 120 < 60) e.visible = false;
 			else e.visible = true;
 		}
-	});
+    });
+    if (apg.networkTestSequence) WaitingToJoinTestSequence(apg);
 }

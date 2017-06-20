@@ -10,7 +10,11 @@ namespace APG {
 		public Action onRoundEnd = () => { };
 
 		public Func<int> getGoalBuilding = () => 0;
-		public Action<float> setGoalX = x => { };
+		public Func<int> getLayer = () => 0;
+		public Action<int> setBuilding = x => { };
+		public Action<int> setGoalLayer = layer => { };
+		public Func<string> getName = () => "";
+		public Func<int> getHealth = () => 3;
 
 		public Func<PlayerEndOfRoundInfo> getEndOfRoundInfo = () => new PlayerEndOfRoundInfo();
 

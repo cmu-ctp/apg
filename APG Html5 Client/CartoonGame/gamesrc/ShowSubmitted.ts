@@ -4,9 +4,9 @@
 	c.googleWebFonts(['Caveat Brush']);
 }
 
-function ShowSubmitted(apg: APGSys, getRoundNumber: () => number): void {
+function ShowSubmitted(apg: APGSys, playerID:number, getRoundNumber: () => number): void {
 	var inputUsed: boolean = false;
-	var clickSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', 1, false);
+	var clickSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', .4, false);
 
 	apg.ResetServerMessageRegistry();
 
@@ -14,7 +14,7 @@ function ShowSubmitted(apg: APGSys, getRoundNumber: () => number): void {
 		upd: e => {
 			if (apg.g.input.activePointer.isDown && !inputUsed) {
 				inputUsed = true;
-				MainPlayerInput(apg);
+				MainPlayerInput(apg, playerID);
 				clickSound.play();
 			}
 		}

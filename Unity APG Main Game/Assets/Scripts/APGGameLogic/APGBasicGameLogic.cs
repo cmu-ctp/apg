@@ -75,6 +75,7 @@ namespace APG {
 		[Serializable]
 		struct ClientJoinParms{
 			public string name;
+			public int playerID;
 		}
 
 		// upd
@@ -121,7 +122,7 @@ namespace APG {
 			apg.ResetClientMessageRegistry()
 				.Register<EmptyParms>("join", (user, p) => {
 					if (players.AddPlayer(user)) {
-						apg.WriteToClients("join", new ClientJoinParms { name = user });
+						apg.WriteToClients("join", new ClientJoinParms { name = user, playerID=players.GetPlayerID(user)+1 });
 					}
 				})
 				.Register<SelectionParms>("upd", (user, p) => {
