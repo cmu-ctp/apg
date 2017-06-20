@@ -110,7 +110,7 @@ public class AudiencePlayerSys {
 
 		Buddies(playerSet, playerSys );
 
-		RunDebug( playerSet, apg );
+		//RunDebug( playerSet, apg );
 	}
 
 	void React(v3 pos, Sprite msg) {
@@ -177,6 +177,7 @@ public class AudiencePlayerSys {
 			var goalLayer = (k < 6 || (k > 9 && k < 16)) ? 0 : 2;
 			var action1id = 0; var action2id = 0; var action3id = 0;
 			var stamina = 10;
+			var resources = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 			playerEvents.RegisterHandler(new AudiencePlayerEventsHandler {
 				onJoin = name => {
@@ -211,7 +212,7 @@ public class AudiencePlayerSys {
 				},
 				updateToClient = ( apg, userName ) => {
 					Debug.Log("Writing client " + userName);
-					apg.WriteToClients("pl", new PlayerUpdate { nm = userName, st=new int[] { pl.health, stamina, buildingGoal, goalLayer }, rs=new int[] { 0,0,0,0,0,0,0,0} });
+					apg.WriteToClients("pl", new PlayerUpdate { nm = userName, st=new int[] { pl.health, stamina, buildingGoal, goalLayer }, rs= resources });
 					}
 			});
 
@@ -256,6 +257,9 @@ public class AudiencePlayerSys {
 						e.color = new Color(1, 0, 0, .2f);
 						head.color = new Color(1, 0, 0, .2f);
 					}
+				},
+				itemTouch = (e, user, info) => {
+					resources[info.style] += info.count;
 				},
 				update = e => {
 					if(e.health <= 0) return;

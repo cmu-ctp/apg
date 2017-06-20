@@ -6,6 +6,7 @@
 
 interface ClientJoinParms{
     name: string;
+    team: number;
     playerID: number;
 }
 
@@ -16,7 +17,7 @@ declare var ticksPerSecond: any;
 
 function WaitingForJoinAcknowledgeTestSequence(apg: APGSys): void {
     apg.ClearLocalMessages();
-    apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", {name:apg.playerName, playerID:3});
+    apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", {name:apg.playerName, playerID:6, team:1});
 }
 
 function WaitingForJoinAcknowledement(apg: APGSys): void {
@@ -29,7 +30,7 @@ function WaitingForJoinAcknowledement(apg: APGSys): void {
 
 			endSubgame = true;
 			endOfRoundSound.play();
-			MainPlayerInput(apg, p.playerID);
+			MainPlayerInput(apg, p.playerID,p.team);
 		});
 
     if (apg.networkTestSequence) {

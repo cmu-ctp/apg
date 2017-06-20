@@ -309,16 +309,19 @@ function CartoonAssetCache(c) {
 }
 function MainInputTestSequence(apg) {
     apg.ClearLocalMessages();
-    var roundLength = 45;
+    var roundLength = 15;
     for (var j = 1; j <= 10; j++) {
         var roundTimeOffset = (j - 1) * roundLength;
         for (var k = 0; k < roundLength + 5; k += 5)
-            apg.WriteLocalAsServer(roundTimeOffset + k, "time", { round: j, time: roundLength - k });
+            apg.WriteLocalAsServer(roundTimeOffset + k, "time", { round: j + 1, time: roundLength - k });
         apg.WriteLocalAsServer(roundTimeOffset + roundLength, "submit", { choices: [] });
-        apg.WriteLocalAsServer(roundTimeOffset + roundLength, "pl", { nm: apg.playerName, st: [10, 10, -1, -1], rs: [0, 0, 0, 0, 0, 0, 0, 0] });
+        apg.WriteLocalAsServer(roundTimeOffset + roundLength, "pl", {
+            nm: apg.playerName, st: [Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 10) + 1, -1, -1],
+            rs: [Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1]
+        });
     }
 }
-function MainPlayerInput(apg, id) {
+function MainPlayerInput(apg, id, team) {
     var w = new Phaser.Group(apg.g);
     apg.g.world.add(w);
     var fontName = "Caveat Brush";
@@ -327,10 +330,9 @@ function MainPlayerInput(apg, id) {
     var warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
     var cols = ['#369', '#693', '#936', '#963', '#639', '#396', '#888', '#933', '#393', '#339'];
     var cols2 = [0x306090, 0x609030, 0x903060, 0x906030, 0x603090, 0x309060, 0x808080, 0x903030, 0x309030, 0x303090];
-    var headNum = id;
-    var nameColor = cols[(id - 1) % 10];
-    var bodyColor = cols2[(id - 1) % 10];
-    var team = id > 10 ? 2 : 1;
+    var headNum = id + 1 + ((team == 2) ? 10 : 0);
+    var nameColor = cols[id % 10];
+    var bodyColor = cols2[id % 10];
     var actionChoices = [0, 0, 0];
     function addActions(srcChoices, setToolTip) {
         var curCollection = 0;
@@ -355,9 +357,9 @@ function MainPlayerInput(apg, id) {
         return o;
     }
     var timer = 0;
-    var roundNumber = 1;
+    var roundNumber = 2;
     var choices = [1, 1, 1, 1, 1, 1];
-    var myStats = { nm: "", hp: 5, loc: 3, row: 1 };
+    var myStats = { nm: "", st: [10, 10, 0, 0], rs: [0, 0, 0, 0, 0, 0, 0, 0] };
     var locationChoice = -1;
     var stanceChoice = -1;
     function reset() {
@@ -382,7 +384,7 @@ function MainPlayerInput(apg, id) {
         timer = p.time;
         console.log("time " + timer);
         roundNumber = p.round;
-        if (timer < 6) {
+        if (timer < 6 && !accepted) {
             warningSound.play('', 0, 1 - (timer * 15) / 100);
         }
     })
@@ -390,13 +392,28 @@ function MainPlayerInput(apg, id) {
         if (p.nm != apg.playerName)
             return;
         myStats = p;
-        if (p.row != -1)
-            lastStance = p.row;
-        if (p.loc != -1)
-            lastLocationPos = p.loc;
+        if (p.st[3] != -1)
+            lastStance = p.st[3];
+        if (p.st[2] != -1)
+            lastLocationPos = p.st[2];
+        stanceBody.y = 160 + lastStance * 64;
+        stanceHead.y = 146 + lastStance * 64;
+        locBody.x = 330 + 64 * lastLocationPos;
+        locHead.x = 320 + 64 * lastLocationPos;
+        playerLabel.x = 320 + 64 * lastLocationPos;
+        nstatLabels[0].tx = "" + p.st[0];
+        nstatLabels[1].tx = "" + p.rs[0];
+        nstatLabels[2].tx = "" + p.rs[1];
+        nstatLabels[3].tx = "" + p.rs[2];
+        nstatLabels[4].tx = "" + p.rs[3];
+        nstatLabels2[0].tx = "" + p.st[1];
+        nstatLabels2[1].tx = "" + p.rs[4];
+        nstatLabels2[2].tx = "" + p.rs[5];
+        nstatLabels2[3].tx = "" + p.rs[6];
+        nstatLabels2[4].tx = "" + p.rs[7];
         accepted = false;
-        w.x = 0;
         reset();
+        endOfRoundSound.play();
     })
         .Register("submit", function (p) {
         for (var k = 0; k < 3; k++)
@@ -411,15 +428,22 @@ function MainPlayerInput(apg, id) {
             choices[3] = Math.floor(Math.random() * 6);
         if (choices[4] == -1)
             choices[4] = Math.floor(Math.random() * 6);
+        if (accepted == false) {
+            accepted = true;
+            endOfRoundSound.play();
+        }
+        lastLocationPos = choices[0];
+        lastStance = choices[1];
         apg.WriteToServer("upd", { choices: choices });
     });
     var toolTip = "";
     function setToolTip(str) { toolTip = str; }
-    var tick = 0, tabButtons, choiceButtons, actionLabels;
-    var actionLabel;
+    var tick = 0, tabButtons, choiceButtons, statLabels, statLabels2, nstatLabels, nstatLabels2, actionLabels;
+    var stanceBody, stanceHead, locBody, locHead;
+    var actionLabel, playerLabel;
     var lastRoundUpdate = 0;
-    var lastLocationPos = 2;
-    var lastStance = 0;
+    var lastLocationPos = (team == 2) ? (5 - id % 6) : id % 6;
+    var lastStance = id < 6 ? 1 : 0;
     var headPic = 'cartoongame/imgs/heads/headbig' + headNum + '.png';
     var sheadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
     var bodyPic = 'cartoongame/imgs/body' + (team == 1 ? 'right' : 'left') + '.png';
@@ -427,6 +451,12 @@ function MainPlayerInput(apg, id) {
     var accepted = false;
     new ent(w, 0, 0, 'cartoongame/imgs/bkg_guide4.png', {
         upd: function (e) {
+            if (accepted) {
+                w.y = w.y * .9 + .1 * 500;
+            }
+            else {
+                w.y = w.y * .9 + .1 * 0;
+            }
             if (choiceButtons[0].selected != -1) {
                 if (locationChoice == -1) {
                     var labels = ['Dance Club', 'Fishing Pond', 'Bed and Breakfast', 'Commuter Airport', 'Day Spa', 'Office Park'];
@@ -451,7 +481,7 @@ function MainPlayerInput(apg, id) {
                 reset();
             }
             if (choiceButtons[4].selected != -1) {
-                w.x = 1000;
+                endOfRoundSound.play();
                 accepted = true;
                 choiceButtons[4].selected = -1;
             }
@@ -477,7 +507,7 @@ function MainPlayerInput(apg, id) {
     new enttx(w, 420, 25, "Round ", { font: '36px ' + fontName, fill: roundColors[1] }, {
         upd: function (e) {
             if (roundNumber != lastRoundUpdate) {
-                e.text = "Round " + roundNumber;
+                e.text = "Round " + (roundNumber);
                 e.fill = roundColors[(roundNumber - 1) % roundColors.length];
                 lastRoundUpdate = roundNumber;
             }
@@ -495,14 +525,14 @@ function MainPlayerInput(apg, id) {
     new enttx(w, 250, 110, "Tip", { font: '18px ' + fontName, fill: '#433' }, { upd: function (e) { e.visible = (toolTip == "") ? false : true; } });
     actionLabel = new enttx(w, 40, 110, "Action 1 / 3", { font: '24px ' + fontName, fill: '#A00' });
     new enttx(w, 700, 110, "Row", { font: '24px ' + fontName, fill: '#A00' }, { upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
-    new ent(w, 740, 160 + lastStance * 64, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
-    new ent(w, 731, 146 + lastStance * 64, sheadPic, { upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
+    stanceBody = new ent(w, 740, 160 + lastStance * 64, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
+    stanceHead = new ent(w, 731, 146 + lastStance * 64, sheadPic, { upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
     new enttx(w, 305, 260, "Location", { font: '24px ' + fontName, fill: '#A00' }, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
     new ent(w, 270, 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png', { scalex: 1, scaley: 1, upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
     new ent(w, 680, 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png', { scalex: 1, scaley: 1, upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
-    new ent(w, 330 + 64 * lastLocationPos, 16 + 285, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
-    new ent(w, 320 + 64 * lastLocationPos, 16 + 271, sheadPic, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
-    new enttx(w, 320 + 64 * lastLocationPos, 16 + 320, apg.playerName, { font: '12px ' + fontName, fill: nameColor }, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
+    locBody = new ent(w, 330 + 64 * lastLocationPos, 16 + 285, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
+    locHead = new ent(w, 320 + 64 * lastLocationPos, 16 + 271, sheadPic, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
+    playerLabel = new enttx(w, 320 + 64 * lastLocationPos, 16 + 320, apg.playerName, { font: '12px ' + fontName, fill: nameColor }, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
     function category(msg, x, y) {
         new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
     }
@@ -514,7 +544,10 @@ function MainPlayerInput(apg, id) {
         return labelEnts;
     }
     category("Stats", 144, 336);
-    inCategory(154, 360, 13, ["Health:", "Stamina:", "Gold:", "Tacos:", "Silver:"]);
+    statLabels = inCategory(154, 360, 13, ["Health: ", "Wire: ", "Stone: ", "Wood: ", "Oil: "]);
+    statLabels2 = inCategory(254, 360, 13, ["Stamina: ", "Plastic: ", "Fur: ", "Metal: ", "Rubber: "]);
+    nstatLabels = inCategory(214, 360, 13, ["5", "0", "0", "0", "0"]);
+    nstatLabels2 = inCategory(314, 360, 13, ["10", "0", "0", "0", "0"]);
     category("Choices", 370, 336);
     actionLabels = inCategory(380, 360, 13, ["Location:", "Row:", "Action 1:", "Action 2:", "Action 3:"]);
     if (apg.networkTestSequence)
@@ -525,7 +558,7 @@ function ShowSubmittedCache(c) {
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
     c.googleWebFonts(['Caveat Brush']);
 }
-function ShowSubmitted(apg, playerID, getRoundNumber) {
+function ShowSubmitted(apg, playerID, team, getRoundNumber) {
     var inputUsed = false;
     var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', .4, false);
     apg.ResetServerMessageRegistry();
@@ -533,7 +566,7 @@ function ShowSubmitted(apg, playerID, getRoundNumber) {
         upd: function (e) {
             if (apg.g.input.activePointer.isDown && !inputUsed) {
                 inputUsed = true;
-                MainPlayerInput(apg, playerID);
+                MainPlayerInput(apg, playerID, team);
                 clickSound.play();
             }
         }
@@ -547,7 +580,7 @@ function JoinAcknowledgeCache(c) {
 }
 function WaitingForJoinAcknowledgeTestSequence(apg) {
     apg.ClearLocalMessages();
-    apg.WriteLocalAsServer(.1, "join", { name: apg.playerName, playerID: 3 });
+    apg.WriteLocalAsServer(.1, "join", { name: apg.playerName, playerID: 6, team: 1 });
 }
 function WaitingForJoinAcknowledement(apg) {
     var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
@@ -558,7 +591,7 @@ function WaitingForJoinAcknowledement(apg) {
             return;
         endSubgame = true;
         endOfRoundSound.play();
-        MainPlayerInput(apg, p.playerID);
+        MainPlayerInput(apg, p.playerID, p.team);
     });
     if (apg.networkTestSequence) {
         WaitingForJoinAcknowledgeTestSequence(apg);
@@ -652,7 +685,27 @@ function WaitingToJoin(apg, previousMessage) {
             }
         });
     }
-    new enttx(apg.g.world, 140, 2 * (50 + 20) - 20, "Tap or click to Connect to the Streamer's Game!", textColor, {
+    new enttx(apg.g.world, 140, 60, "Thanks for helping with the first Gods of Socks and Spoons game test!", textColor2, {
+        upd: function (e) {
+            if (endSubgame) {
+                e.x = e.x * .7 + .3 * -50;
+                if (e.x < -47)
+                    e.destroy(true);
+                return;
+            }
+        }
+    });
+    new enttx(apg.g.world, 140, 160, "Here's how you'll play - each round (about a minute long), pick where to move and 3 actions to perform.  While you do, your choices from the previous round will be happening in the streamer's video.  Try to stay alive, build your city, and help your team!  (This demo is incomplete, so most actions don't do anything yet)", textColor2, {
+        upd: function (e) {
+            if (endSubgame) {
+                e.x = e.x * .7 + .3 * -50;
+                if (e.x < -47)
+                    e.destroy(true);
+                return;
+            }
+        }
+    });
+    new enttx(apg.g.world, 140, 380, "Tap or click to Connect to the Streamer's Game!", textColor, {
         upd: function (e) {
             if (endSubgame) {
                 e.x = e.x * .7 + .3 * -50;

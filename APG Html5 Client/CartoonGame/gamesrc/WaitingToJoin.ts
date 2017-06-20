@@ -64,7 +64,27 @@ function WaitingToJoin(apg: APGSys, previousMessage:string = "" ): void {
 		});
 	}
 
-	new enttx(apg.g.world, 140, 2*(50 + 20)-20, "Tap or click to Connect to the Streamer's Game!", textColor, {
+    new enttx(apg.g.world, 140, 60, "Thanks for helping with the first Gods of Socks and Spoons game test!", textColor2, {
+        upd: e => {
+            if (endSubgame) {
+                e.x = e.x * .7 + .3 * -50;
+                if (e.x < -47) e.destroy(true);
+                return;
+            }
+        }
+    });
+
+    new enttx(apg.g.world, 140, 160, "Here's how you'll play - each round (about a minute long), pick where to move and 3 actions to perform.  While you do, your choices from the previous round will be happening in the streamer's video.  Try to stay alive, build your city, and help your team!  (This demo is incomplete, so most actions don't do anything yet)", textColor2, {
+        upd: e => {
+            if (endSubgame) {
+                e.x = e.x * .7 + .3 * -50;
+                if (e.x < -47) e.destroy(true);
+                return;
+            }
+        }
+    });
+
+	new enttx(apg.g.world, 140, 380, "Tap or click to Connect to the Streamer's Game!", textColor, {
 		upd: e => {
 			if (endSubgame) {
 				e.x = e.x * .7 + .3 * -50;

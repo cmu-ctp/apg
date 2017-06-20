@@ -6,6 +6,8 @@ using v3 = UnityEngine.Vector3;
 public struct TouchInfo {
 	public int strength;
 	public ent src;
+	public int style;
+	public int count;
 }
 
 // All of the Serializable / SerialField annotations  are purely for debugging - it makes them visible and inspectable in the UnityEditor at runtime.
@@ -36,6 +38,7 @@ public class ent {
 	public float val1, val2;
 
 	public Action<ent, ent, int> onHurt = (me, source, damage) => { };
+	public Action<ent, ent, TouchInfo> itemTouch;
 	public Action<ent, ent, TouchInfo> breathTouch;
 	public Action<ent, ent, TouchInfo> playerTouch;
 	public Action<ent, ent, TouchInfo> buddyTouch;
@@ -102,6 +105,7 @@ public class ent {
 		isShadow = false;
 
 		ignorePause = false;
+		itemTouch = (e, user, info) => { };
 		breathTouch = (e, user, info) => { };
 		playerTouch = (e, user, info) => { };
 		buddyTouch = (e, user, info) => { };
@@ -142,6 +146,7 @@ public class ent {
 		gameSys = sys;
 		updLink = new EntLink(this);
 		gridLink = new EntLink(this);
+		itemTouch = (e, user, info) => { };
 		breathTouch = (e, user, info) => { };
 		playerTouch = (e, user, info) => { };
 		buddyTouch = (e, user, info) => { };
@@ -277,6 +282,7 @@ class PoolEnt {
 	public v3 vel {set { e.vel=value;} }
 	public v3 knockback {set { e.knockback=value;} }
 	public Action<ent, ent, int> onHurt { set { e.onHurt = value; } }
+	public Action<ent, ent, TouchInfo> itemTouch { set { e.itemTouch = value; } }
 	public Action<ent, ent, TouchInfo> breathTouch {set { e.breathTouch=value;} }
 	public Action<ent, ent, TouchInfo> playerTouch {set { e.playerTouch=value;} }
 	public Action<ent, ent, TouchInfo> buddyTouch {set { e.buddyTouch=value;} }

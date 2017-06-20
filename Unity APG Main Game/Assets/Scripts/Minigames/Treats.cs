@@ -47,7 +47,7 @@ public class TreatSys {
 		new ent(gameSys) { sprite = msg, name="react", pos = pos, scale = 1, update = e => { delay--; if(delay <= 0) e.remove(); } };
 	}
 
-	string[] treatStyles = new string[] { "Dollars", "Bricks", "Oil", "Veggies", "Wool" };
+	string[] treatStyles = new string[] { "Wire", "Stone", "Wood", "Oil", "Plastic", "Fur", "Metal", "Rubber" };
 
 	void BasicTreat( v3 pos ) {
 			var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
@@ -71,8 +71,12 @@ public class TreatSys {
 					}
 				},
 				buddyTouch = (e, user, info) => {
+					var cnt = rd.i(2, 7);
+					var style = rd.i(0, treatStyles.Length);
+					var styleStr = treatStyles[style];
 					gameSys.Sound(rd.Sound( theTreats.coinSound ), 1);
-					reactSys.React( e.pos+new v3(0,0,0), "+" + rd.i(2,7)+" " + treatStyles[rd.i(0,treatStyles.Length)], new Color( .3f,.5f,.8f,1));
+					user.itemTouch(e, user, new TouchInfo { style = style, count = cnt });
+					reactSys.React( e.pos+new v3(0,0,0), "+" + cnt + " " + styleStr, new Color( .3f,.5f,.8f,1));
 					e.remove();
 				}
 			};

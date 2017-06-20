@@ -75,6 +75,7 @@ namespace APG {
 		[Serializable]
 		struct ClientJoinParms{
 			public string name;
+			public int team;
 			public int playerID;
 		}
 
@@ -122,7 +123,8 @@ namespace APG {
 			apg.ResetClientMessageRegistry()
 				.Register<EmptyParms>("join", (user, p) => {
 					if (players.AddPlayer(user)) {
-						apg.WriteToClients("join", new ClientJoinParms { name = user, playerID=players.GetPlayerID(user)+1 });
+						var id = players.GetPlayerID(user);
+						apg.WriteToClients("join", new ClientJoinParms { name = user, playerID=id/2, team= (id%2==0)?1:2 });
 					}
 				})
 				.Register<SelectionParms>("upd", (user, p) => {
@@ -185,6 +187,8 @@ namespace APG {
 			if( startActionTimer == 0 ) {
 
 				// Run some sort of between round thinker here.
+				roundNumber++;
+				apg.WriteToClients("time", new RoundUpdate { time = secondsPerChoice, round = roundNumber + 1 });
 				gameSys.Sound( roundOver, 1 );
 
 				src.MakeRoundEnd( roundNumber, ticksPerSecond, players.GetEndOfRoundInfo(), val => pausedTimer = val );
@@ -196,24 +200,26 @@ namespace APG {
 		void CollectPlayerChoicesTimer() {
 			endOfRoundTimer--;
 			if( endOfRoundTimer == 0 ) {
-				players.UpdatePlayersToClients( apg );
 				players.RoundUpdate();
 				players.SetGoalPositions();
+				players.UpdatePlayersToClients(apg);
 
 				timerUpdater = StartActionTimer;
 			}
 		}
 
 		void PlayersEnterChoicesTimer() {
-			nextAudiencePlayerChoice--;
+			
 
 			if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
 				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber+1});
 			}
 
-			if( nextAudiencePlayerChoice == 0 ) {
+			nextAudiencePlayerChoice--;
+
+			if ( nextAudiencePlayerChoice == 0 ) {
 				apg.WriteToClients("submit", new EmptyParms() );
-				roundNumber++;
+				//roundNumber++;
 
 				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber+1});
 
