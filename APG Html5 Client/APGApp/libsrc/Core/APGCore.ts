@@ -69,7 +69,7 @@
 
 		function launchGame() {
 			onLoadEnd();
-			var apg: APGFullSystem = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence );
+            var apg: APGFullSystem = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence, allowFullScreen );
 			var showingOrientationWarning = false;
 			setInterval(function () {
 				handleOrientation();

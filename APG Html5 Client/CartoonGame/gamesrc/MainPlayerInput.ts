@@ -50,12 +50,13 @@ function MainInputTestSequence(apg: APGSys): void {
     var roundLength: number = 15;
     for (var j = 1; j <= 10; j++ ){
         var roundTimeOffset: number = (j - 1) * roundLength;
-        for (var k = 0; k < roundLength+5; k += 5)apg.WriteLocalAsServer<RoundUpdate>(roundTimeOffset + k, "time", { round: j+1, time: roundLength - k });
+        for (var k = 0; k < roundLength + 5; k += 5)apg.WriteLocalAsServer<RoundUpdate>(roundTimeOffset + k, "time", { round: j + 1, time: roundLength - k });
         apg.WriteLocalAsServer<SelectionParms>(roundTimeOffset + roundLength, "submit", { choices: [] });
-        apg.WriteLocalAsServer<PlayerUpdate>(roundTimeOffset + roundLength, "pl", {
+        apg.WriteLocalAsServer<PlayerUpdate>(roundTimeOffset + roundLength+.5, "pl", {
             nm: apg.playerName, st: [Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 10) + 1, -1, -1],
             rs: [Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1]
         });
+        apg.WriteLocalAsServer<EmptyParms>(roundTimeOffset + roundLength + 1, "startround", { choices: [] });
     }
 }
 
@@ -131,7 +132,11 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
         }
     }
 
-	apg.ResetServerMessageRegistry()
+    apg.ResetServerMessageRegistry()
+        .Register<EmptyParms>("startround", p => {
+            accepted = false;
+            endOfRoundSound.play();
+        })
 		.Register<RoundUpdate>("time", p => {
             timer = p.time;
             console.log("time " + timer);
@@ -160,9 +165,9 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
             nstatLabels2[2].tx = "" + p.rs[5];
             nstatLabels2[3].tx = "" + p.rs[6];
             nstatLabels2[4].tx = "" + p.rs[7];
-            accepted = false;
+            //accepted = false;
             reset();
-            endOfRoundSound.play();
+            //endOfRoundSound.play();
 		})
         .Register<SelectionParms>("submit", p => {
             for (var k = 0; k < 3; k++)choices[k + 2] = actionChoices[k];
@@ -294,6 +299,10 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
     locBody = new ent(w, 330 + 64 * lastLocationPos, 16+285, bodyPic, { scalex: 1, scaley: 1, color:bodyColor, upd: e => { e.visible = choiceButtons[0].selected == -1 } });
     locHead = new ent(w, 320 + 64 * lastLocationPos, 16 +271, sheadPic, { upd: e => { e.visible = choiceButtons[0].selected == -1 } });
     playerLabel = new enttx(w, 320 + 64 * lastLocationPos, 16 +320, apg.playerName, { font: '12px ' + fontName, fill: nameColor }, { upd: e => { e.visible = choiceButtons[0].selected == -1 } });
+
+    if (apg.allowFullScreen) {
+        new enttx(w, 100, -400, "Your actions were submitted just fine!  Now just relax until the next round.", { font: '18px ' + fontName, fill: '#433' });
+    }
 
     function category(msg: string, x: number, y: number): void {
         new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });

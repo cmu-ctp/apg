@@ -315,10 +315,11 @@ function MainInputTestSequence(apg) {
         for (var k = 0; k < roundLength + 5; k += 5)
             apg.WriteLocalAsServer(roundTimeOffset + k, "time", { round: j + 1, time: roundLength - k });
         apg.WriteLocalAsServer(roundTimeOffset + roundLength, "submit", { choices: [] });
-        apg.WriteLocalAsServer(roundTimeOffset + roundLength, "pl", {
+        apg.WriteLocalAsServer(roundTimeOffset + roundLength + .5, "pl", {
             nm: apg.playerName, st: [Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 10) + 1, -1, -1],
             rs: [Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1, Math.floor(Math.random() * 10) + 1]
         });
+        apg.WriteLocalAsServer(roundTimeOffset + roundLength + 1, "startround", { choices: [] });
     }
 }
 function MainPlayerInput(apg, id, team) {
@@ -380,6 +381,10 @@ function MainPlayerInput(apg, id, team) {
         }
     }
     apg.ResetServerMessageRegistry()
+        .Register("startround", function (p) {
+        accepted = false;
+        endOfRoundSound.play();
+    })
         .Register("time", function (p) {
         timer = p.time;
         console.log("time " + timer);
@@ -411,9 +416,7 @@ function MainPlayerInput(apg, id, team) {
         nstatLabels2[2].tx = "" + p.rs[5];
         nstatLabels2[3].tx = "" + p.rs[6];
         nstatLabels2[4].tx = "" + p.rs[7];
-        accepted = false;
         reset();
-        endOfRoundSound.play();
     })
         .Register("submit", function (p) {
         for (var k = 0; k < 3; k++)
@@ -533,6 +536,9 @@ function MainPlayerInput(apg, id, team) {
     locBody = new ent(w, 330 + 64 * lastLocationPos, 16 + 285, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
     locHead = new ent(w, 320 + 64 * lastLocationPos, 16 + 271, sheadPic, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
     playerLabel = new enttx(w, 320 + 64 * lastLocationPos, 16 + 320, apg.playerName, { font: '12px ' + fontName, fill: nameColor }, { upd: function (e) { e.visible = choiceButtons[0].selected == -1; } });
+    if (apg.allowFullScreen) {
+        new enttx(w, 100, -400, "Your actions were submitted just fine!  Now just relax until the next round.", { font: '18px ' + fontName, fill: '#433' });
+    }
     function category(msg, x, y) {
         new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });
     }
@@ -580,18 +586,32 @@ function JoinAcknowledgeCache(c) {
 }
 function WaitingForJoinAcknowledgeTestSequence(apg) {
     apg.ClearLocalMessages();
-    apg.WriteLocalAsServer(.1, "join", { name: apg.playerName, playerID: 6, team: 1 });
+    apg.WriteLocalAsServer(.1, "join", { name: apg.playerName, started: true, playerID: 6, team: 1 });
 }
 function WaitingForJoinAcknowledement(apg) {
     var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
     var endSubgame = false, timeOut = 0, retry = 0;
+    var playerID = -1, team = -1, connected = false;
     apg.ResetServerMessageRegistry()
         .Register("join", function (p) {
         if (p.name != apg.playerName)
             return;
+        if (p.started) {
+            endSubgame = true;
+            endOfRoundSound.play();
+            MainPlayerInput(apg, p.playerID, p.team);
+        }
+        else {
+            connected = true;
+            playerID = p.playerID;
+            team = p.team;
+            msg.tx = "Connected!  Waiting for streamer to start playing!";
+        }
+    })
+        .Register("start", function (p) {
         endSubgame = true;
         endOfRoundSound.play();
-        MainPlayerInput(apg, p.playerID, p.team);
+        MainPlayerInput(apg, playerID, team);
     });
     if (apg.networkTestSequence) {
         WaitingForJoinAcknowledgeTestSequence(apg);
@@ -599,16 +619,18 @@ function WaitingForJoinAcknowledement(apg) {
     new ent(apg.g.world, 60, 0, 'cartoongame/imgs/ClientUI3.png', {
         alpha: 0,
         upd: function (e) {
-            retry++;
-            if (retry > ticksPerSecond * 4) {
-                retry = 0;
-                apg.WriteToServer("join", {});
-            }
-            timeOut++;
-            if (timeOut > ticksPerSecond * 20) {
-                endSubgame = true;
-                WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game.");
-                return;
+            if (!connected) {
+                retry++;
+                if (retry > ticksPerSecond * 4) {
+                    retry = 0;
+                    apg.WriteToServer("join", {});
+                }
+                timeOut++;
+                if (timeOut > ticksPerSecond * 20) {
+                    endSubgame = true;
+                    WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game.");
+                    return;
+                }
             }
             if (endSubgame) {
                 e.x = e.x * .7 + .3 * -30;
@@ -621,7 +643,7 @@ function WaitingForJoinAcknowledement(apg) {
         }
     });
     var tick = 0;
-    new enttx(apg.g.world, 320, 100 + 60, "Trying to Connect to Streamer's Game - Hold on a Second...", { font: '32px Caveat Brush', fill: '#222' }, {
+    var msg = new enttx(apg.g.world, 320, 100 + 60, "Trying to Connect to Streamer's Game - Hold on a Second...", { font: '32px Caveat Brush', fill: '#222' }, {
         alpha: 0,
         upd: function (e) {
             if (endSubgame) {

@@ -30,7 +30,7 @@ function AddAppReposition(divName:string, width:number):void {
 	var curx = 0, cury = 0;
 	var clickx, clicky;
 	var d = null;
-	var dragging = false;
+    var dragging = false;
 	document.onmousedown = function () {
 		if (mouseDown === false) {
 			if (mx > curx && mx < curx + width && my > cury && my < cury + 32) {
@@ -51,7 +51,17 @@ function AddAppReposition(divName:string, width:number):void {
 		mx = e.clientX;
 		my = e.clientY;
 	};
-	setInterval(function () {
+    setInterval(function () {
+        if (d === null) {
+            d = document.getElementById(divName);
+            if (d !== null) {
+                curx = 100;
+                cury = 400;
+                d.style.position = "absolute";
+                d.style.left = '100px';
+                d.style.top = '400px';
+            }
+        }
 		if (dragging) {
 			if (d === null) {
 				d = document.getElementById(divName);

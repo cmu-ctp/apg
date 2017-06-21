@@ -508,6 +508,7 @@ class FullGame {
 
 		if (assets.basicGameLogic.waitingForGameToStart) {
 			if (Input.GetKey(KeyCode.Escape) || Input.GetKey(KeyCode.Space) || Input.GetButton("Fire1") || Input.GetButton("Fire2")) {
+				assets.basicGameLogic.OnGameStart();
 				assets.basicGameLogic.waitingForGameToStart = false;
 				FadeSongTo(assets.musicSet.mainSong);
 			}

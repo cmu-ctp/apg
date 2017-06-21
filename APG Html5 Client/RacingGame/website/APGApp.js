@@ -58,7 +58,7 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence
         }
         function launchGame() {
             onLoadEnd();
-            var apg = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence);
+            var apg = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence, allowFullScreen);
             var showingOrientationWarning = false;
             setInterval(function () {
                 handleOrientation();
@@ -69,13 +69,14 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence
     }
 }
 var APGFullSystem = (function () {
-    function APGFullSystem(g, logicIRCChannelName, playerName, chat, JSONAssets, networkTestSequence) {
+    function APGFullSystem(g, logicIRCChannelName, playerName, chat, JSONAssets, networkTestSequence, allowFullScreen) {
         var _this = this;
         this.g = g;
         this.JSONAssets = JSONAssets;
         if (playerName == "")
             playerName = "defaultPlayerName";
         this.playerName = playerName;
+        this.allowFullScreen = allowFullScreen;
         this.networkTestSequence = networkTestSequence;
         this.network = new IRCNetwork(function () { return _this.handlers; }, playerName, logicIRCChannelName, chat);
     }
@@ -504,6 +505,16 @@ function AddAppReposition(divName, width) {
         my = e.clientY;
     };
     setInterval(function () {
+        if (d === null) {
+            d = document.getElementById(divName);
+            if (d !== null) {
+                curx = 100;
+                cury = 400;
+                d.style.position = "absolute";
+                d.style.left = '100px';
+                d.style.top = '400px';
+            }
+        }
         if (dragging) {
             if (d === null) {
                 d = document.getElementById(divName);

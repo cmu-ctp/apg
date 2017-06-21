@@ -4,15 +4,18 @@
 
 	g: Phaser.Game;
 
-	playerName: string;
+    playerName: string;
+
+    allowFullScreen: boolean;
 
 	JSONAssets: { any };
 
-	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any, networkTestSequence:boolean ) {
+	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any, networkTestSequence:boolean, allowFullScreen:boolean ) {
 		this.g = g;
         this.JSONAssets = JSONAssets;
         if (playerName == "") playerName = "defaultPlayerName";
         this.playerName = playerName;
+        this.allowFullScreen = allowFullScreen;
         this.networkTestSequence = networkTestSequence;
 		this.network = new IRCNetwork(() => this.handlers, playerName, logicIRCChannelName, chat);
 	}

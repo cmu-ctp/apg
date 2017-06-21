@@ -211,7 +211,6 @@ public class AudiencePlayerSys {
 					action3id = parms[4];
 				},
 				updateToClient = ( apg, userName ) => {
-					Debug.Log("Writing client " + userName);
 					apg.WriteToClients("pl", new PlayerUpdate { nm = userName, st=new int[] { pl.health, stamina, buildingGoal, goalLayer }, rs= resources });
 					}
 			});

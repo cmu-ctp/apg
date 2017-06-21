@@ -85,6 +85,11 @@ interface APGSys {
      */
     networkTestSequence: boolean;
 
+    /**
+    * If this is set to true, the client game has the ability to be fullscreen (usually mobile)
+    */
+    allowFullScreen: boolean;
+
      /**
      * The player name for the client.  This will be automatically filled in when the player logs in to Twitch.
      */

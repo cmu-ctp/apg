@@ -77,6 +77,7 @@ namespace APG {
 			public string name;
 			public int team;
 			public int playerID;
+			public bool started;
 		}
 
 		// upd
@@ -104,6 +105,10 @@ namespace APG {
 
 		public bool waitingForGameToStart = true;
 
+		public void OnGameStart() {
+			apg.WriteToClients("start", new EmptyParms {});
+		}
+
 		public float player1ChargeRatio = 0f;
 		public float player2ChargeRatio = 0f;
 
@@ -124,7 +129,7 @@ namespace APG {
 				.Register<EmptyParms>("join", (user, p) => {
 					if (players.AddPlayer(user)) {
 						var id = players.GetPlayerID(user);
-						apg.WriteToClients("join", new ClientJoinParms { name = user, playerID=id/2, team= (id%2==0)?1:2 });
+						apg.WriteToClients("join", new ClientJoinParms { name = user, started=!waitingForGameToStart, playerID=id/2, team= (id%2==0)?1:2 });
 					}
 				})
 				.Register<SelectionParms>("upd", (user, p) => {
@@ -179,6 +184,8 @@ namespace APG {
 				gameSys.Sound( roundStart, 1 );
 
 				timerUpdater = PlayersEnterChoicesTimer;
+
+				apg.WriteToClients("startround", new EmptyParms { });
 			}
 		}
 
