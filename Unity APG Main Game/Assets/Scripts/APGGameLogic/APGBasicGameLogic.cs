@@ -2,37 +2,6 @@
 using UnityEngine;
 using v3 = UnityEngine.Vector3;
 
-/*
-
-	So what can I pull out here?
-
-	Inviting
-	______
-	Inviter: Everyone gets invited to play.
-	Invite-up-to-max-players.
-
-
-	Player Choice Framework
-	_____________________
-
-
-	Player Joining / Leaving / Being Kicked Framework
-	_________________________________________
-
-
-	Lobby for Team Joining
-	___________________
-
-
-	Teams
-	______
-
-
-	Persistent Accounts
-	________________
-
-
- */
 
 namespace APG {
 

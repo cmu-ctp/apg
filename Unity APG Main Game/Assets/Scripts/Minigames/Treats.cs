@@ -99,10 +99,10 @@ public class TreatSys {
 				},
 				breathTouch = (e, user, info) => {
 					if( tick - lastPush < .05f )return;
-					var pushDir = (e.pos - user.pushCenter).normalized;
+					var pushDir = user.vel.normalized;//(e.pos - user.pushCenter).normalized;
 					pushDir.y = 0;
 					pushDir.z = 0;
-					push += pushDir * info.strength*.05f;
+					push += pushDir * info.strength*.02f;
 					lastPush = tick;
 					goalScale += info.strength * .04f;
 					if( info.strength == 3 || gameSys.gameOver  ) {

@@ -1,14 +1,4 @@
-﻿// way more error messsages
-// debug sending of messages interally
-// launching app without using chat somehow?
-// make it easier to configure client - in what ways?  Screen size.  Landscape vs portrait.
-// simpler examples
-// vs code
-// reorganize this file better.
-
-// This is the only script referenced by the web page.
-
-declare var WebFontConfig: Object;
+﻿declare var WebFontConfig: Object;
 
 interface TwitchIFace {
 	init(parms: Object, fn: Function): void;

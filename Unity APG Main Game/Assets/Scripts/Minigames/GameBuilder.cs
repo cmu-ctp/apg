@@ -7,7 +7,7 @@ using APG;
 public class GameBuilder : MonoBehaviour {
 	public GameObject basicSpriteObject;
 
-	public GameObject sky, ground, overlay1, overlay2;
+	public GameObject sky, ground, overlay1, overlay2, overlay3;
 
 	public Sprite introPlaque;
 	public Sprite playerHighlight;
@@ -34,6 +34,10 @@ public class GameBuilder : MonoBehaviour {
 
 	void Start() {
 		Application.runInBackground = true;
+
+		overlay2.GetComponent<SpriteRenderer>().sortingOrder = Math.Min(Math.Max((int)(-(2)* 1024.0f), -32768), 32767);
+		overlay3.GetComponent<SpriteRenderer>().sortingOrder = Math.Min(Math.Max((int)(-(6) * 1024.0f), -32768), 32767);
+
 		fullGame = new FullGame(this);
 		fullGame.Init(this);
 	}
@@ -534,13 +538,16 @@ class FullGame {
 		assets.sky.transform.position = new Vector3(transform.position.x, transform.position.y, assets.sky.transform.position.z);
 
 		assets.overlay1.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + 3);
-		assets.overlay2.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + 3);
+		assets.overlay2.transform.position = new Vector3(transform.position.x, transform.position.y, 2);
+		assets.overlay3.transform.position = new Vector3(transform.position.x, transform.position.y, 6);
 
 		assets.overlay1.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, .9f, .15f + .11f * Mathf.Cos(tick * .01f + 73.0f) + .13f * Mathf.Cos(tick * .0073f + 13.0f));
-		assets.overlay2.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, .9f, .12f + .09f * Mathf.Cos(tick * .0083f + 173.0f) + .11f * Mathf.Cos(tick * .0063f + 23.0f));
+		assets.overlay2.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, .9f, .22f + .09f * Mathf.Cos(tick * .0083f + 173.0f) + .17f * Mathf.Cos(tick * .0063f + 23.0f));
+		assets.overlay3.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, .9f, .22f + .07f * Mathf.Cos(tick * .0113f + 273.0f) + .23f * Mathf.Cos(tick * .0093f + 33.0f));
 
 		assets.overlay1.transform.localEulerAngles = new Vector3(0, 0, .2f + 21f * Mathf.Cos(tick * .01f + 73.0f) + 16f * Mathf.Cos(tick * .0053f + 13.0f));
-		assets.overlay2.transform.localEulerAngles = new Vector3(0, 0, .2f + 11f * Mathf.Cos(tick * .0311f + 173.0f) + 23f * Mathf.Cos(tick * .0073f + 213.0f));
+		assets.overlay2.transform.localEulerAngles = new Vector3(0, 0, .2f + 11f * Mathf.Cos(tick * .0111f + 173.0f) + 23f * Mathf.Cos(tick * .0073f + 213.0f));
+		assets.overlay3.transform.localEulerAngles = new Vector3(0, 0, .2f + 17f * Mathf.Cos(tick * .0131f + 273.0f) + 13f * Mathf.Cos(tick * .093f + 313.0f));
 	}
 
 	public FullGame(GameBuilder builder) {

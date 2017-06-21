@@ -1,19 +1,4 @@
-﻿// transitions between rounds - need to make all the parts of player update work.
-// how to play - where?
-// joining a game in progress versus a waiting game?
-// game over - get kicked out!
-// need to make (FAILED TO JOIN) not bust.
-// make action icons be write in streamer game
-
-// bit.ly link on screen between rounds
-// server game ending?
-// let players pick unalloced characters?
-// variable number of choices
-// on acceptance - shrink app
-// stat update.
-// player stat update effect?
-
-function CartoonAssetCache(c: Cacher): void {
+﻿function CartoonAssetCache(c: Cacher): void {
     c.images('cartoongame/imgs', ['blueorb.png', 'flag1small.png', 'flag2small.png', 'littleperson.png', 'littleperson2.png', 'bodyleft.png', 'bodyright.png', 'bkg_guide4.png']);
     c.images('cartoongame/imgs/buildings', ['building1.png', 'building2.png', 'building3.png', 'building4.png', 'building5.png', 'building6.png']);
     c.images('cartoongame/imgs/heads', ['headbig1.png', 'headbig2.png', 'headbig3.png', 'headbig4.png', 'headbig5.png', 'headbig6.png', 'headbig7.png', 'headbig8.png', 'headbig9.png', 'headbig10.png', 'headbig11.png', 'headbig12.png', 'headbig13.png', 'headbig14.png', 'headbig15.png', 'headbig16.png', 'headbig17.png', 'headbig18.png', 'headbig19.png', 'headbig20.png']);
@@ -260,7 +245,6 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
 		}
     });
 
-    // 4->.266f, 6->.4f, 8->.533f
     var roundColors = ['#468', '#846', '#684'];
 
     new enttx(w, 260, 25, "Actions for ", { font: '36px ' + fontName, fill: '#444' });

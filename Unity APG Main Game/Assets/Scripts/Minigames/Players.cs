@@ -187,9 +187,9 @@ public class PlayerSys {
 					if(tick-useDownTime == 135) {
 						foreach(var b in inhaleBig) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
 					}
-					else if(tick-useDownTime == 30) {
+					/*else if(tick-useDownTime == 30) {
 						foreach(var b in inhale) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
-					}
+					}*/
 					useDown = true;
 
 					if( id == 1 || id == 0 ) {
@@ -197,10 +197,10 @@ public class PlayerSys {
 						if( players.basicGameLogic.player1ChargeRatio > 1f ) {
 							players.basicGameLogic.player1ChargeRatio = 1f;
 							if( tick % 45 == 0 ) {
-								//e.sprite = players.player1flash;
+								e.sprite = players.player1flash;
 								foreach(var b in inhale) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
 							}
-							//if( tick % 45 == 4 )e.sprite = players.player1;
+							if( tick % 45 == 4 )e.sprite = players.player1;
 						}
 					}
 					else {
@@ -208,10 +208,10 @@ public class PlayerSys {
 						if( players.basicGameLogic.player2ChargeRatio > 1f ) {
 							players.basicGameLogic.player2ChargeRatio = 1f;
 							if( tick % 45 == 0 ) {
-								//e.sprite = players.player2flash;
+								e.sprite = players.player2flash;
 								foreach(var b in inhale) b(e.pos, lastAimDir.x, lastAimDir.y, 1);
 							}
-							//if( tick % 45 == 4 )e.sprite = players.player2;
+							if( tick % 45 == 4 )e.sprite = players.player2;
 						}
 					}
 				}
@@ -232,11 +232,11 @@ public class PlayerSys {
 							knockback2 *= 1.5f;
 							blowStrength = 3;
 						}
-						else if(tick-useDownTime > 20) {
+						/*else if(tick-useDownTime > 20) {
 							knockback2 *= .8f;
 							blowStrength = 2;
-						}
-						else { knockback2 *= .05f; }
+						}*/
+						else { knockback2 *= .05f; blowStrength = 2; }
 
 						foreach(var b in blow) b(e.pos, lastAimDir.x, lastAimDir.y, blowStrength);
 
@@ -270,7 +270,7 @@ public class PlayerSys {
 			},
 			breathTouch = (e, user, info) => {
 				if( info.src == e )return;
-				e.knockback += user.vel * .16f;
+				e.knockback += user.vel * .08f;
 				if( info.strength == 3 ) { 
 					e.knockback += user.vel * .16f;
 					if( tick - lastChat > 120 )

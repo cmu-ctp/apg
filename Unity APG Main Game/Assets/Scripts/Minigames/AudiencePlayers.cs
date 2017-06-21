@@ -4,78 +4,11 @@ using System.Collections.Generic;
 using v3 = UnityEngine.Vector3;
 using APG;
 
-	// show aplayer stance
-	// show aplayer action
-	// show aplayer item
-	// show aplayer equip
-
-	// pause at beginning of game to let people connect
-
-	// color code streamer player, audience players, buildings
-	// show direction players is going to shoot
-	// make players have a glowing halo
-	
-	// show round numbers in hud.  color code round numbers.
-
-	// distribute aplayers better
-
-	/*
-	 
-	Get in rest of audiece player actions.
-
-	Get in high level structure.  Game start, game end.
-
-	Client turn sequencing: ?
-
-	Get in between round stuff.  Need to pause game, show audience player actions.
-
-	Players inhaling
-	Players breath full flashing
-	Maybe drop down to two breathing styles
-
-	HUD round number
-	Busted hud spawn thing
-
-	Showing different damage numbers when players are hit by powerful attacks - different colors, different sizes, different lifetime, on react.  Really amp this up.
-
-	parenting needs to work more reliably.
-
-	.........................
-
-	Look more carefully into whispers
-	Look into twitch special account info stuff
-
-	How to do multiple example projects?
-
-	Some way to make Unity game and HTML5 clients interact without needing to connect to twitch?
-	Easier way to test input, on both the server and the client?
-	Keeping network messages in sync better?
-
-	Whispers?
-
-	Would be fun to have lots of quirky special one-off actions for audience players.
-
-	What else do audience players need to see:
-	Stats
-	Other player stats
-	Hints and Game Rules
-	Surprising / funny things
-	Teams queued up
-
-	Other player category roles (in a fractal way)?
-
-	Would be cool to have different player classes that have different impacts (to be selected when forming a team)
-
-	Screen for turn effects
-
- */
 
 
 public class AudiencePlayerSys {
 
-	public int team1Lives = 0;
-	public int team2Lives = 0;
-
+	// Move this to the player
 	public float team1Health = 0;
 	public float team2Health = 0;
 
@@ -110,7 +43,7 @@ public class AudiencePlayerSys {
 
 		Buddies(playerSet, playerSys );
 
-		//RunDebug( playerSet, apg );
+		RunDebug( playerSet, apg );
 	}
 
 	void React(v3 pos, Sprite msg) {
@@ -154,12 +87,8 @@ public class AudiencePlayerSys {
 			var nameColor = nameColors[(int)k % 10];
 
 			var label = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=nameColor };
-			var action1 = new ent(gameSys) { sprite=players.actions[0], pos = new v3(0, 0, 0),scale=.5f, active=false};
-			var action2 = new ent(gameSys) { sprite = players.actions[1], pos = new v3(0, 0, 0), scale = .5f, active = false };
-			var action3 = new ent(gameSys) { sprite = players.actions[2], pos = new v3(0, 0, 0), scale = .5f, active = false };
-			var healthBar = new ent(gameSys) { sprite = players.healthBar, pos = new v3(0, 0, 0), scale=.07f, color=new Color(.33f,0,0, .5f) };
-			var staminaBar = new ent(gameSys) { sprite = players.staminaBar, pos = new v3(0, 0, 0), scale = .07f, color=new Color(.33f,.33f,.15f,.5f), active = false };
-			var labelBack = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=new Color(0,0,0,1), children = new List<ent> { label, action1, action2, action3, healthBar, staminaBar }};
+			var healthBar = new ent(gameSys) { sprite = players.healthBar, pos = new v3(0, 0, 0), scale=.1f, color=new Color(.33f,0,0, .5f) };
+			var labelBack = new ent(gameSys, players.textName) { pos = new v3(0, 0, 0), text="", textColor=new Color(0,0,0,1), children = new List<ent> { label, healthBar }};
 
 			var head = new ent(gameSys) { pos = new v3(0, 0, 0), sprite = players.heads[(int)k], color = new Color(1, 1, 1, 1) };
 
@@ -183,7 +112,6 @@ public class AudiencePlayerSys {
 				onJoin = name => {
 					label.text = name;
 					labelBack.text = name;
-					action1.active = true; action2.active = true; action3.active = true; staminaBar.active = true;
 					healthBar.pos = new v3(-.5f, -5f, -.1f);
 					inUse = true;},
 				getName = () => label.text,
@@ -203,9 +131,6 @@ public class AudiencePlayerSys {
 					parms[4] = nm.Between(0, parms[4], 8);
 					buildingGoal =  parms[0];
 					goalLayer = parms[1];
-					action1.sprite = players.actions[parms[2]];
-					action2.sprite = players.actions[parms[3]];
-					action3.sprite = players.actions[parms[4]];
 					action1id = parms[2];
 					action2id = parms[3];
 					action3id = parms[4];
@@ -227,17 +152,11 @@ public class AudiencePlayerSys {
 			var goalHealthRatio = 1f;
 
 			pl = new ent(gameSys) {
-				sprite = players.anims[14], pos = new v3(posx, -5, goalz), scale = .3f*.3f * 4.5f, health = 5, children = new List<ent> { labelBack, head }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt,
+				sprite = players.anims[14], pos = new v3(posx, -5, goalz), scale = .505f, health = 5, children = new List<ent> { labelBack, head }, flipped=(k<10) ? false : true, leader= (k < 10) ? playerSys.playerEnt : ( playerSys.player2Ent != null ) ? playerSys.player2Ent:playerSys.playerEnt,
 					name = "buddy"+k, inGrid=true, parent = bsrc, shadow=gameSys.Shadow(players.shadow, null, 1, .4f, 0 ), color= nameColors[(int)k % 10],
 				onHurt = (e, src, dmg) => {
 					e.health--;
 					goalHealthRatio = (e.health / 5f);
-					if( team == 1 ) {
-						team1Health--;
-					}
-					else {
-						team2Health--;
-					}
 					if(e.health > 0) {
 						gameSys.Sound(players.hurtSound, 1);
 						React(e.pos + new v3(0, 0, -.2f), players.owMsg);
@@ -246,11 +165,9 @@ public class AudiencePlayerSys {
 					}
 					else {
 						gameSys.Sound(players.dieSound, 1);
-						if( team == 2 )team2Lives--;
-						else team1Lives--;
 						label.text ="";
 						labelBack.text ="";
-						action1.active = action2.active = action3.active = healthBar.active = staminaBar.active = false;
+						healthBar.active = false;
 						Ghost(e.pos, e.leader, team );
 						React(e.pos + new v3(0, 0, -.2f), players.ughMsg);
 						e.color = new Color(1, 0, 0, .2f);
@@ -259,6 +176,8 @@ public class AudiencePlayerSys {
 				},
 				itemTouch = (e, user, info) => {
 					resources[info.style] += info.count;
+					nameFlash = 1f;
+					nameFlashColor = new Color(1, .9f, .8f, 1);
 				},
 				update = e => {
 					if(e.health <= 0) return;
@@ -318,25 +237,11 @@ public class AudiencePlayerSys {
 					}
 				}
 			};
-			if( k < 10 ) {
-				team1Lives++;
-				team1Health += pl.health;
-				team1MaxHealth += pl.health;
-			}
-			else {
-				team2Lives++;
-				team2Health += pl.health;
-				team2MaxHealth += pl.health;
-			}
 
 			labelBack.pos = new v3(0,-1.4f, -.2f );
-			labelBack.scale *= .8f;
+			labelBack.scale *= 1.1f;
 			label.pos = new v3(-.5f,.5f,-.1f);
 			healthBar.pos = new v3(-.5f, 15f, -.1f);
-			staminaBar.pos = new v3(-.5f, -7f, -.1f);
-			action1.pos = new v3(17f, 0f, -.1f);
-			action2.pos = new v3(17f, -4f, -.1f);
-			action3.pos = new v3(17f, -8f, -.1f);
 
 			head.pos = new v3(0f, 1.1f, -.001f);
 			head.scale = .5f/.3f;
