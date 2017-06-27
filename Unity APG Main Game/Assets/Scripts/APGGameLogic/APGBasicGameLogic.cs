@@ -12,6 +12,7 @@ namespace APG {
 		public TwitchNetworking network;
 		public int maxPlayers = 20;
 		public int secondsPerChoice = 40;
+		public int pauseTime = 12;
 		public int secondsAfterLockedInChoice = 7;
 
 		public AudioClip timerCountDown, roundOver, roundStart;
@@ -86,7 +87,7 @@ namespace APG {
 			nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 			endOfRoundTimer = ticksPerSecond * secondsAfterLockedInChoice;
 			startActionTimer = ticksPerSecond * 2;
-			pausedTimer = ticksPerSecond * 12;
+			pausedTimer = ticksPerSecond * pauseTime;
 
 			timerUpdater = PlayersEnterChoicesTimer;
 
@@ -140,7 +141,7 @@ namespace APG {
 				return 0;
 			}
 
-			return pausedTimer/(ticksPerSecond * 12f );
+			return pausedTimer/(ticksPerSecond * (float)pauseTime);
 		}
 
 		void PausedTimer() {
@@ -148,7 +149,7 @@ namespace APG {
 				endOfRoundTimer = ticksPerSecond * secondsAfterLockedInChoice;
 				nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
 				startActionTimer = ticksPerSecond * 2;
-				pausedTimer = ticksPerSecond * 12;
+				pausedTimer = ticksPerSecond * pauseTime;
 
 				gameSys.Sound( roundStart, 1 );
 
@@ -185,7 +186,6 @@ namespace APG {
 		}
 
 		void PlayersEnterChoicesTimer() {
-			
 
 			if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
 				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber+1});

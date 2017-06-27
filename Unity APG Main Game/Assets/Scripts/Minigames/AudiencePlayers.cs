@@ -8,21 +8,18 @@ using APG;
 
 public class AudiencePlayerSys {
 
-	// Move this to the player
-	public float team1Health = 0;
-	public float team2Health = 0;
+	public float team1Health = 20;
+	public float team2Health = 20;
 
-	public float team1MaxHealth = 0;
-	public float team2MaxHealth = 0;
-
+	public float team1MaxHealth = 20;
+	public float team2MaxHealth = 20;
 
 	GameSys gameSys;
 	Players players;
 
 	void RunDebug(PlayerSet playerSet, APGSys apg) {
 		var names = new string[] { "Taki", "Fin", "Castral Fex", "FireTiger", "Ribaeld", "Big Tong", "Gatekeeper", "KittyKat", "Purifier", "Flaer", "Soothsayer13", "xxxBarryxxx", "PlasterPant", "Kokirei", "Fighter", "Seer", "Paninea", "Graethei", "Magesty", "Revolution" };
-		for(var k = 0; k < 20; k++) playerSet.AddPlayer( names[k] );
-		//for(var k = 0; k < 10; k++) playerSet.AddPlayer( names[k] );
+		for(var k = 0; k < 20/*10*/; k++) playerSet.AddPlayer( names[k] );
 		var tick=0;
 		new ent( gameSys ) {
 			update = e => {
@@ -139,7 +136,6 @@ public class AudiencePlayerSys {
 					apg.WriteToClients("pl", new PlayerUpdate { nm = userName, st=new int[] { pl.health, stamina, buildingGoal, goalLayer }, rs= resources });
 					}
 			});
-
 			
 			var buddyID = k;
 			var tick = 0;

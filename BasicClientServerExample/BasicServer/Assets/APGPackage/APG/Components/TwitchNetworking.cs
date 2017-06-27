@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -32,7 +33,7 @@ public class TwitchNetworking:MonoBehaviour {
 
 	//___________________________________________
 
-	public AudienceInterface GetAudienceSys() {
+	public APGSys GetAudienceSys() {
 		return apg;
 	}
 
@@ -104,7 +105,7 @@ public class TwitchNetworking:MonoBehaviour {
 
 		var forceSettingsWrite = false;
 
-		if( settings.BitlyLink != "" ) {
+		if( false ) {// settings.BitlyLink != "" ) {
 		}
 		else {
 			var longUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+settings.GameClientID+"+"+settings.ChatChannelName+"+"+settings.LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
@@ -160,6 +161,8 @@ public class TwitchNetworking:MonoBehaviour {
 		IRCChat.SendMsg( "*** Chat Channel Initialized ***" );
 	}
 
+	int lastLogicWriteTime = -1;
+
 	void InitIRCLogicChannel() {
 
 		IRCLogic.messageRecievedEvent.AddListener(msg => {
@@ -177,15 +180,24 @@ public class TwitchNetworking:MonoBehaviour {
 		IRCLogic.SendMsg( "*** Logic Channel Initialized ***" );
 	}
 
-	static readonly int maxIRCMsgLength = 512;
+	static readonly int maxIRCMsgLength = 480;
 	static readonly int splitterLength = "%%".Length;
 	StringBuilder bufferedCommands = new StringBuilder( maxIRCMsgLength + 1 );
+	Queue<string> commandQueue = new Queue<string>();
 
 	public void WriteMessageToClient<T>( string msg, T parms ) {
 		var s = msg+"###"+JsonUtility.ToJson(parms);
 
 		if( bufferedCommands.Length + splitterLength + s.Length > maxIRCMsgLength ) {
-			IRCLogic.SendMsg( bufferedCommands.ToString() );
+			if (time - lastLogicWriteTime < 30 ) {
+				//Debug.Log("Enqueing " + time+ " " + bufferedCommands);
+				commandQueue.Enqueue(bufferedCommands.ToString());
+			}
+			else {
+				//Debug.Log("Sending " + time + " " + bufferedCommands);
+				IRCLogic.SendMsg(bufferedCommands.ToString());
+				lastLogicWriteTime = time;
+			}
 			bufferedCommands.Length = 0;
 			bufferedCommands.Append( s );
 		}
@@ -227,15 +239,28 @@ public class TwitchNetworking:MonoBehaviour {
 		InitIRCChat();
 		InitIRCLogicChannel();
 	}
-	void Update() {
+
+	void FixedUpdate() {
 		time++;
-		if( (time % 60 * 15) == 0 ) {
+		if( (time % (50 * 20)) == 0 ) {
 			WriteMessageToClient("alive", new EmptyMsg());
 		}
-		if( bufferedCommands.Length > 0 ) {
-			IRCLogic.SendMsg( bufferedCommands.ToString() );
-			bufferedCommands.Length = 0;
+		if (time - lastLogicWriteTime > 30) {
+			if (bufferedCommands.Length > 0) {
+				//Debug.Log("Sending buffered commands " + time +" "+ bufferedCommands );
+				IRCLogic.SendMsg(bufferedCommands.ToString());
+				bufferedCommands.Length = 0;
+				lastLogicWriteTime = time;
+			}
+			else if( commandQueue.Count > 0) {
+				var cmd = commandQueue.Dequeue();
+				//Debug.Log("Sending enqueued commands "+time+ " " + cmd);
+				IRCLogic.SendMsg( cmd );
+				lastLogicWriteTime = time;
+			}
 		}
 		apg.Update();
+
 	}
+
 }

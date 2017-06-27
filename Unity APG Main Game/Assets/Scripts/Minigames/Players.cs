@@ -285,7 +285,6 @@ public class PlayerSys {
 		MakeBreath( pl, blow, inhale, inhaleBig );
 
 		var halotick = 0;
-		var alpha = 0f;
 		new ent(gameSys) {
 			parent = pl, sprite = (id == 2 ? players.player2flash:players.player1flash ), pos = new v3(0,0,0), scale = 1f, name="playerhalo",
 			update = e => {
