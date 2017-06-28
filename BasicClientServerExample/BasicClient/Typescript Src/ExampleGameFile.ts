@@ -11,6 +11,13 @@
  *		When the streamer clicks their mouse anywhere on their screen, a firework will explode
  *		in that location on all clients screens.  And if any client taps or clicks their screen, a firework
  *		will explode on the streamer's screen in that location.
+ *
+ * A Note on the Structure of the Client
+ *  
+ *      There are two main directories for this project, Typescript Src and Website.  The first of these files
+ *      contains this Typescript source, which will be transpiled into a javascript file.  The Website directory
+ *      contains, of course, the actual website that will be uploaded as the game client that audience members
+ *      will download to connect to the streamer's game.  This is where all game assets should go.
  */
 
 // Pre-cache all of the assets we're going to use in this app.  We have to do this to make sure these assets
