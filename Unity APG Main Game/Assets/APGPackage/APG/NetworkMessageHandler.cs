@@ -17,6 +17,11 @@ namespace APG {
 			return this;
 		}
 
+		public NetworkMessageHandler RegisterString(string msgName, Action<string, string> handlerForClientMessage) {
+			commands[msgName] = handlerForClientMessage;
+			return this;
+		}
+
 		public void Run(string user, string msgString) {
 			var jsonMSG = msgString.Split(new string[] { "###" }, StringSplitOptions.None);
 

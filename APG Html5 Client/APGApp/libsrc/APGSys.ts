@@ -113,6 +113,16 @@ interface APGSys {
      */
 	WriteToServer<T>(msgName: string, parmsForMessageToServer: T): void;
 
+    /**
+    * Communicate a message directly to the server without using JSON.  The message should a combination of a string message name, and a string that contains the message's
+    * parameters.  This might be preferrable for performance reasons, but it will be more error-prone.
+    * The message will need a corresponding message handler on the server, and the parameter object will need to be mirrored and kept in sync in the C# code of
+    * the Unity game.
+    * You should really prefer to use WriteToServer unless you have a compelling reason to use this.
+    *
+    * @param msg The message name for this message being sent to the server.
+    */
+    WriteStringToServer(msgName: string, parms: string): void;
 
 
     /* _____________________________________Input______________________________________ */
@@ -139,6 +149,16 @@ interface APGSys {
      */
     RegisterPeer<T>(msgName: string, funcForServerMessage: (user: string, parmsForHandler: T) => void): APGSys;
 
+     /**
+     * Register an input message handler for network messages sent by the server.  Make sure that the message name and string
+     * containing the message's parameters are mirrored in the streamer's Unity game, in the C# code.  This won't use JSON to
+     * encode the message, so it might be preferrable for performance reasons.
+     *
+     * @param msgName The message name for this message.
+     * @param funcForServerMessage A network message handler that is executed when the server sends a message of type "msgName".
+     */
+	RegisterString(msgName: string, funcForServerMessage: (parmsForHandler: string) => void ): APGSys;
+
 
 
     /* _____________________________________Testing______________________________________ */
@@ -163,8 +183,17 @@ interface APGSys {
     WriteLocal<T>(delay: number, user: string, msgName: string, parmsForMessageToServer: T): void;
 
     /**
+    * Simulate recieving a message from the server.
+    *
+    * @param delay The amount of time to delay before sending this message, in seconds.
+    * @param msgName The message name for this local message.  Only use this for testing and debugging.
+    * @param parmsForMessageToServer The parameters connected to this message.
+    */
+    WriteLocalStringAsServer(delay: number, msgName: string, parmsForMessageToServer: string): void;
+
+
+    /**
     * When changing game modes, make sure that any delayed messages from previous modes are cleared.
     */
     ClearLocalMessages(): void;
-
 }

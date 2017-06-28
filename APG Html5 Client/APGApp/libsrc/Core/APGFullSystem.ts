@@ -24,48 +24,65 @@
 		this.network.update();
 	}
 
-    WriteToServer<T>( msgName: string, parmsForMessageToServer: T): void {
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteToServer : ", "sys");
-            return;
+    CheckMessageParameters<T>(funcName: string, message: string, parmsForMessageToServer: T): boolean {
+        if (message == "") {
+            ConsoleOutput.debugWarn("APGFullSystem." + funcName + ": Missing message name", "sys");
+            return false;
         }
         if (parmsForMessageToServer == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteToServer : ", "sys");
-            return;
+            ConsoleOutput.debugWarn("APGFullSystem." + funcName + ": Missing message parameters ", "sys");
+            return false;
         }
+        return true;
+    }
 
-		this.network.sendMessageToServer(msgName, parmsForMessageToServer);
+    CheckMessageRegisterFunction<T>(funcName: string, message: string, funcForMessageFromServer: T): boolean {
+        if (message == "") {
+            ConsoleOutput.debugWarn("APGFullSystem." + funcName + ": Missing message name", "sys");
+            return false;
+        }
+        if (funcForMessageFromServer == null) {
+            ConsoleOutput.debugWarn("APGFullSystem." + funcName + ": Missing function", "sys");
+            return false;
+        }
+        return true;
+    }
+
+    WriteToServer<T>( message: string, parmsForMessageToServer: T): void {
+        if (!this.CheckMessageParameters("WriteToServer", message, parmsForMessageToServer)) return;
+
+        this.network.sendMessageToServer(this.handlers.JoinNetworkMessage( message, JSON.stringify(parmsForMessageToServer)));
 	}
 
-    WriteLocalAsServer<T>(delay: number, msgName: string, parmsForMessageToServer: T): void {
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteLocalAsServer : ", "sys");
-            return;
-        }
-        if (parmsForMessageToServer == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteLocalAsServer : ", "sys");
-            return;
-        }
+    WriteStringToServer(message: string, parmsForMessageToServer: string): void {
+        if (!this.CheckMessageParameters("WriteStringToServer", message, parmsForMessageToServer)) return;
 
-		this.network.sendServerMessageLocally(delay, msgName, parmsForMessageToServer);
+        this.network.sendMessageToServer(this.handlers.JoinNetworkMessage( message, parmsForMessageToServer));
+    }
+
+
+    WriteLocalAsServer<T>(delay: number, message: string, parmsForMessageToServer: T): void {
+        if (!this.CheckMessageParameters("WriteLocalAsServer", message, parmsForMessageToServer)) return;
+
+        this.network.sendServerMessageLocally(delay, this.handlers.JoinNetworkMessage( message, JSON.stringify(parmsForMessageToServer) ));
 	}
 
-    WriteLocal<T>( delay:number, user: string, msgName: string, parmsForMessageToServer: T): void {
+    WriteLocalStringAsServer(delay: number, message: string, parmsForMessageToServer: string): void {
+        if (!this.CheckMessageParameters("WriteLocalStringAsServer", message, parmsForMessageToServer)) return;
+
+        this.network.sendServerMessageLocally(delay, this.handlers.JoinNetworkMessage( message, parmsForMessageToServer ));
+    }
+
+
+    WriteLocal<T>( delay:number, user: string, message: string, parmsForMessageToServer: T): void {
 
         if (user == "") {
             ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
             return;
         }
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
-            return;
-        }
-        if (parmsForMessageToServer == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
-            return;
-        }
-
-		this.network.sendMessageLocally(delay, user, msgName, parmsForMessageToServer);
+        if (!this.CheckMessageParameters("WriteLocal", message, parmsForMessageToServer)) return;
+        
+        this.network.sendMessageLocally(delay, user, this.handlers.JoinNetworkMessage( message, JSON.stringify(parmsForMessageToServer)) );
     }
 
     ClearLocalMessages(): void {
@@ -74,35 +91,27 @@
 
 	ResetServerMessageRegistry(): APGSys { this.handlers = new NetworkMessageHandler(); return this; }
 
-    Register<T>(msgName: string, handlerForServerMessage: (parmsForHandler: T) => void): APGSys {
+    Register<T>(message: string, handlerForServerMessage: (parmsForHandler: T) => void): APGSys {
+        if (!this.CheckMessageRegisterFunction("Register", message, handlerForServerMessage)) return;
 
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.Register : ", "sys");
-            return;
-        }
-        if (handlerForServerMessage == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.Register : ", "sys");
-            return;
-        }
-
-		this.handlers.Add<T>(msgName, handlerForServerMessage);
+		this.handlers.Add<T>(message, handlerForServerMessage);
 		return this;
 	}
 
-    RegisterPeer<T>(msgName: string, handlerForServerMessage: (user: string, parmsForHandler: T) => void): APGSys {
+    RegisterPeer<T>(message: string, handlerForServerMessage: (user: string, parmsForHandler: T) => void): APGSys {
+        if (!this.CheckMessageRegisterFunction("RegisterPeer", message, handlerForServerMessage)) return;
 
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.RegisterPeer : ", "sys");
-            return;
-        }
-        if (handlerForServerMessage == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.RegisterPeer : ", "sys");
-            return;
-        }
-
-		this.handlers.AddPeerMessage<T>(msgName, handlerForServerMessage);
+		this.handlers.AddPeerMessage<T>(message, handlerForServerMessage);
 		return this;
 	}
+
+    RegisterString(message: string, handlerForServerMessage: (parmsForHandler: string) => void): APGSys {
+        if (!this.CheckMessageRegisterFunction("RegisterString", message, handlerForServerMessage)) return;
+
+        this.handlers.AddString(message, handlerForServerMessage);
+        return this;
+    }
+
 
 	//____________________________________________________
 

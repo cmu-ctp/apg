@@ -309,5 +309,5 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
     category("Choices", 370, 336);
     actionLabels = inCategory(380, 360, 13, ["Location:","Row:","Action 1:", "Action 2:", "Action 3:"]);
 
-    if (apg.networkTestSequence) MainInputTestSequence( apg );
+    if (apg.networkTestSequence) MainInputTestSequence(apg);
 }

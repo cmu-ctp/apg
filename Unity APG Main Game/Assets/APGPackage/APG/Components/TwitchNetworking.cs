@@ -34,6 +34,7 @@ public class TwitchNetworking:MonoBehaviour {
 	//___________________________________________
 
 	public APGSys GetAudienceSys() {
+		if (apg == null) Initialize();
 		return apg;
 	}
 
@@ -63,7 +64,7 @@ public class TwitchNetworking:MonoBehaviour {
 	TwitchIRCChat IRCChat;
 	TwitchIRCLogic IRCLogic;
 
-	AudiencePlayersSys apg;
+	AudiencePlayersSys apg = null;
 
 	int time = 0;
 
@@ -185,8 +186,12 @@ public class TwitchNetworking:MonoBehaviour {
 	StringBuilder bufferedCommands = new StringBuilder( maxIRCMsgLength + 1 );
 	Queue<string> commandQueue = new Queue<string>();
 
-	public void WriteMessageToClient<T>( string msg, T parms ) {
-		var s = msg+"###"+JsonUtility.ToJson(parms);
+	public void WriteMessageToClient<T>(string msg, T parms) {
+		WriteMessageStringToClient(msg, JsonUtility.ToJson(parms));
+	}
+
+	public void WriteMessageStringToClient( string msg, string parms ) {
+		var s = msg+"###"+parms;
 
 		if( bufferedCommands.Length + splitterLength + s.Length > maxIRCMsgLength ) {
 			if (time - lastLogicWriteTime < 30 ) {
@@ -219,10 +224,10 @@ public class TwitchNetworking:MonoBehaviour {
 		return settings.BitlyLink;
 	}
 
-	void Awake() {
-		Debug.Log( "Starting GameLogicChat");
+	void Initialize() {
+		Debug.Log("Starting GameLogicChat");
 
-		apg = new AudiencePlayersSys( this, recorder );
+		apg = new AudiencePlayersSys(this, recorder);
 
 		LoadNetworkSettings();
 
@@ -233,6 +238,10 @@ public class TwitchNetworking:MonoBehaviour {
 		IRCLogic = this.GetComponent<TwitchIRCLogic>();
 		IRCLogic.oauthFunc = () => settings.LogicOauth;
 		IRCLogic.channelNameFunc = () => settings.LogicChannelName;
+	}
+
+	void Awake() {
+		if( apg==null) Initialize();
 	}
 
 	void Start() {

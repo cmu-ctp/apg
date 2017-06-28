@@ -21,10 +21,17 @@ namespace APG {
 		public void WriteLocal<T>(string user, string msg, T parms) {
 			RunHandler(user, msg + "###" + JsonUtility.ToJson(parms));
 		}
+		public void WriteLocalString(string user, string msg, string parms) {
+			RunHandler(user, msg + "###" + parms);
+		}
 
 		public void WriteToClients<T>(string msg, T parms) {
 			network.WriteMessageToClient(msg, parms);
 		}
+		public void WriteStringToClients(string msg, string parms) {
+			network.WriteMessageStringToClient(msg, parms);
+		}
+
 		public void WriteToChat(string msg) {
 			network.SendChatText(msg);
 		}
@@ -41,6 +48,10 @@ namespace APG {
 		}
 		public APGSys Register<T>(string msgName, Action<string, T> funcForClientMessage){
 			handlers.Register<T>(msgName, funcForClientMessage);
+			return this;
+		}
+		public APGSys RegisterString(string msgName, Action<string, string> funcForClientMessage) {
+			handlers.RegisterString(msgName, funcForClientMessage);
 			return this;
 		}
 

@@ -23,19 +23,19 @@ class IRCNetwork{
 		if (chat != null) chat.on("chat", (channel: string, userstate: any, message: string, self: boolean): void => this.handleInputMessage(userstate.username, message));
 	}
 
-	sendMessageToServer<T>(message: string, parms: T): void {
-		this.writeToChat(message + "###" + JSON.stringify(parms));
+	sendMessageToServer(message: string): void {
+		this.writeToChat(message);
 	}
 
-    sendMessageLocally<T>(delay: number, user: string, message: string, parms: T): void {
+    sendMessageLocally(delay: number, user: string, message: string): void {
         if (delay == 0) {
-            this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
+            this.handleInputMessage(user, message);
         }
         else {
             var msg: DelayedMessage = new DelayedMessage();
             msg.time = this.tick + delay * ticksPerSecond ;
             msg.sender = user;
-            msg.message = message + "###" + JSON.stringify(parms);
+            msg.message = message;
 
             if (this.localMessageHead== null) {
                 this.localMessageHead = msg;
@@ -63,8 +63,8 @@ class IRCNetwork{
         }
 	}
 
-    sendServerMessageLocally<T>(delay: number, message: string, parms: T): void {
-        this.sendMessageLocally(delay, this.logicChannelName, message, parms);
+    sendServerMessageLocally(delay: number, message): void {
+        this.sendMessageLocally(delay, this.logicChannelName, message);
     }
 
     clearLocalMessages(): void {

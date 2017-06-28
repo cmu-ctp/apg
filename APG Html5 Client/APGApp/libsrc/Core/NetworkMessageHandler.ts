@@ -12,6 +12,15 @@ class NetworkMessageHandler {
 		this.peerInputs = {};
 	}
 
+    JoinNetworkMessage(message: string, parms: string): string {
+        return message + '###' + parms;
+    }
+
+    SplitNetworkMessage(joinedMessage: string): string[] {
+        return joinedMessage.split("###");
+    }
+
+
 	Add<T>(msgName: string, handlerForServerMessage: (parmsForHandler: T) => void): NetworkMessageHandler {
 		this.inputs[msgName] =
 			function (s: string): void {
@@ -30,9 +39,15 @@ class NetworkMessageHandler {
 		return this;
 	}
 
+    AddString(msgName: string, handlerForServerMessage: (parmsForHandler: string) => void): NetworkMessageHandler {
+        this.inputs[msgName] = handlerForServerMessage;
+        return this;
+    }
+
+
 	Run(message: string): boolean {
 
-		var msgTemp:string[] = message.split("###");
+        var msgTemp: string[] = this.SplitNetworkMessage(message);
 		if (msgTemp.length != 2) {
 			ConsoleOutput.debugError("Bad Network Message: " + message, "network");
 			return false;
@@ -51,7 +66,7 @@ class NetworkMessageHandler {
 
 	RunPeer(user:string, message: string): boolean {
 
-		var msgTemp: string[] = message.split("###");
+        var msgTemp: string[] = this.SplitNetworkMessage( message );
 		if (msgTemp.length != 2) {
 			ConsoleOutput.debugError("Bad Network Message: " + message, "network");
 			return false;

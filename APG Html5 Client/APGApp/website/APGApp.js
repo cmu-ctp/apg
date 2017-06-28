@@ -83,69 +83,77 @@ var APGFullSystem = (function () {
     APGFullSystem.prototype.update = function () {
         this.network.update();
     };
-    APGFullSystem.prototype.WriteToServer = function (msgName, parmsForMessageToServer) {
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteToServer : ", "sys");
-            return;
+    APGFullSystem.prototype.CheckMessageParameters = function (funcName, message, parmsForMessageToServer) {
+        if (message == "") {
+            ConsoleOutput.debugWarn("APGFullSystem." + funcName + ": Missing message name", "sys");
+            return false;
         }
         if (parmsForMessageToServer == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteToServer : ", "sys");
-            return;
+            ConsoleOutput.debugWarn("APGFullSystem." + funcName + ": Missing message parameters ", "sys");
+            return false;
         }
-        this.network.sendMessageToServer(msgName, parmsForMessageToServer);
+        return true;
     };
-    APGFullSystem.prototype.WriteLocalAsServer = function (delay, msgName, parmsForMessageToServer) {
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteLocalAsServer : ", "sys");
-            return;
+    APGFullSystem.prototype.CheckMessageRegisterFunction = function (funcName, message, funcForMessageFromServer) {
+        if (message == "") {
+            ConsoleOutput.debugWarn("APGFullSystem." + funcName + ": Missing message name", "sys");
+            return false;
         }
-        if (parmsForMessageToServer == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteLocalAsServer : ", "sys");
-            return;
+        if (funcForMessageFromServer == null) {
+            ConsoleOutput.debugWarn("APGFullSystem." + funcName + ": Missing function", "sys");
+            return false;
         }
-        this.network.sendServerMessageLocally(delay, msgName, parmsForMessageToServer);
+        return true;
     };
-    APGFullSystem.prototype.WriteLocal = function (delay, user, msgName, parmsForMessageToServer) {
+    APGFullSystem.prototype.WriteToServer = function (message, parmsForMessageToServer) {
+        if (!this.CheckMessageParameters("WriteToServer", message, parmsForMessageToServer))
+            return;
+        this.network.sendMessageToServer(this.handlers.JoinNetworkMessage(message, JSON.stringify(parmsForMessageToServer)));
+    };
+    APGFullSystem.prototype.WriteStringToServer = function (message, parmsForMessageToServer) {
+        if (!this.CheckMessageParameters("WriteStringToServer", message, parmsForMessageToServer))
+            return;
+        this.network.sendMessageToServer(this.handlers.JoinNetworkMessage(message, parmsForMessageToServer));
+    };
+    APGFullSystem.prototype.WriteLocalAsServer = function (delay, message, parmsForMessageToServer) {
+        if (!this.CheckMessageParameters("WriteLocalAsServer", message, parmsForMessageToServer))
+            return;
+        this.network.sendServerMessageLocally(delay, this.handlers.JoinNetworkMessage(message, JSON.stringify(parmsForMessageToServer)));
+    };
+    APGFullSystem.prototype.WriteLocalStringAsServer = function (delay, message, parmsForMessageToServer) {
+        if (!this.CheckMessageParameters("WriteLocalStringAsServer", message, parmsForMessageToServer))
+            return;
+        this.network.sendServerMessageLocally(delay, this.handlers.JoinNetworkMessage(message, parmsForMessageToServer));
+    };
+    APGFullSystem.prototype.WriteLocal = function (delay, user, message, parmsForMessageToServer) {
         if (user == "") {
             ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
             return;
         }
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
+        if (!this.CheckMessageParameters("WriteLocal", message, parmsForMessageToServer))
             return;
-        }
-        if (parmsForMessageToServer == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.WriteLocal : ", "sys");
-            return;
-        }
-        this.network.sendMessageLocally(delay, user, msgName, parmsForMessageToServer);
+        this.network.sendMessageLocally(delay, user, this.handlers.JoinNetworkMessage(message, JSON.stringify(parmsForMessageToServer)));
     };
     APGFullSystem.prototype.ClearLocalMessages = function () {
         this.network.clearLocalMessages();
     };
     APGFullSystem.prototype.ResetServerMessageRegistry = function () { this.handlers = new NetworkMessageHandler(); return this; };
-    APGFullSystem.prototype.Register = function (msgName, handlerForServerMessage) {
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.Register : ", "sys");
+    APGFullSystem.prototype.Register = function (message, handlerForServerMessage) {
+        if (!this.CheckMessageRegisterFunction("Register", message, handlerForServerMessage))
             return;
-        }
-        if (handlerForServerMessage == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.Register : ", "sys");
-            return;
-        }
-        this.handlers.Add(msgName, handlerForServerMessage);
+        this.handlers.Add(message, handlerForServerMessage);
         return this;
     };
-    APGFullSystem.prototype.RegisterPeer = function (msgName, handlerForServerMessage) {
-        if (msgName == "") {
-            ConsoleOutput.debugWarn("APGFullSystem.RegisterPeer : ", "sys");
+    APGFullSystem.prototype.RegisterPeer = function (message, handlerForServerMessage) {
+        if (!this.CheckMessageRegisterFunction("RegisterPeer", message, handlerForServerMessage))
             return;
-        }
-        if (handlerForServerMessage == null) {
-            ConsoleOutput.debugWarn("APGFullSystem.RegisterPeer : ", "sys");
+        this.handlers.AddPeerMessage(message, handlerForServerMessage);
+        return this;
+    };
+    APGFullSystem.prototype.RegisterString = function (message, handlerForServerMessage) {
+        if (!this.CheckMessageRegisterFunction("RegisterString", message, handlerForServerMessage))
             return;
-        }
-        this.handlers.AddPeerMessage(msgName, handlerForServerMessage);
+        this.handlers.AddString(message, handlerForServerMessage);
         return this;
     };
     return APGFullSystem;
@@ -313,18 +321,18 @@ var IRCNetwork = (function () {
         if (chat != null)
             chat.on("chat", function (channel, userstate, message, self) { return _this.handleInputMessage(userstate.username, message); });
     }
-    IRCNetwork.prototype.sendMessageToServer = function (message, parms) {
-        this.writeToChat(message + "###" + JSON.stringify(parms));
+    IRCNetwork.prototype.sendMessageToServer = function (message) {
+        this.writeToChat(message);
     };
-    IRCNetwork.prototype.sendMessageLocally = function (delay, user, message, parms) {
+    IRCNetwork.prototype.sendMessageLocally = function (delay, user, message) {
         if (delay == 0) {
-            this.handleInputMessage(user, message + "###" + JSON.stringify(parms));
+            this.handleInputMessage(user, message);
         }
         else {
             var msg = new DelayedMessage();
             msg.time = this.tick + delay * ticksPerSecond;
             msg.sender = user;
-            msg.message = message + "###" + JSON.stringify(parms);
+            msg.message = message;
             if (this.localMessageHead == null) {
                 this.localMessageHead = msg;
                 msg.next = null;
@@ -350,8 +358,8 @@ var IRCNetwork = (function () {
             }
         }
     };
-    IRCNetwork.prototype.sendServerMessageLocally = function (delay, message, parms) {
-        this.sendMessageLocally(delay, this.logicChannelName, message, parms);
+    IRCNetwork.prototype.sendServerMessageLocally = function (delay, message) {
+        this.sendMessageLocally(delay, this.logicChannelName, message);
     };
     IRCNetwork.prototype.clearLocalMessages = function () {
         this.localMessageHead = null;
@@ -419,6 +427,12 @@ var NetworkMessageHandler = (function () {
         this.inputs = {};
         this.peerInputs = {};
     }
+    NetworkMessageHandler.prototype.JoinNetworkMessage = function (message, parms) {
+        return message + '###' + parms;
+    };
+    NetworkMessageHandler.prototype.SplitNetworkMessage = function (joinedMessage) {
+        return joinedMessage.split("###");
+    };
     NetworkMessageHandler.prototype.Add = function (msgName, handlerForServerMessage) {
         this.inputs[msgName] =
             function (s) {
@@ -435,8 +449,12 @@ var NetworkMessageHandler = (function () {
             };
         return this;
     };
+    NetworkMessageHandler.prototype.AddString = function (msgName, handlerForServerMessage) {
+        this.inputs[msgName] = handlerForServerMessage;
+        return this;
+    };
     NetworkMessageHandler.prototype.Run = function (message) {
-        var msgTemp = message.split("###");
+        var msgTemp = this.SplitNetworkMessage(message);
         if (msgTemp.length != 2) {
             ConsoleOutput.debugError("Bad Network Message: " + message, "network");
             return false;
@@ -451,7 +469,7 @@ var NetworkMessageHandler = (function () {
         return true;
     };
     NetworkMessageHandler.prototype.RunPeer = function (user, message) {
-        var msgTemp = message.split("###");
+        var msgTemp = this.SplitNetworkMessage(message);
         if (msgTemp.length != 2) {
             ConsoleOutput.debugError("Bad Network Message: " + message, "network");
             return false;
