@@ -2,7 +2,7 @@
 
 public class MusicSet : MonoBehaviour {
 
-	public AudioClip mainSong;
+	public AudioClip[] mainSongs;
 	public AudioClip titleSong;
 
 }

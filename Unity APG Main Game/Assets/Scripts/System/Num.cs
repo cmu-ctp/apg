@@ -6,6 +6,7 @@ using v3 = UnityEngine.Vector3;
 
 public static class nm {
 	public static int Between(int min, int val, int max) { return Math.Max(min, Math.Min(max, val)); }
+	public static float Between(float min, float val, float max) { return Math.Max(min, Math.Min(max, val)); }
 	public static float FadeInOut(float t, float scale) { var outVal = Mathf.Sin(t*Mathf.PI)*scale; if(outVal > 1) outVal = 1; return outVal; }
 	public static void ease(ref v3 from, v3 to, float easingFraction) { from = from * (1.0f-easingFraction) + easingFraction * to; }
 	public static void ease(ref float from, float to, float easingFraction) { from = from * (1.0f - easingFraction) + easingFraction * to; }

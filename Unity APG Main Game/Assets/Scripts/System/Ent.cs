@@ -8,6 +8,7 @@ public struct TouchInfo {
 	public ent src;
 	public int style;
 	public int count;
+	public bool isPlayer;
 }
 
 // All of the Serializable / SerialField annotations  are purely for debugging - it makes them visible and inspectable in the UnityEditor at runtime.
@@ -43,6 +44,7 @@ public class ent {
 	public Action<ent, ent, TouchInfo> playerTouch;
 	public Action<ent, ent, TouchInfo> buddyTouch;
 	public Action<ent, ent, TouchInfo> shotTouch;
+	public Action<ent, ent, TouchInfo> objTouch;
 
 	[SerializeField] int sortOrder;
 
@@ -110,6 +112,7 @@ public class ent {
 		playerTouch = (e, user, info) => { };
 		buddyTouch = (e, user, info) => { };
 		shotTouch = (e, user, info) => { };
+		objTouch = (e, user, info) => { };
 		onHurt = (me, source, damage) => { };
 
 		leader = shadowEnt = null;
@@ -151,6 +154,7 @@ public class ent {
 		playerTouch = (e, user, info) => { };
 		buddyTouch = (e, user, info) => { };
 		shotTouch = (e, user, info) => { };
+		objTouch = (e, user, info) => { };
 
 		leader = shadowEnt = null;
 	}
@@ -180,7 +184,7 @@ public class ent {
 	}
 	public Color color { set { if(spr != null )spr.color = value; } }
 	public bool flipped { set { if(spr != null )spr.flipX = value; } get { return spr.flipX; } }
-	public string name { set { src.name = value;} }
+	public string name { set { src.name = value;} get { return src.name; } }
 	public bool active { set {  poolActive = value; src.SetActive( value ); } get { return poolActive; } }
 	public Layers layer {
 		set {
@@ -287,6 +291,7 @@ class PoolEnt {
 	public Action<ent, ent, TouchInfo> playerTouch {set { e.playerTouch=value;} }
 	public Action<ent, ent, TouchInfo> buddyTouch {set { e.buddyTouch=value;} }
 	public Action<ent, ent, TouchInfo> shotTouch {set { e.shotTouch=value;} }
+	public Action<ent, ent, TouchInfo> objTouch { set { e.objTouch = value; } }
 	public Action<ent> update {set { e.update = value;}}
 	public bool inGrid {set { e.inGrid = value; }}
 	public ent shadow { set { e.shadow= value; } }

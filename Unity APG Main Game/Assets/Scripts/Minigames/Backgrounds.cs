@@ -2,8 +2,8 @@
 using v3 = UnityEngine.Vector3;
 
 public class Backgrounds:MonoBehaviour {
-	public Sprite[] trees, bushes, clouds, buildings;
-	public Sprite flag1, flag2;
+	public Sprite[] trees, bushes, clouds, buildings, skies;
+	public Sprite flag1, flag2, overlay, land;
 
 	GameSys gameSys;
 	public v3[] Setup(GameSys theGameSys) {

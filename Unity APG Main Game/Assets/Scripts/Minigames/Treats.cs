@@ -49,38 +49,52 @@ public class TreatSys {
 
 	string[] treatStyles = new string[] { "Wire", "Stone", "Wood", "Oil", "Plastic", "Fur", "Metal", "Rubber" };
 
-	void BasicTreat( v3 pos ) {
-			var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
-			new PoolEnt( entPool ) {
-				sprite = theTreats.goodies, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, 1, .4f, 0 ),
-				update = e => {
-					e.pos += new v3( xvel,vel, 0);
-					vel -= .005f;
-					e.ang += spin;
-					e.removeIfOffScreen();
-					if( e.pos.y < -5f && vel < 0 ) {
-						numBounces++;
-						if( firstBounce ) {
-							firstBounce = false;
-							xvel = rd.f(.1f);
-						}
-						vel *= -.4f;
-						if( numBounces > 3 ) {
-							e.remove();
-						}
-					}
-				},
-				buddyTouch = (e, user, info) => {
-					var cnt = rd.i(2, 7);
-					var style = rd.i(0, treatStyles.Length);
-					var styleStr = treatStyles[style];
-					gameSys.Sound(rd.Sound( theTreats.coinSound ), 1);
-					user.itemTouch(e, user, new TouchInfo { style = style, count = cnt });
-					reactSys.React( e.pos+new v3(0,0,0), "+" + cnt + " " + styleStr, new Color( .3f,.5f,.8f,1));
-					e.remove();
-				}
-			};
-	}
+	public void SpecialTreat( v3 pos ) {
+		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
+		new PoolEnt( entPool ) {
+			sprite = theTreats.goodies, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = 1f, flipped=rd.Test(.5f), name="specialTreat", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, 1, .4f, 0 ),
+			update = e => {
+				e.pos += new v3( xvel,vel, 0);
+				vel -= .005f;
+				e.ang += spin;
+				e.removeIfOffScreen();
+				if( e.pos.y < -5f && vel < 0 ) {
+					numBounces++;
+					if( firstBounce ) { firstBounce = false; xvel = rd.f(.1f); }
+					vel *= -.4f;
+					if( numBounces > 3 ) { e.remove(); } } },
+			buddyTouch = (e, user, info) => {
+				var cnt = rd.i(2, 7);
+				var style = rd.i(0, treatStyles.Length);
+				var styleStr = treatStyles[style];
+				gameSys.Sound(rd.Sound( theTreats.coinSound ), 1);
+				user.itemTouch(e, user, new TouchInfo { style = style, count = cnt });
+				reactSys.React( e.pos+new v3(0,0,0), "A Shoe!", new Color( .3f,.5f,.8f,1));
+				e.remove(); }};}
+
+
+	public void BasicTreat( v3 pos ) {
+		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
+		new PoolEnt( entPool ) {
+			sprite = theTreats.goodies, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, 1, .4f, 0 ),
+			update = e => {
+				e.pos += new v3( xvel,vel, 0);
+				vel -= .005f;
+				e.ang += spin;
+				e.removeIfOffScreen();
+				if( e.pos.y < -5f && vel < 0 ) {
+					numBounces++;
+					if( firstBounce ) { firstBounce = false; xvel = rd.f(.1f); }
+					vel *= -.4f;
+					if( numBounces > 3 ) { e.remove(); } } },
+			buddyTouch = (e, user, info) => {
+				var cnt = rd.i(2, 7);
+				var style = rd.i(0, treatStyles.Length);
+				var styleStr = treatStyles[style];
+				gameSys.Sound(rd.Sound( theTreats.coinSound ), 1);
+				user.itemTouch(e, user, new TouchInfo { style = style, count = cnt });
+				reactSys.React( e.pos+new v3(0,0,0), "+" + cnt + " " + styleStr, new Color( .3f,.5f,.8f,1));
+				e.remove(); }};}
 
 	void BalloonCluster( v3 pos, v3 vel ) {
 		for( var k = 0; k < 4; k++ ) {

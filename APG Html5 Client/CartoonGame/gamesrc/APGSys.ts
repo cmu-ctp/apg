@@ -118,6 +118,7 @@ interface APGSys {
     * parameters.  This might be preferrable for performance reasons, but it will be more error-prone.
     * The message will need a corresponding message handler on the server, and the parameter object will need to be mirrored and kept in sync in the C# code of
     * the Unity game.
+    * You should really prefer to use WriteToServer unless you have a compelling reason to use this.
     *
     * @param msg The message name for this message being sent to the server.
     */
@@ -195,5 +196,4 @@ interface APGSys {
     * When changing game modes, make sure that any delayed messages from previous modes are cleared.
     */
     ClearLocalMessages(): void;
-
 }

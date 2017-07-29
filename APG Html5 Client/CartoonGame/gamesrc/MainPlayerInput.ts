@@ -1,4 +1,13 @@
-﻿function CartoonAssetCache(c: Cacher): void {
+﻿/*
+6 x 3 grid
+6 buildings
+show health, resources, items
+
+attack, defend, assist / heal, use, extract, special
+item 1, item 2, item 3
+*/
+
+function CartoonAssetCache(c: Cacher): void {
     c.images('cartoongame/imgs', ['blueorb.png', 'flag1small.png', 'flag2small.png', 'littleperson.png', 'littleperson2.png', 'bodyleft.png', 'bodyright.png', 'bkg_guide4.png']);
     c.images('cartoongame/imgs/buildings', ['building1.png', 'building2.png', 'building3.png', 'building4.png', 'building5.png', 'building6.png']);
     c.images('cartoongame/imgs/heads', ['headbig1.png', 'headbig2.png', 'headbig3.png', 'headbig4.png', 'headbig5.png', 'headbig6.png', 'headbig7.png', 'headbig8.png', 'headbig9.png', 'headbig10.png', 'headbig11.png', 'headbig12.png', 'headbig13.png', 'headbig14.png', 'headbig15.png', 'headbig16.png', 'headbig17.png', 'headbig18.png', 'headbig19.png', 'headbig20.png']);
@@ -48,7 +57,6 @@ function MainInputTestSequence(apg: APGSys): void {
 function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
     var w = new Phaser.Group(apg.g);
     apg.g.world.add(w);
-    //var w = apg.g.world;
 
 	var fontName: string = "Caveat Brush";
 
@@ -109,11 +117,11 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
         choices[0] = -1;
         choices[1] = -1;
 
-        actionLabel.tx = "Action 1 / 3";
+        actionLabel.tx = "Action:";
         actionLabels[0].tx = "Location:";
         actionLabels[1].tx = "Row:";
-        for (var j: number = 0; j < 3; j++) {
-            actionLabels[j + 2].tx = "Action " + (j + 1) + ": ";
+        for (var j: number = 0; j < 1; j++) {
+            actionLabels[j + 2].tx = "Action: ";
         }
     }
 
@@ -213,9 +221,9 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
             }
             choiceButtons[0].update( locationChoice == -1 );
             choiceButtons[1].update(stanceChoice == -1);
-            choiceButtons[2].update(selected < 3);
+            choiceButtons[2].update(selected < 1);
             choiceButtons[3].update(true);
-            choiceButtons[4].update(locationChoice > -1 && stanceChoice > -1 && selected >= 3 );
+            choiceButtons[4].update(locationChoice > -1 && stanceChoice > -1 && selected >= 1 );
 
             if (choiceButtons[3].selected == 0) {
                 reset();
@@ -229,16 +237,10 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
             if (choiceButtons[2].selected != -1) {
                 // record choice here.
                 actionChoices[selected] = choiceButtons[2].selected;
-                if (selected < 3) {
-                    actionLabels[selected + 2].tx = "Action " + (selected + 1) + ": " + choiceButtons[2].selectedName;
+                if (selected < 1) {
+                    actionLabels[selected + 2].tx = "Action: " + choiceButtons[2].selectedName;
                 }
-				if (selected < 2) {
-					actionLabels[selected+2].tx = "Action " + (selected + 1) + ": " + choiceButtons[2].selectedName;
-                    actionLabel.tx = "Action " + (selected + 2) + " / 3";
-                }
-                else {
-                    actionLabel.tx = "";
-                }
+                actionLabel.tx = "";
                 choiceButtons[2].selected = -1;
 				selected++;
 			}
@@ -247,7 +249,7 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
 
     var roundColors = ['#468', '#846', '#684'];
 
-    new enttx(w, 260, 25, "Actions for ", { font: '36px ' + fontName, fill: '#444' });
+    new enttx(w, 260, 25, "Action for ", { font: '36px ' + fontName, fill: '#444' });
     new enttx(w, 420, 25, "Round ", { font: '36px ' + fontName, fill: roundColors[1] }, {
         upd: e => {
             if (roundNumber != lastRoundUpdate) {
@@ -271,7 +273,7 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
 
     new enttx(w, 250, 110, "Tip", { font: '18px ' + fontName, fill: '#433' }, {upd: e => {e.visible = (toolTip == "") ? false : true;}});
 
-    actionLabel = new enttx(w, 40, 110, "Action 1 / 3", { font: '24px ' + fontName, fill: '#A00' });
+    actionLabel = new enttx(w, 40, 110, "Action", { font: '24px ' + fontName, fill: '#A00' });
     
     new enttx(w, 700, 110, "Row", { font: '24px ' + fontName, fill: '#A00' }, { upd: e => { e.visible = choiceButtons[1].selected == -1 } });
     stanceBody = new ent(w, 740, 160 + lastStance * 64, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: e => { e.visible = choiceButtons[1].selected == -1 } });
@@ -307,7 +309,7 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
     nstatLabels2 = inCategory(314, 360, 13, ["10", "0", "0", "0", "0"]);
 
     category("Choices", 370, 336);
-    actionLabels = inCategory(380, 360, 13, ["Location:","Row:","Action 1:", "Action 2:", "Action 3:"]);
+    actionLabels = inCategory(380, 360, 13, ["Location:","Row:","Action:"]);
 
     if (apg.networkTestSequence) MainInputTestSequence(apg);
 }

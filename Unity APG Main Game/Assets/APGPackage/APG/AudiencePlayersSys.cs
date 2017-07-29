@@ -38,6 +38,9 @@ namespace APG {
 		public string LaunchAPGClientURL() {
 			return network.LaunchAPGClientURL();
 		}
+		public Texture2D MobileJoinQRCode() {
+			return network.MobileJoinQRCode();
+		}
 		public ChatterInterface Chatters() {
 			return chatSys;
 		}

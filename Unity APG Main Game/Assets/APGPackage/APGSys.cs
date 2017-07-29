@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace APG {
 	/**
@@ -13,10 +14,12 @@ namespace APG {
 			*/
 		string LaunchAPGClientURL();
 
-		/**
-		 * DON'T RELY ON THIS YET - ITS STILL UNDER CONSTRUCTION
-		 */
-		ChatterInterface Chatters();
+		Texture2D MobileJoinQRCode();
+
+			/**
+			 * DON'T RELY ON THIS YET - ITS STILL UNDER CONSTRUCTION
+			 */
+			ChatterInterface Chatters();
 
 		/* _____________________________________Output______________________________________ */
 

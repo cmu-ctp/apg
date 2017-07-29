@@ -18,7 +18,7 @@ declare var ticksPerSecond: any;
 
 function WaitingForJoinAcknowledgeTestSequence(apg: APGSys): void {
     apg.ClearLocalMessages();
-    apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 6, team: 1 });
+    apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 1 });
 }
 
 function WaitingForJoinAcknowledement(apg: APGSys): void {

@@ -25,12 +25,12 @@
     "x": 40,
     "y": 160,
     "choices": [
-      {"x": 0, "y": 0, "name": "Defend", "pic": "defend","tip":"Protect yourself and all players standing at the same building as you.  You will all take less damage.  Only on player can do this per building.  Uses x stamina." },
-      {"x": 64, "y": 0, "name": "Assist", "pic": "assist","tip": "Aid other players who are extracting, building, or activating at the same building as you.  Only one player can do this per building.  Gives back x stamina."},
-      {"x": 128, "y": 0, "name": "Heal","pic": "heal","tip": "Heal other players next to you, in all four directions, as well as yourself.  Uses x stamina."},
-      {"x": 0, "y": 64, "name": "Build",  "pic": "build","tip":"Build or repair the building you're at.  This can upgrade buildings.  No more than 2 players can do this at a building each turn.  Uses x stamina." },
-	  {"x": 64, "y": 64, "name": "Extract", "pic": "harvest","tip":"Extract resources from the building you're at.  What is extracted depends on the building type.  Buildings have limits on how many players can extract from them per turn.  Uses x stamina." },      
-      {"x": 128, "y": 64, "name": "Activate", "pic": "activate","tip":"Use special ability of building you're at.  Depending on the building, this might use resources, and might use or restore stamina." },
+      {"x": 0, "y": 0, "name": "Attack",  "pic": "build","tip":"" },
+      {"x": 64, "y": 0, "name": "Defend", "pic": "defend","tip":"Protect yourself and all players standing at the same building as you.  You will all take less damage." },
+      {"x": 128, "y": 0, "name": "Heal","pic": "heal","tip": "Heal other players next to you, as well as yourself."},
+	  {"x": 0, "y": 64, "name": "Extract", "pic": "harvest","tip":"Extract resources from the building you're at.  What is extracted depends on the building type." },      
+      {"x": 64, "y": 64, "name": "Activate", "pic": "activate","tip":"Use special ability of building you're at." },
+      {"x": 128, "y": 64, "name": "Special", "pic": "assist","tip": ""},
       {"x": 0, "y": 128, "name": "Item 1","pic": "bag1","tip": "This will be the first item that you collect over the course of the game."},
       {"x": 64, "y": 128, "name": "Item 2","pic": "bag2","tip": "This will be the second item that you collect over the course of the game."},
       {"x": 128, "y": 128, "name": "Item 3","pic": "bag3","tip": "This will be the third item that you collect over the course of the game."}

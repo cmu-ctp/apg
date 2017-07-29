@@ -373,11 +373,11 @@ function MainPlayerInput(apg, id, team) {
         actionChoices = [-1, -1, -1];
         choices[0] = -1;
         choices[1] = -1;
-        actionLabel.tx = "Action 1 / 3";
+        actionLabel.tx = "Action:";
         actionLabels[0].tx = "Location:";
         actionLabels[1].tx = "Row:";
-        for (var j = 0; j < 3; j++) {
-            actionLabels[j + 2].tx = "Action " + (j + 1) + ": ";
+        for (var j = 0; j < 1; j++) {
+            actionLabels[j + 2].tx = "Action: ";
         }
     }
     apg.ResetServerMessageRegistry()
@@ -477,9 +477,9 @@ function MainPlayerInput(apg, id, team) {
             }
             choiceButtons[0].update(locationChoice == -1);
             choiceButtons[1].update(stanceChoice == -1);
-            choiceButtons[2].update(selected < 3);
+            choiceButtons[2].update(selected < 1);
             choiceButtons[3].update(true);
-            choiceButtons[4].update(locationChoice > -1 && stanceChoice > -1 && selected >= 3);
+            choiceButtons[4].update(locationChoice > -1 && stanceChoice > -1 && selected >= 1);
             if (choiceButtons[3].selected == 0) {
                 reset();
             }
@@ -490,23 +490,17 @@ function MainPlayerInput(apg, id, team) {
             }
             if (choiceButtons[2].selected != -1) {
                 actionChoices[selected] = choiceButtons[2].selected;
-                if (selected < 3) {
-                    actionLabels[selected + 2].tx = "Action " + (selected + 1) + ": " + choiceButtons[2].selectedName;
+                if (selected < 1) {
+                    actionLabels[selected + 2].tx = "Action: " + choiceButtons[2].selectedName;
                 }
-                if (selected < 2) {
-                    actionLabels[selected + 2].tx = "Action " + (selected + 1) + ": " + choiceButtons[2].selectedName;
-                    actionLabel.tx = "Action " + (selected + 2) + " / 3";
-                }
-                else {
-                    actionLabel.tx = "";
-                }
+                actionLabel.tx = "";
                 choiceButtons[2].selected = -1;
                 selected++;
             }
         }
     });
     var roundColors = ['#468', '#846', '#684'];
-    new enttx(w, 260, 25, "Actions for ", { font: '36px ' + fontName, fill: '#444' });
+    new enttx(w, 260, 25, "Action for ", { font: '36px ' + fontName, fill: '#444' });
     new enttx(w, 420, 25, "Round ", { font: '36px ' + fontName, fill: roundColors[1] }, {
         upd: function (e) {
             if (roundNumber != lastRoundUpdate) {
@@ -526,7 +520,7 @@ function MainPlayerInput(apg, id, team) {
     });
     choiceButtons = addActions(choices, setToolTip);
     new enttx(w, 250, 110, "Tip", { font: '18px ' + fontName, fill: '#433' }, { upd: function (e) { e.visible = (toolTip == "") ? false : true; } });
-    actionLabel = new enttx(w, 40, 110, "Action 1 / 3", { font: '24px ' + fontName, fill: '#A00' });
+    actionLabel = new enttx(w, 40, 110, "Action", { font: '24px ' + fontName, fill: '#A00' });
     new enttx(w, 700, 110, "Row", { font: '24px ' + fontName, fill: '#A00' }, { upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
     stanceBody = new ent(w, 740, 160 + lastStance * 64, bodyPic, { scalex: 1, scaley: 1, color: bodyColor, upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
     stanceHead = new ent(w, 731, 146 + lastStance * 64, sheadPic, { upd: function (e) { e.visible = choiceButtons[1].selected == -1; } });
@@ -555,7 +549,7 @@ function MainPlayerInput(apg, id, team) {
     nstatLabels = inCategory(214, 360, 13, ["5", "0", "0", "0", "0"]);
     nstatLabels2 = inCategory(314, 360, 13, ["10", "0", "0", "0", "0"]);
     category("Choices", 370, 336);
-    actionLabels = inCategory(380, 360, 13, ["Location:", "Row:", "Action 1:", "Action 2:", "Action 3:"]);
+    actionLabels = inCategory(380, 360, 13, ["Location:", "Row:", "Action:"]);
     if (apg.networkTestSequence)
         MainInputTestSequence(apg);
 }
@@ -586,7 +580,7 @@ function JoinAcknowledgeCache(c) {
 }
 function WaitingForJoinAcknowledgeTestSequence(apg) {
     apg.ClearLocalMessages();
-    apg.WriteLocalAsServer(.1, "join", { name: apg.playerName, started: true, playerID: 6, team: 1 });
+    apg.WriteLocalAsServer(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 1 });
 }
 function WaitingForJoinAcknowledement(apg) {
     var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);

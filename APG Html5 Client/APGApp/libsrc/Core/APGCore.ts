@@ -68,7 +68,13 @@
 		}
 
 		function launchGame() {
-			onLoadEnd();
+            onLoadEnd();
+
+           // ...
+            /*var videoList = $('.browser').find('video');
+            var pp = videoList[0];
+            pp.style.display = 'none';*/
+
             var apg: APGFullSystem = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence, allowFullScreen );
 			var showingOrientationWarning = false;
 			setInterval(function () {

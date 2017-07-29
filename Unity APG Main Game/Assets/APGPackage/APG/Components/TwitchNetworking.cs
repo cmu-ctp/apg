@@ -6,6 +6,8 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using APG;
+using ZXing;
+using ZXing.QrCode;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -68,9 +70,24 @@ public class TwitchNetworking:MonoBehaviour {
 
 	int time = 0;
 
+	Texture2D mobileQRCode = null;
+
 	IRCNetworkRecorder recorder = new IRCNetworkRecorder();
 
 	//___________________________________________
+
+	private static Color32[] Encode(string textForEncoding, int width, int height) {
+		var writer = new BarcodeWriter { Format = BarcodeFormat.QR_CODE, Options = new QrCodeEncodingOptions { Height = height, Width = width } };
+		return writer.Write(textForEncoding);
+	}
+
+	private Texture2D generateQR(string text) {
+		var encoded = new Texture2D(256, 256);
+		var color32 = Encode(text, encoded.width, encoded.height);
+		encoded.SetPixels32(color32);
+		encoded.Apply();
+		return encoded;
+	}
 
 	private Uri ShortenUri(Uri longUri, string login, string apiKey, bool addHistory) {
 	  const string bitlyUrl = @"http://api.bit.ly/shorten?longUrl={0}&apiKey={1}&login={2}&version=2.0.1&format=json&history={3}";
@@ -112,6 +129,8 @@ public class TwitchNetworking:MonoBehaviour {
 			var longUrl = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id="+settings.GameClientID+"&state="+settings.GameClientID+"+"+settings.ChatChannelName+"+"+settings.LogicChannelName+"&redirect_uri="+settings.RedirectLink+"&scope=user_read+channel_read+chat_login";
 
 			Debug.Log( "Use the following URL for a bitly link:" + longUrl );
+
+			mobileQRCode = generateQR(longUrl);
 
 			//settings.BitlyLink = ShortenUri( new Uri( longUrl ), "kenzidelx", "R_9945fa5fc55249e28f45da879047ba24", false ).ToString();
 
@@ -223,6 +242,14 @@ public class TwitchNetworking:MonoBehaviour {
 	public string LaunchAPGClientURL() {
 		return settings.BitlyLink;
 	}
+
+	public Texture2D MobileJoinQRCode() {
+		if(mobileQRCode == null) {
+
+		}
+		return mobileQRCode;
+	}
+
 
 	void Initialize() {
 		Debug.Log("Starting GameLogicChat");
