@@ -14,13 +14,15 @@ class DelayedMessage {
 
 class IRCNetwork{
 
+    disconnected: boolean;
+
 	constructor(getHandlers: () => NetworkMessageHandler, player: string, logicChannelName: string, chat: tmiClient) {
 		this.getHandlers = getHandlers;
 		this.playerName = player;
 		this.logicChannelName = logicChannelName;
 		this.channelName = '#' + logicChannelName;
 		this.chat = chat;
-		if (chat != null) chat.on("chat", (channel: string, userstate: any, message: string, self: boolean): void => this.handleInputMessage(userstate.username, message));
+        if (chat != null) chat.on("chat", (channel: string, userstate: any, message: string, self: boolean): void => { this.lastReadMessageTime = this.tick; this.handleInputMessage(userstate.username, message); });
 	}
 
 	sendMessageToServer(message: string): void {
@@ -72,16 +74,27 @@ class IRCNetwork{
         this.tick = 0;
     }
 
-	update(): void {
-        this.lastMessageTime--;
+	update( useKeepAlive:boolean ): void {
+        this.lastSendMessageTime--;
         this.tick++;
+
+        if (useKeepAlive && (this.tick % keepAliveTime == 0)) {
+            this.sendMessageToServer("alive###{}");
+        }
+
+        if (this.chat != null && this.tick - this.lastReadMessageTime > disconnectionTime) {
+            this.disconnected = true;
+        }
+        else {
+            this.disconnected = false;
+        }
 
         while (this.localMessageHead != null && this.localMessageHead.time < this.tick ) {
             this.handleInputMessage(this.localMessageHead.sender, this.localMessageHead.message);
             this.localMessageHead = this.localMessageHead.next;
         }
 
-		if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {
+		if (this.lastSendMessageTime <= 0 && this.messageQueue.length > 0) {
 
 			var delayedMessage = this.messageQueue.shift();
 
@@ -98,7 +111,8 @@ class IRCNetwork{
 	private chat: tmiClient;
 
 	private channelName: string;
-    private lastMessageTime: number = 0;
+    private lastSendMessageTime: number = 0;
+    private lastReadMessageTime: number = 0;
     private tick: number = 0;
 	private messageQueue: string[] = [];
 
@@ -135,7 +149,7 @@ class IRCNetwork{
 
 	private writeToChat(s: string): void {
 
-		if (this.lastMessageTime > 0) {
+		if (this.lastSendMessageTime > 0) {
 			if (this.messageQueue.length > maxBufferedIRCWrites) {
 				ConsoleOutput.debugWarn("writeToChat: maxBufferedIRCWrites exceeded.  Too many messages have been queued.  Twitch IRC limits how often clients can post into IRC channels.");
 				return;
@@ -149,6 +163,6 @@ class IRCNetwork{
 		if (debugLogOutgoingIRCChat) {
 			ConsoleOutput.debugLog(s, "network");
 		}
-		this.lastMessageTime = IRCWriteDelayInSeconds * ticksPerSecond;
+		this.lastSendMessageTime = IRCWriteDelayInSeconds * ticksPerSecond;
 	}
 }

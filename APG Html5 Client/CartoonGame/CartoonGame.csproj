@@ -28,6 +28,7 @@
     <Content Include="website\APGApp.js" />
     <Content Include="website\bounce.htm" />
     <Content Include="website\client.css" />
+    <Content Include="website\gosas.html" />
     <Content Include="website\phaser.js" />
     <Content Include="website\phaser.min.js" />
   </ItemGroup>

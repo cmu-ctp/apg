@@ -1,27 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-using v3 = UnityEngine.Vector3;
 
-
+//	This shouldn't be smeared out between here and gamebuilder...
+ 
 namespace APG {
+
+	class PlayerEntry { public string name; public int lastMessageTime; public int buddyID; public BuddyFuncs funcs;}
 
 	public class APGBasicGameLogic:MonoBehaviour {
 
 		public GameBuilder src;
-
 		public TwitchNetworking network;
-		public int maxPlayers = 20;
-		public int secondsPerChoice = 5;//40;
-		public int pauseTime = 12;
-		public int secondsAfterLockedInChoice = 7;
-
+		public int secondsPerChoice = 40;
 		public AudioClip timerCountDown, roundOver, roundStart;
 
 		// ___________________________________
 
-		public PlayerSet GetPlayers() { return players; }
 		public void SetGameSys( GameSys theSys ) { gameSys = theSys;}
 		public void SetAudiencePlayers( AudiencePlayerSys audiencePlayerSys ) { buddies = audiencePlayerSys; }
+		PlayerSys playerSys;
+		public void SetPlayers(PlayerSys thePlayerSys) { playerSys = thePlayerSys; }
 
 		// ___________________________________
 
@@ -29,6 +28,8 @@ namespace APG {
 		struct RoundUpdate{ public int round; public int time; }
 		[Serializable]
 		struct EmptyParms{ }
+		[Serializable]
+		struct RoundParms { public int health1; public int health2; }
 		// join
 		[Serializable]
 		struct ClientJoinParms{ public string name; public int team; public int playerID; public bool started;}
@@ -40,78 +41,120 @@ namespace APG {
 
 		public bool waitingForGameToStart = true; public float player1ChargeRatio = 0f; public float player2ChargeRatio = 0f;
 
-		int ticksPerSecond = 60; float nextChatInviteTime; int nextAudiencePlayerChoice; int endOfRoundTimer; int roundNumber = 1; int pausedTimer = 0; int startActionTimer;
-		GameSys gameSys; AudiencePlayerSys buddies; Action timerUpdater; APGSys apg; PlayerSet players = new PlayerSet();
+		public void OnGameStart() { apg.WriteToClients("start", new EmptyParms { }); }
+		public int GetRoundNumber() { return roundNumber; }
+		public int GetRoundTime() { return nextAudiencePlayerChoice; }
+		public int GetGameTime() { return gameTime; }
 
-		public void OnGameStart() {apg.WriteToClients("start", new EmptyParms {});}
+		// ___________________________________
+
+		Dictionary<string, PlayerEntry> playerMap = new Dictionary<string, PlayerEntry>();
+		int activePlayers = 0;
+		int ticksPerSecond = 60; float nextChatInviteTime; int roundNumber = 1; 
+		GameSys gameSys; AudiencePlayerSys buddies; APGSys apg; 
+		Action timerUpdater;
+		int maxPlayers = 20;
+		int secondsAfterLockedInChoice = 7;
+		int nextAudiencePlayerChoice;
+		bool pauseEnded = false;
+		int gameTime = 0;
+		int appTime = 0;
+
+		void ClearDisconnectedPlayers() {
+			var deadPlayers = new List<string>();
+			foreach( var p in playerMap.Values) {
+				if (appTime - p.lastMessageTime > 50 * 50) { activePlayers--; p.funcs.onLeave(); deadPlayers.Add(p.name); }}
+			for (var k = 0; k < deadPlayers.Count; k++) playerMap.Remove(deadPlayers[k]);}
+		void SetPlayerMessageTime( string user ) {
+			if (playerMap.ContainsKey(user) == false) return;
+			playerMap[user].lastMessageTime = appTime;}
+		bool AddPlayer(string user) {
+			if (playerMap.ContainsKey(user) == true) return false;
+			var buddyID = -1;
+			for( var k = 0; k < buddies.buddyFuncs.Count; k++) { if( buddies.buddyFuncs[k].inUse() == false) { buddyID = k; break; }}
+			if( buddyID == -1) return false;
+			playerMap[user] = new PlayerEntry { lastMessageTime=appTime, name=user, buddyID=buddyID, funcs = buddies.buddyFuncs[buddyID]  };
+			playerMap[user].funcs.onJoin(user);
+			activePlayers++;
+			return true;}
+		bool SetPlayerInput(string user, int[] parms) {
+			if (playerMap.ContainsKey(user) == false) return false;
+			playerMap[user].funcs.onInput(parms);
+			return true;}
+		int ChoiceTime() { return nextAudiencePlayerChoice - ticksPerSecond * 2 - ticksPerSecond * secondsAfterLockedInChoice; }
 		void Start() {
-			nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
-			endOfRoundTimer = ticksPerSecond * secondsAfterLockedInChoice;
-			startActionTimer = ticksPerSecond * 2;
-			pausedTimer = ticksPerSecond * pauseTime;
-			timerUpdater = PlayersEnterChoicesTimer;
+			SetupTimers();
 			nextChatInviteTime = ticksPerSecond * 10;
 			apg = network.GetAudienceSys();
 			apg.ResetClientMessageRegistry()
+				.Register<EmptyParms>("alive", (user, p) => {SetPlayerMessageTime(user);})
 				.Register<EmptyParms>("join", (user, p) => {
-					if (players.AddPlayer(user)) {
-						var id = players.GetPlayerID(user);
+					if (AddPlayer(user)) {
+						SetPlayerMessageTime(user);
+						var id = playerMap[user].buddyID;
 						apg.WriteToClients("join", new ClientJoinParms { name = user, started=!waitingForGameToStart, playerID=id/2, team= (id%2==0)?1:2 });}})
-				.Register<SelectionParms>("upd", (user, p) => { players.SetPlayerInput(user, p.choices);});}
+				.Register<SelectionParms>("upd", (user, p) => {
+					SetPlayerMessageTime(user);
+					SetPlayerInput(user, p.choices);});}
 		void InviteAudience() {
 			nextChatInviteTime--;
-			if(players.PlayerCount() < maxPlayers) {
+			if(activePlayers < maxPlayers) {
 				if(nextChatInviteTime <= 0) {
-					if(players.PlayerCount() == 0) {apg.WriteToChat("Up to 20 people can play!  Join here: " + apg.LaunchAPGClientURL());}
-					else {apg.WriteToChat("" + players.PlayerCount() + " of " + maxPlayers + " are playing!  Join here: " + apg.LaunchAPGClientURL());}
+					if(activePlayers == 0) {apg.WriteToChat("Up to 20 people can play!  Join here: " + apg.LaunchAPGClientURL());}
+					else {apg.WriteToChat("" + activePlayers + " of " + maxPlayers + " are playing!  Join here: " + apg.LaunchAPGClientURL());}
 					nextChatInviteTime = ticksPerSecond * 30;}}
 			else {
 				if(nextChatInviteTime <= 0) {
 					apg.WriteToChat("The game is full!  Get in line to play: " + apg.LaunchAPGClientURL());
 					nextChatInviteTime = ticksPerSecond * 60;}}}
-		public int GetRoundNumber() {return roundNumber;}
-		public int GetRoundTime() {return endOfRoundTimer + nextAudiencePlayerChoice + startActionTimer;}
-		public float BetweenRoundPauseRatio() {
-			if( timerUpdater != PausedTimer ) {return 0;}
-			return pausedTimer/(ticksPerSecond * (float)pauseTime);}
+
+		void FixedUpdate() {
+			appTime++;
+			if ((appTime % (50 * 2)) == 0) ClearDisconnectedPlayers();
+			if (playerSys.team1Health == 0 ) {gameSys.gameOver=true;}
+			else if(playerSys.team2Health == 0 ) {gameSys.gameOver=true;}
+			else {  InviteAudience(); if( !waitingForGameToStart ) timerUpdater();}}
+		void SetupTimers() {
+			nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
+			pauseEnded = false;
+			timerUpdater = PlayersEnterChoicesTimer;}
+
+		void AtEnterChoicesEnd() {
+			apg.WriteToClients("submit", new EmptyParms());
+			apg.WriteToClients("time", new RoundUpdate { time = (int)(ChoiceTime() / 60), round = roundNumber + 1 });}
+		void AtCollectPlayerActionsEnd() {
+			buddies.RoundUpdate();
+			buddies.SetGoalPositions();
+			buddies.UpdatePlayersToClients(apg);}
+		void AtStartActionEnd() {
+			roundNumber++;
+			apg.WriteToClients("time", new RoundUpdate { time = secondsPerChoice, round = roundNumber + 1 });
+			gameSys.Sound(roundOver, 1);
+			src.MakeRoundEnd(roundNumber, ticksPerSecond, buddies.GetPlayerGrid(), () => pauseEnded = true);}
+		void AtPausedTimerEnd() {
+			SetupTimers();
+			gameSys.Sound(roundStart, 1);
+			apg.WriteToClients("startround", new RoundParms { health1=(int)playerSys.team1Health, health2 = (int)playerSys.team2Health  });}
 		void PausedTimer() {
-			if( pausedTimer == 0 ) {
-				endOfRoundTimer = ticksPerSecond * secondsAfterLockedInChoice;
-				nextAudiencePlayerChoice = ticksPerSecond * secondsPerChoice;
-				startActionTimer = ticksPerSecond * 2;
-				pausedTimer = ticksPerSecond * pauseTime;
-				gameSys.Sound( roundStart, 1 );
-				timerUpdater = PlayersEnterChoicesTimer;
-				apg.WriteToClients("startround", new EmptyParms { });}}
+			if( pauseEnded ) {
+				AtPausedTimerEnd();}}
 		void StartActionTimer() {
-			startActionTimer--;
-			if( startActionTimer == 0 ) {
-				// Run some sort of between round thinker here.
-				roundNumber++;
-				apg.WriteToClients("time", new RoundUpdate { time = secondsPerChoice, round = roundNumber + 1 });
-				gameSys.Sound( roundOver, 1 );
-				src.MakeRoundEnd( roundNumber, ticksPerSecond, players.GetPlayerGrid(), players.GetEndOfRoundInfo(), val => pausedTimer = val );
+			gameTime++;
+			nextAudiencePlayerChoice--;
+			if(nextAudiencePlayerChoice <= 0 ) {
+				AtStartActionEnd();
 				timerUpdater = PausedTimer;}}
 		void CollectPlayerChoicesTimer() {
-			endOfRoundTimer--;
-			if( endOfRoundTimer == 0 ) {
-				players.RoundUpdate();
-				players.SetGoalPositions();
-				players.UpdatePlayersToClients(apg);
+			gameTime++;
+			nextAudiencePlayerChoice--;
+			if(nextAudiencePlayerChoice <= ticksPerSecond * 2) {
+				AtCollectPlayerActionsEnd();
 				timerUpdater = StartActionTimer;}}
 		void PlayersEnterChoicesTimer() {
-			if((nextAudiencePlayerChoice % (ticksPerSecond * 5) == 0) || (nextAudiencePlayerChoice % (ticksPerSecond * 1) == 0 && nextAudiencePlayerChoice < (ticksPerSecond * 5))) {
-				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber+1});}
+			gameTime++;
+			if ((ChoiceTime() % (ticksPerSecond * 5) == 0) || (ChoiceTime() % (ticksPerSecond * 1) == 0 && ChoiceTime() < (ticksPerSecond * 5))) {
+				apg.WriteToClients( "time", new RoundUpdate {time=(int)(ChoiceTime()/ 60),round= roundNumber+1});}
 			nextAudiencePlayerChoice--;
-			if ( nextAudiencePlayerChoice == 0 ) {
-				apg.WriteToClients("submit", new EmptyParms() );
-				//roundNumber++;
-				apg.WriteToClients( "time", new RoundUpdate {time=(int)(nextAudiencePlayerChoice/60),round= roundNumber+1});
-				timerUpdater = CollectPlayerChoicesTimer;}}
-		void FixedUpdate() {
-			if( buddies.team1Health == 0 ) {gameSys.gameOver=true;}
-			else if( buddies.team2Health == 0 ) {gameSys.gameOver=true;}
-			else { 
-				InviteAudience();
-				// FIXME - this isn't handling framerate drops correctly.
-				if( !waitingForGameToStart ) {timerUpdater();}}}}}
+			if ( nextAudiencePlayerChoice <= ticksPerSecond * 2 + ticksPerSecond * secondsAfterLockedInChoice) {
+				AtEnterChoicesEnd();
+				timerUpdater = CollectPlayerChoicesTimer;}}}}

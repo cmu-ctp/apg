@@ -3,12 +3,18 @@ using System;
 using System.Collections.Generic;
 using v3 = UnityEngine.Vector3;
 
+public enum TouchFlag { IsAirbourne = 1<<0 }
+
 public struct TouchInfo {
+	public int damage;
 	public int strength;
 	public ent src;
 	public int style;
+	public bool isItem;
+	public uint flags;
 	public int count;
 	public bool isPlayer;
+	public bool showDamage;
 }
 
 // All of the Serializable / SerialField annotations  are purely for debugging - it makes them visible and inspectable in the UnityEditor at runtime.
@@ -38,7 +44,7 @@ public class ent {
 
 	public float val1, val2;
 
-	public Action<ent, ent, int> onHurt = (me, source, damage) => { };
+	public Action<ent, ent, TouchInfo> onHurt = (me, source, damage) => { };
 	public Action<ent, ent, TouchInfo> itemTouch;
 	public Action<ent, ent, TouchInfo> breathTouch;
 	public Action<ent, ent, TouchInfo> playerTouch;
@@ -172,6 +178,7 @@ public class ent {
 	public void MoveBy(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.Translate(new v3(x, y, z), Space.World); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public void MoveTo(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.position = new v3(x, y, z); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public Sprite sprite { set { if( spr != null)spr.sprite = value; } get { return spr.sprite; } }
+	public Material material { set { if (spr != null) spr.material = value; } }
 	public void SortByZ() {
 		if(ren != null ) {
 			if( isShadow ) {
@@ -182,7 +189,7 @@ public class ent {
 			}
 		}
 	}
-	public Color color { set { if(spr != null )spr.color = value; } }
+	public Color color { set { if(spr != null )spr.color = value; } get { return spr.color; } }
 	public bool flipped { set { if(spr != null )spr.flipX = value; } get { return spr.flipX; } }
 	public string name { set { src.name = value;} get { return src.name; } }
 	public bool active { set {  poolActive = value; src.SetActive( value ); } get { return poolActive; } }
@@ -190,8 +197,17 @@ public class ent {
 		set {
 			string s = "";
 			switch(value) {
+				case Layers.Fade:
+					s = "Fade";
+					break;
 				case Layers.UI:
 					s = "UI";
+					break;
+				case Layers.UIMid:
+					s = "UIMid";
+					break;
+				case Layers.UIBkg:
+					s = "UIBkg";
 					break;
 				case Layers.Game:
 					s = "Default";
@@ -285,7 +301,7 @@ class PoolEnt {
 	public ent leader {set { e.leader=value;} }
 	public v3 vel {set { e.vel=value;} }
 	public v3 knockback {set { e.knockback=value;} }
-	public Action<ent, ent, int> onHurt { set { e.onHurt = value; } }
+	public Action<ent, ent, TouchInfo> onHurt { set { e.onHurt = value; } }
 	public Action<ent, ent, TouchInfo> itemTouch { set { e.itemTouch = value; } }
 	public Action<ent, ent, TouchInfo> breathTouch {set { e.breathTouch=value;} }
 	public Action<ent, ent, TouchInfo> playerTouch {set { e.playerTouch=value;} }

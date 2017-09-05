@@ -74,14 +74,22 @@ var APGFullSystem = (function () {
         this.g = g;
         this.JSONAssets = JSONAssets;
         if (playerName == "")
-            playerName = "defaultPlayerName";
+            playerName = "ludolab";
+        this.useKeepAlive = false;
         this.playerName = playerName;
         this.allowFullScreen = allowFullScreen;
         this.networkTestSequence = networkTestSequence;
         this.network = new IRCNetwork(function () { return _this.handlers; }, playerName, logicIRCChannelName, chat);
     }
+    APGFullSystem.prototype.SetKeepAliveStatus = function (val) {
+        this.useKeepAlive = val;
+        return this;
+    };
     APGFullSystem.prototype.update = function () {
-        this.network.update();
+        this.network.update(this.useKeepAlive);
+        if (this.disconnected == false && this.network.disconnected == true && this.onDisconnect != null)
+            this.onDisconnect();
+        this.disconnected = this.network.disconnected;
     };
     APGFullSystem.prototype.CheckMessageParameters = function (funcName, message, parmsForMessageToServer) {
         if (message == "") {
@@ -137,23 +145,27 @@ var APGFullSystem = (function () {
     APGFullSystem.prototype.ClearLocalMessages = function () {
         this.network.clearLocalMessages();
     };
-    APGFullSystem.prototype.ResetServerMessageRegistry = function () { this.handlers = new NetworkMessageHandler(); return this; };
+    APGFullSystem.prototype.ResetServerMessageRegistry = function () { this.handlers = new NetworkMessageHandler(); this.onDisconnect = null; return this; };
     APGFullSystem.prototype.Register = function (message, handlerForServerMessage) {
         if (!this.CheckMessageRegisterFunction("Register", message, handlerForServerMessage))
-            return;
+            return this;
         this.handlers.Add(message, handlerForServerMessage);
         return this;
     };
     APGFullSystem.prototype.RegisterPeer = function (message, handlerForServerMessage) {
         if (!this.CheckMessageRegisterFunction("RegisterPeer", message, handlerForServerMessage))
-            return;
+            return this;
         this.handlers.AddPeerMessage(message, handlerForServerMessage);
         return this;
     };
     APGFullSystem.prototype.RegisterString = function (message, handlerForServerMessage) {
         if (!this.CheckMessageRegisterFunction("RegisterString", message, handlerForServerMessage))
-            return;
+            return this;
         this.handlers.AddString(message, handlerForServerMessage);
+        return this;
+    };
+    APGFullSystem.prototype.RegisterDisconnect = function (disconnectFunc) {
+        this.onDisconnect = disconnectFunc;
         return this;
     };
     return APGFullSystem;
@@ -308,7 +320,8 @@ var DelayedMessage = (function () {
 var IRCNetwork = (function () {
     function IRCNetwork(getHandlers, player, logicChannelName, chat) {
         var _this = this;
-        this.lastMessageTime = 0;
+        this.lastSendMessageTime = 0;
+        this.lastReadMessageTime = 0;
         this.tick = 0;
         this.messageQueue = [];
         this.localMessageHead = null;
@@ -319,7 +332,7 @@ var IRCNetwork = (function () {
         this.channelName = '#' + logicChannelName;
         this.chat = chat;
         if (chat != null)
-            chat.on("chat", function (channel, userstate, message, self) { return _this.handleInputMessage(userstate.username, message); });
+            chat.on("chat", function (channel, userstate, message, self) { _this.lastReadMessageTime = _this.tick; _this.handleInputMessage(userstate.username, message); });
     }
     IRCNetwork.prototype.sendMessageToServer = function (message) {
         this.writeToChat(message);
@@ -365,14 +378,23 @@ var IRCNetwork = (function () {
         this.localMessageHead = null;
         this.tick = 0;
     };
-    IRCNetwork.prototype.update = function () {
-        this.lastMessageTime--;
+    IRCNetwork.prototype.update = function (useKeepAlive) {
+        this.lastSendMessageTime--;
         this.tick++;
+        if (useKeepAlive && (this.tick % keepAliveTime == 0)) {
+            this.sendMessageToServer("alive###{}");
+        }
+        if (this.chat != null && this.tick - this.lastReadMessageTime > disconnectionTime) {
+            this.disconnected = true;
+        }
+        else {
+            this.disconnected = false;
+        }
         while (this.localMessageHead != null && this.localMessageHead.time < this.tick) {
             this.handleInputMessage(this.localMessageHead.sender, this.localMessageHead.message);
             this.localMessageHead = this.localMessageHead.next;
         }
-        if (this.lastMessageTime <= 0 && this.messageQueue.length > 0) {
+        if (this.lastSendMessageTime <= 0 && this.messageQueue.length > 0) {
             var delayedMessage = this.messageQueue.shift();
             this.toggleSpace = !this.toggleSpace;
             if (this.chat != null)
@@ -402,7 +424,7 @@ var IRCNetwork = (function () {
         }
     };
     IRCNetwork.prototype.writeToChat = function (s) {
-        if (this.lastMessageTime > 0) {
+        if (this.lastSendMessageTime > 0) {
             if (this.messageQueue.length > maxBufferedIRCWrites) {
                 ConsoleOutput.debugWarn("writeToChat: maxBufferedIRCWrites exceeded.  Too many messages have been queued.  Twitch IRC limits how often clients can post into IRC channels.");
                 return;
@@ -416,7 +438,7 @@ var IRCNetwork = (function () {
         if (debugLogOutgoingIRCChat) {
             ConsoleOutput.debugLog(s, "network");
         }
-        this.lastMessageTime = IRCWriteDelayInSeconds * ticksPerSecond;
+        this.lastSendMessageTime = IRCWriteDelayInSeconds * ticksPerSecond;
     };
     return IRCNetwork;
 }());
@@ -485,8 +507,9 @@ var NetworkMessageHandler = (function () {
     };
     return NetworkMessageHandler;
 }());
-var secondsPerChoice = 60;
 var ticksPerSecond = 60;
+var disconnectionTime = 30 * ticksPerSecond;
+var keepAliveTime = 20 * ticksPerSecond;
 var IRCWriteDelayInSeconds = 1;
 var maxBufferedIRCWrites = 5;
 var debugErrorsAsAlerts = false;
@@ -505,17 +528,16 @@ function AddAppReposition(divName, width) {
     document.onmousedown = function () {
         if (mouseDown === false) {
             if (mx > curx && mx < curx + width && my > cury && my < cury + 32) {
-                startx = mx;
-                starty = my;
-                clickx = curx;
-                clicky = cury;
-                dragging = true;
+                curx = 800;
+                cury = 0;
+                d.style.position = "absolute";
+                d.style.left = '800px';
+                d.style.top = '0px';
             }
         }
         mouseDown = true;
     };
     document.onmouseup = function () {
-        dragging = false;
         mouseDown = false;
     };
     document.onmousemove = function (e) {
@@ -526,22 +548,12 @@ function AddAppReposition(divName, width) {
         if (d === null) {
             d = document.getElementById(divName);
             if (d !== null) {
-                curx = 100;
-                cury = 400;
+                curx = 800;
+                cury = 0;
                 d.style.position = "absolute";
-                d.style.left = '100px';
-                d.style.top = '400px';
+                d.style.left = '800px';
+                d.style.top = '0px';
             }
-        }
-        if (dragging) {
-            if (d === null) {
-                d = document.getElementById(divName);
-            }
-            d.style.position = "absolute";
-            curx = clickx + (mx - startx);
-            cury = clicky + (my - starty);
-            d.style.left = "" + curx + 'px';
-            d.style.top = "" + cury + 'px';
         }
     }, 1000 / 30);
 }
@@ -758,10 +770,13 @@ var ent = (function (_super) {
         if (t.cursor === null) {
             t.cursor = _this;
         }
+        _this.id = ent.entList.length;
+        ent.entList.push(_this);
         return _this;
     }
     ent.prototype.update = function () { if (this.upd != null)
         this.upd(this); };
+    ent.prototype.eliminate = function () { ent.entList[this.id] = null; this.destroy(true); this.id = -1; };
     Object.defineProperty(ent.prototype, "scalex", {
         set: function (value) { this.scale.x = value; },
         enumerable: true,
@@ -818,10 +833,13 @@ var enttx = (function (_super) {
         if (t.cursor === null) {
             t.cursor = _this;
         }
+        _this.id = enttx.entList.length;
+        enttx.entList.push(_this);
         return _this;
     }
     enttx.prototype.update = function () { if (this.upd != null)
         this.upd(this); };
+    enttx.prototype.eliminate = function () { enttx.entList[this.id] = null; this.destroy(true); this.id = -1; };
     Object.defineProperty(enttx.prototype, "scx", {
         set: function (value) { this.scale.x = value; },
         enumerable: true,

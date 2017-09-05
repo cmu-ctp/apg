@@ -2,7 +2,7 @@
 using v3 = UnityEngine.Vector3;
 using System;
 
-public enum Layers { UI, Game, Background }
+public enum Layers { Fade, UI, UIBkg, UIMid, Game, Background }
 
 public enum UseType { PlayerBlowing, PlayerPush, BuddyTouch }
 

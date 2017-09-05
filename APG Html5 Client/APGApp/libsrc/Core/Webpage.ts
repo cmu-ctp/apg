@@ -21,21 +21,27 @@ function AddAppReposition(divName:string, width:number):void {
 	var clickx, clicky;
 	var d = null;
     var dragging = false;
-	document.onmousedown = function () {
+    document.onmousedown = function () {
 		if (mouseDown === false) {
 			if (mx > curx && mx < curx + width && my > cury && my < cury + 32) {
-				startx = mx;
+				/*startx = mx;
 				starty = my;
 				clickx = curx;
 				clicky = cury;
-				dragging = true;
+				dragging = true;*/
+                curx = 800;
+                cury = 0;
+                d.style.position = "absolute";
+                d.style.left = '800px';
+                d.style.top = '0px';
 			}
 		}
 		mouseDown = true;
 	};
-	document.onmouseup = function () {
-		dragging = false;
-		mouseDown = false;
+    document.onmouseup = function () {
+        mouseDown = false;
+		/*dragging = false;
+		mouseDown = false;*/
 	};
 	document.onmousemove = function (e) {
 		mx = e.clientX;
@@ -45,14 +51,14 @@ function AddAppReposition(divName:string, width:number):void {
         if (d === null) {
             d = document.getElementById(divName);
             if (d !== null) {
-                curx = 100;
-                cury = 400;
+                curx = 800;
+                cury = 0;
                 d.style.position = "absolute";
-                d.style.left = '100px';
-                d.style.top = '400px';
+                d.style.left = '800px';
+                d.style.top = '0px';
             }
         }
-		if (dragging) {
+		/*if (dragging) {
 			if (d === null) {
 				d = document.getElementById(divName);
 			}
@@ -61,7 +67,7 @@ function AddAppReposition(divName:string, width:number):void {
 			cury = clicky + (my - starty);
 			d.style.left = "" + curx + 'px';
 			d.style.top = "" + cury + 'px';
-		}
+		}*/
 	}, 1000 / 30);
 }
 

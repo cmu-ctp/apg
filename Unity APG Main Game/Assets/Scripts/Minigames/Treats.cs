@@ -7,17 +7,30 @@ public class Treats:MonoBehaviour {
 	public Sprite goodies;
 	public AudioClip[] balloonPop;
 	public AudioClip[] coinSound;
+	public Sprite[] resources, items;
 }
+
+public enum Resource { FrothyDrink=0, Burger=1, Beans=2, Goo=3, Acid=4, Corn=5, Bribe=6, Fries=7, Taco=8, TBone=9 }
+public enum ItemIds { TennisBall = 0, Bomb = 1, Hammer = 2, ScaryMask = 3, Rocket = 4, Shield = 5 }
 
 public class TreatSys {
 	public SpawnEntry balloonClusterLeft, balloonClusterRight, balloonClusterBottomLeft, balloonClusterBottom, balloonClusterBottomRight;
 	public SpawnEntry balloonGridLeft, balloonGridCenter, balloonGridRight, balloonGridAll;
 	GameSys gameSys;
-	Treats theTreats;
+	public Treats theTreats;
 	ReactSys reactSys;
 
 	const int entPoolSize = 600;
 	FixedEntPool entPool;
+
+	public float soundTick;
+
+	float lastSoundTime = 0;
+
+	// http://bit.ly/2iC8WhQ
+	// upu8scu61zxcbxd05puyu4gorvxnek
+	// http://dev.icecreambreakfast.com/apg/gosas.html
+	// https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=upu8scu61zxcbxd05puyu4gorvxnek&state=hjgrph2akqwki1617ac5rdq9rqiep0k+ludolab+ludolab_&redirect_uri=http://dev.icecreambreakfast.com/apg/gosas.html&scope=user_read+channel_read+chat_login
 
 	public TreatSys(Treats treats, GameSys theGameSys, ReactSys theReactSys) {
 		gameSys = theGameSys;
@@ -47,12 +60,15 @@ public class TreatSys {
 		new ent(gameSys) { sprite = msg, name="react", pos = pos, scale = 1, update = e => { delay--; if(delay <= 0) e.remove(); } };
 	}
 
-	string[] treatStyles = new string[] { "Wire", "Stone", "Wood", "Oil", "Plastic", "Fur", "Metal", "Rubber" };
+	
+
+	public static string[] treatStyles = new string[] { "Adult Drink", "Burger", "Beans", "Goo", "Acid", "Corn", "Bribe", "Fries", "Taco", "T-Bone" };
+	public static string[] itemStyles = new string[] { "Tennis Ball", "Bomb", "Hammer", "Scary Mask", "Rocket", "Shield" };
 
 	public void SpecialTreat( v3 pos ) {
-		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
+		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0; var id = rd.i(0, itemStyles.Length);
 		new PoolEnt( entPool ) {
-			sprite = theTreats.goodies, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = 1f, flipped=rd.Test(.5f), name="specialTreat", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, 1, .4f, 0 ),
+			sprite = theTreats.items[id], pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .25f, flipped=rd.Test(.5f), name="specialTreat", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, 1, .4f, 0 ), 
 			update = e => {
 				e.pos += new v3( xvel,vel, 0);
 				vel -= .005f;
@@ -64,19 +80,19 @@ public class TreatSys {
 					vel *= -.4f;
 					if( numBounces > 3 ) { e.remove(); } } },
 			buddyTouch = (e, user, info) => {
-				var cnt = rd.i(2, 7);
-				var style = rd.i(0, treatStyles.Length);
-				var styleStr = treatStyles[style];
-				gameSys.Sound(rd.Sound( theTreats.coinSound ), 1);
-				user.itemTouch(e, user, new TouchInfo { style = style, count = cnt });
-				reactSys.React( e.pos+new v3(0,0,0), "A Shoe!", new Color( .3f,.5f,.8f,1));
+				var styleStr = itemStyles[id];
+				if (soundTick - lastSoundTime > 5) { gameSys.Sound(rd.Sound(theTreats.coinSound), 1); lastSoundTime = soundTick; }
+				user.itemTouch(e, user, new TouchInfo { flags = 0, style = id, count = 1, isItem=true });
+				reactSys.React( e.pos+new v3(0,0,0), ""+itemStyles[id], new Color( .3f,.5f,.8f,1));
 				e.remove(); }};}
 
-
 	public void BasicTreat( v3 pos ) {
-		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
+		if( rd.f(0,1)<.08f) { // this is not how we'd ultimately like to do this.
+			SpecialTreat(pos);
+			return;}
+		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0; var id = rd.i(0, treatStyles.Length);
 		new PoolEnt( entPool ) {
-			sprite = theTreats.goodies, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, 1, .4f, 0 ),
+			sprite = theTreats.resources[id], pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, shadow=gameSys.Shadow(theTreats.shadow, entPool, 1, .4f, 0 ),
 			update = e => {
 				e.pos += new v3( xvel,vel, 0);
 				vel -= .005f;
@@ -88,12 +104,10 @@ public class TreatSys {
 					vel *= -.4f;
 					if( numBounces > 3 ) { e.remove(); } } },
 			buddyTouch = (e, user, info) => {
-				var cnt = rd.i(2, 7);
-				var style = rd.i(0, treatStyles.Length);
-				var styleStr = treatStyles[style];
-				gameSys.Sound(rd.Sound( theTreats.coinSound ), 1);
-				user.itemTouch(e, user, new TouchInfo { style = style, count = cnt });
-				reactSys.React( e.pos+new v3(0,0,0), "+" + cnt + " " + styleStr, new Color( .3f,.5f,.8f,1));
+				var styleStr = treatStyles[id];
+				if (soundTick - lastSoundTime > 5) { gameSys.Sound(rd.Sound(theTreats.coinSound), 1); lastSoundTime = soundTick; }
+				user.itemTouch(e, user, new TouchInfo { flags = 0, style = id, count = 1, isItem=false});
+				reactSys.React( e.pos+new v3(0,0,0), " " + styleStr, new Color( .3f,.5f,.8f,1));
 				e.remove(); }};}
 
 	void BalloonCluster( v3 pos, v3 vel ) {
@@ -120,7 +134,7 @@ public class TreatSys {
 					lastPush = tick;
 					goalScale += info.strength * .04f;
 					if( info.strength == 3 || gameSys.gameOver  ) {
-						gameSys.Sound(rd.Sound( theTreats.balloonPop ), 1);
+						if (soundTick - lastSoundTime > 5) { gameSys.Sound(rd.Sound(theTreats.balloonPop), 1); lastSoundTime = soundTick; }
 						BasicTreat( e.pos );
 						reactSys.React( e.pos + new v3(0, 0, -.2f), "Pop!", new Color(.9f, 1f, .7f, 1 ) );
 						e.remove();
@@ -163,7 +177,7 @@ public class TreatSys {
 						goalScale += info.strength * .1f;
 						if( goalScale > .6f ) {
 							BasicTreat( e.pos );
-							gameSys.Sound(rd.Sound( theTreats.balloonPop ), 1);
+							if (soundTick - lastSoundTime > 5) { gameSys.Sound(rd.Sound(theTreats.balloonPop), 1); lastSoundTime = soundTick; }
 							reactSys.React( e.pos + new v3((leftBound+rightBound)/2f, 0, -.2f), "Pop!", new Color(.9f, 1f, .7f, 1 ) );
 							e.remove();
 						}

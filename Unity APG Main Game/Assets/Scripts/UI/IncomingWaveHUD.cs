@@ -8,13 +8,16 @@ public class IncomingWaveHUD : MonoBehaviour {
 	public APG.APGBasicGameLogic basicGameLogic;}
 
 public class WaveHUD {
-	private int tick = 0; float hudSlideIn = 0f; AudiencePlayerSys buddies;
+	private int tick = 0; float hudSlideIn = 0f; AudiencePlayerSys buddies; PlayerSys playerSys;
+	public float pauseRatio = 0f;
 	void spawningMessage(GameSys gameSys, SpawnSys spawners, GameObject textName, MonoBehaviour src ) {
 		bool labelActive = false;
 		var labelAlpha = 0f;
 		int messageTime= 0;
-		new ent(gameSys, textName) { pos = nm.v3y( 4.6f ), scale=.07f, text="", textColor=nm.col( .1f, 0 ), active=false, name="spawningMessage", parentMono=src, 
+		var location = new v3(0, 0, 0);
+		var me = new ent(gameSys, textName) { pos = nm.v3y( 4.6f ), scale=.07f, text="", textColor=nm.col( .1f, 0 ), active=false, name="spawningMessage", parentMono=src,  ignorePause=true,
 			update = e => {
+				e.pos = location + new v3(0, 7 * pauseRatio, 0);
 				if( spawners.incomingMessageTime > messageTime) {messageTime = spawners.incomingMessageTime;e.text = spawners.incomingMessage;}
 				if( spawners.incomingMessage != "" ) {
 					nm.ease( ref labelAlpha, 1, .1f );
@@ -26,7 +29,8 @@ public class WaveHUD {
 						nm.ease( ref labelAlpha, 0, .1f );
 						e.scale = e.scale * .8f + .2f * .045f;
 						e.textColor = nm.col( .1f, labelAlpha );
-						if( labelAlpha < .01f ) {labelActive = false;e.active = false;}}}}};}
+						if( labelAlpha < .01f ) {labelActive = false;e.active = false;}}}}};
+		location = me.pos;}
 	void makeSpawnTimelineEntries( GameSys gameSys, SpawnSys spawners, ent uiBkg, Sprite player, IncomingWaveHUD assets, MonoBehaviour src ) {
 		for( var k = 0; k < (spawners.spawnSet.Count < 20 ? spawners.spawnSet.Count:20 ); k++ ) {
 			var offset = k;
@@ -70,7 +74,8 @@ public class WaveHUD {
 	void MakeTimer( GameSys gameSys, IncomingWaveHUD assets, MonoBehaviour src ) {
 		var lastTimer = 0;
 		var sc = .06f;
-		var timeui = new ent(gameSys ) { sprite=assets.timeUI, pos = new v3(-3.5f, 5.2f, 0 ), scale=1f, active=true, name="timeui", parentMono = src };
+		var timePos = new v3(0,0,0);
+		var timeui = new ent(gameSys ) { sprite=assets.timeUI, pos = new v3(-3.5f, 5.2f, 0 ), scale=1f, active=true, name="timeui", parentMono = src, ignorePause=true, update = e => { e.pos = timePos + new v3(0, 5 * pauseRatio, 0); } }; timePos = timeui.pos;
 		var timeNum = new ent(gameSys, assets.textName) { text="45", textColor=nm.col( 0f, 1 ), active=true, name="time", parent = timeui,
 			update = e => {
 				int timer = assets.basicGameLogic.GetRoundTime();
@@ -96,9 +101,9 @@ public class WaveHUD {
 		theRound.pos = new v3(.3f,-.28f,-.01f);}
 	void MakeHealthBar1(GameSys gameSys, IncomingWaveHUD assets, MonoBehaviour src) {
 		var ratio = 1f;
-		var bar = new ent(gameSys) { sprite = assets.whiteSquare, name="healthbar1", pos = new v3(-9, 6, 1), scale = .4f, layer = Layers.UI, parentMono = src, color = new Color( .3f, .7f, .3f, .5f ), 
+		var bar = new ent(gameSys) {sprite = assets.whiteSquare, name="healthbar1", pos = new v3(-9, 6, 1), scale = .4f, layer = Layers.UI, parentMono = src, color = new Color( .3f, .7f, .3f, .5f ), 
 			update = e => {
-				var goalRatio = buddies.team1Health / buddies.team1MaxHealth;
+				var goalRatio = playerSys.team1Health / playerSys.team1MaxHealth;
 				e.val1 = goalRatio;
 				e.val2 = ratio;
 				if( Mathf.Abs( ratio - goalRatio) > .01f ) {
@@ -106,25 +111,28 @@ public class WaveHUD {
 					e.color = new Color(.6f * ratio+.3f, .1f, .1f, .5f);
 					e.scale3 = new v3(14.2f*ratio,.8f,1);}
 				else if( goalRatio == 0 && e.scale != 0 ) {e.scale = 0;}}};
-		new ent(gameSys) { sprite = assets.healthBar1, name="healthbar1", pos = new v3(-9+hudSlideIn, 6, 1), scale = .4f, layer = Layers.UI, parentMono = src, children = new List<ent> { bar } };
+		var corePos = new v3(0, 0, 0);
+		var core = new ent(gameSys) { ignorePause=true, sprite = assets.healthBar1, name="healthbar1", pos = new v3(-9+hudSlideIn, 6, 1), scale = .4f, layer = Layers.UI, parentMono = src, children = new List<ent> { bar }, update = e => { e.pos = corePos + new v3(-35f * pauseRatio, 0, 0); } }; corePos = core.pos;
 		bar.pos = new v3( -4.45f, .25f, -.01f );
 		bar.scale3 = new v3(14.2f,.8f,1);}
 	void MakeHealthBar2(GameSys gameSys, IncomingWaveHUD assets, MonoBehaviour src) {
 		var ratio = 1f;
-		var bar = new ent(gameSys) { sprite = assets.whiteSquare, name="healthbar1", pos = new v3(-9, 6, 1), scale = .4f, layer = Layers.UI, parentMono = src, color = new Color( .3f, .7f, .3f, .5f ), flipped=true,
+		var bar = new ent(gameSys) {sprite = assets.whiteSquare, name="healthbar1", pos = new v3(-9, 6, 1), scale = .4f, layer = Layers.UI, parentMono = src, color = new Color( .3f, .7f, .3f, .5f ), flipped=true,
 			update = e => {
-				var goalRatio = buddies.team2Health / buddies.team2MaxHealth;
+				var goalRatio = playerSys.team2Health / playerSys.team2MaxHealth;
 				if( Mathf.Abs( ratio - goalRatio) > .01f ) {
 					nm.ease( ref ratio, goalRatio, .1f );
 					e.color = new Color(.6f * ratio+.3f, .1f, .1f, .5f);
 					e.scale3 = new v3(14.2f*ratio,.8f,1);}
 				else if( goalRatio == 0 && e.scale != 0 ) {e.scale = 0;}}};
-		new ent(gameSys) { sprite = assets.healthBar2, name="chargebar1anim", pos = new v3(9-hudSlideIn, 6, 1), scale = .4f, layer = Layers.UI, parentMono = src, children = new List<ent> { bar } };
+		var corePos = new v3(0, 0, 0);
+		var core = new ent(gameSys) { ignorePause = true, sprite = assets.healthBar2, name="chargebar1anim", pos = new v3(9-hudSlideIn, 6, 1), scale = .4f, layer = Layers.UI, parentMono = src, children = new List<ent> { bar }, update = e => { e.pos = corePos + new v3(24f * pauseRatio, 0, 0); } }; corePos = core.pos;
 		bar.pos = new v3( 4.45f, .25f, -.01f );
 		bar.scale3 = new v3(14.2f,.8f,1);}
 	void MakeChargeBar1(GameSys gameSys, IncomingWaveHUD assets, MonoBehaviour src) {
 		var ratio = 1f;
-		var cover = new ent(gameSys) { sprite = assets.chargeBar1, name="chargebar1", pos = new v3(-10.7f + hudSlideIn, 5.7f, 1), scale = 1f, layer = Layers.UI, parentMono = src };
+		var coverPos = new v3(0, 0, 0);
+		var cover = new ent(gameSys) { ignorePause = true, sprite = assets.chargeBar1, name="chargebar1", pos = new v3(-10.7f + hudSlideIn, 5.7f, 1), scale = 1f, layer = Layers.UI, parentMono = src, update = e => { e.pos = coverPos + new v3(-4 * pauseRatio, 0, 0); } }; coverPos = cover.pos;
 		var bar = new ent(gameSys) { parent = cover, sprite = assets.whiteSquareBottomCenter, name="chargeBarAnim", pos = new v3(-.05f, -2.1f, -.1f), scale = .5f, layer = Layers.UI, color = new Color( .5f, .5f, 1f, .5f ), 
 			update = e => {
 				var goalRatio = assets.basicGameLogic.player1ChargeRatio;
@@ -138,7 +146,8 @@ public class WaveHUD {
 				else if( goalRatio == 0 && e.scale != 0 ) {e.scale = 0;}}};}
 	void MakeChargeBar2(GameSys gameSys, IncomingWaveHUD assets, MonoBehaviour src) {
 		var ratio = 1f;
-		var cover = new ent(gameSys) { sprite = assets.chargeBar2, name="chargebar2", pos = new v3(10.7f - hudSlideIn, 5.7f, 1), scale = 1f, layer = Layers.UI, parentMono = src };
+		var coverPos = new v3(0, 0, 0);
+		var cover = new ent(gameSys) { ignorePause = true, sprite = assets.chargeBar2, name = "chargebar2", pos = new v3(10.7f - hudSlideIn, 5.7f, 1), scale = 1f, layer = Layers.UI, parentMono = src, update = e =>{ e.pos = coverPos + new v3(3f * pauseRatio, 0, 0); } }; coverPos = cover.pos;
 		var bar = new ent(gameSys) { parent = cover, sprite = assets.whiteSquareBottomCenter, name="chargeBarAnim", pos = new v3(-.25f, -2.1f, -.1f), scale = .5f, layer = Layers.UI, color = new Color( .5f, .5f, 1f, .5f ), 
 			update = e => {
 				var goalRatio = assets.basicGameLogic.player2ChargeRatio;
@@ -150,12 +159,15 @@ public class WaveHUD {
 					e.color = new Color(151f/255f*(.5f+ratio*.5f), 65f/255f*(.5f+ratio*.5f), 212f/255f *(.5f+ratio*.5f), .5f);
 					e.scale3 = new v3(.5f, 2.6f*ratio,1);}
 				else if( goalRatio == 0 && e.scale != 0 ) {e.scale = 0;}}};}
-	public WaveHUD( GameSys gameSys, IncomingWaveHUD assets, MonoBehaviour src, SpawnSys spawners, AudiencePlayerSys audiencePlayerSys, Texture2D mobileQRCode ) {
+	public WaveHUD( GameSys gameSys, IncomingWaveHUD assets, MonoBehaviour src, SpawnSys spawners, AudiencePlayerSys audiencePlayerSys, Texture2D mobileQRCode, PlayerSys thePlayerSys ) {
 		if( Camera.main.aspect == 1.6f) { hudSlideIn = 1f; }
 		if( Camera.main.aspect == 1.5f) { hudSlideIn = 2f; }
 		if( Mathf.Abs( Camera.main.aspect - 4f/3f ) < .001f ) { hudSlideIn = 2.6f; }
 		buddies = audiencePlayerSys;
-		var uiBkg = new ent(gameSys) { sprite = assets.timelineBackground, name="uibkg", pos = new v3(.6f, 5.8f, 1), scale = .75f, layer = Layers.UI, parentMono = src, update = e => tick++ };
+		playerSys = thePlayerSys;
+		v3 uiSrcPos = new v3(0,0,0);
+		var uiBkg = new ent(gameSys) { sprite = assets.timelineBackground, name="uibkg", ignorePause=true, pos = new v3(.6f, 5.8f, 1), scale = .75f, layer = Layers.UI, parentMono = src, update = e => { tick++; e.pos = uiSrcPos + new v3(0, 8*pauseRatio, 0); } };
+		uiSrcPos = uiBkg.pos;
 		spawningMessage( gameSys, spawners, assets.textName, src );
 		makeSpawnTimelineEntries( gameSys, spawners, uiBkg, assets.player, assets, src );
 		MakeTimer( gameSys, assets, src );

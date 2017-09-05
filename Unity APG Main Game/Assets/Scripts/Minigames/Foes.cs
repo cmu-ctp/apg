@@ -71,7 +71,7 @@ public class FoeSys {
 	}
 
 	bool TryLeave( ent e, float startTime, ref v3 goal, v3 leaveTarget ) {
-		if (tick - startTime > 60 * 30 || gameSys.gameOver) {
+		if (tick - startTime > 60 * 40 || gameSys.gameOver) {
 			goal = leaveTarget;
 			goal.y = 50;
 			e.pos = e.pos * .99f + .01f * goal;
@@ -114,7 +114,7 @@ public class FoeSys {
 				e.vel.y -= .0008f;
 				e.MoveBy(e.vel);
 				if( e.pos.y < -5f && e.vel.y < 0 ) { e.vel.y *= -.6f; if( Mathf.Abs(e.vel.y )< .001f )e.remove(); }
-				gameSys.grid.Find(e.pos - nm.v3y( .7f ), 1, e, (me, targ) => { targ.shotTouch(targ, me, new TouchInfo { isPlayer=isPlayerAttack });});
+				gameSys.grid.Find(e.pos - nm.v3y( .7f ), 1, e, (me, targ) => { targ.shotTouch(targ, me, new TouchInfo { flags = 0, isPlayer = isPlayerAttack });});
 				e.removeIfOffScreen();},
 			playerTouch = (e, user, info) => {
 				if (ignorePlayer)return;
@@ -127,7 +127,7 @@ public class FoeSys {
 					if( e.vel.y < .1f )e.vel.y = .1f;
 					e.vel.x = user.vel.x*.025f;
 					if(bounceNum < 3) { bounceNum++; rotateSpeed*=2;} },
-			buddyTouch = (e, user, info) => { user.onHurt(user, e, 1); e.remove(); },
+			buddyTouch = (e, user, info) => { user.onHurt(user, e, new TouchInfo { flags = (int)TouchFlag.IsAirbourne, damage = 1, showDamage = true }); e.remove(); },
 			breathTouch = (e, user, info) => { isPlayerAttack = true; e.vel *= .3f; e.vel += user.vel * .05f; e.color = new Color(1.5f, 1.3f, .8f, .8f); }};}
 
 	v3 SeekTarg( v3 pos, v3 src, float dist) {
@@ -347,7 +347,7 @@ public class FoeSys {
 					e.ang = i.angAnim.Val(tick) + rd.f(-i.shakeAmount, i.shakeAmount);
 					nm.ease(ref i.shakeAmount, 0f, .05f);
 					if (e.pos.z > 5) return;
-					gameSys.grid.Find(e.pos - nm.v3y(.7f), 1, e, (me, targ) => { targ.objTouch(targ, me, new TouchInfo { }); });
+					gameSys.grid.Find(e.pos - nm.v3y(.7f), 1, e, (me, targ) => { targ.objTouch(targ, me, new TouchInfo { flags = 0}); });
 				},
 				shotTouch = (e, user, info) => {},
 				breathTouch = (e, user, info) => {
@@ -413,7 +413,7 @@ public class FoeSys {
 					e.ang = i.angAnim.Val(tick) + rd.f(-i.shakeAmount, i.shakeAmount);
 					nm.ease(ref i.shakeAmount, 0f, .05f);
 					if (e.pos.z > 5) return;
-					gameSys.grid.Find(e.pos - nm.v3y(.7f), 1, e, (me, targ) => { targ.objTouch(targ, me, new TouchInfo { }); });
+					gameSys.grid.Find(e.pos - nm.v3y(.7f), 1, e, (me, targ) => { targ.objTouch(targ, me, new TouchInfo { flags = 0}); });
 				},
 				shotTouch = (e, user, info) => {},
 				breathTouch = (e, user, info) => {
@@ -478,7 +478,7 @@ public class FoeSys {
 					e.ang = i.angAnim.Val(tick) + rd.f(-i.shakeAmount, i.shakeAmount);
 					nm.ease(ref i.shakeAmount, 0f, .05f);
 					if (e.pos.z > 5) return;
-					gameSys.grid.Find(e.pos - nm.v3y(.7f), 1, e, (me, targ) => { targ.objTouch(targ, me, new TouchInfo { }); });
+					gameSys.grid.Find(e.pos - nm.v3y(.7f), 1, e, (me, targ) => { targ.objTouch(targ, me, new TouchInfo { flags = 0}); });
 				},
 				shotTouch = (e, user, info) => {},
 				breathTouch = (e, user, info) => {

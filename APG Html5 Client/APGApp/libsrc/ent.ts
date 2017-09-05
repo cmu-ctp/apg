@@ -18,8 +18,12 @@ if (typeof Object.assign != 'function') {
 }
 
 class ent extends Phaser.Sprite {
+    static entList: ent[];
+
 	upd: (m: ent) => void = null;
 	update() { if (this.upd != null) this.upd(this); }
+
+    eliminate() { ent.entList[this.id] = null; this.destroy(true); this.id = -1; }
 
 	set scalex(value: number) { this.scale.x = value; }
 	set scaley(value: number) { this.scale.y = value; }
@@ -37,6 +41,8 @@ class ent extends Phaser.Sprite {
 
 	set src(value: ent) { value.addChild( this ); }
 
+    private id: number;
+
 	constructor(t: Phaser.Group, x: number, y: number, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture,
 		fields?: { src?:ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, upd?: (m: ent) => void }) {
 		super(t.game, x, y, key);
@@ -44,13 +50,19 @@ class ent extends Phaser.Sprite {
 		this.exists = true; this.visible = true; this.alive = true; this.z = t.children.length;
 		t.addChild(this);
 		if (t.enableBody) { t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug); }
-		if (t.cursor === null) { t.cursor = this; }
+        if (t.cursor === null) { t.cursor = this; }
+        this.id = ent.entList.length;
+        ent.entList.push(this);
 	}
 }
 
 class enttx extends Phaser.Text {
+    static entList: enttx[];
+
 	upd: (m: enttx) => void = null;
-	update() { if (this.upd != null) this.upd(this); }
+    update() { if (this.upd != null) this.upd(this); }
+
+    eliminate() { enttx.entList[this.id] = null; this.destroy(true); this.id = -1; }
 
 	set scx(value: number) { this.scale.x = value; }
 	set scy(value: number) { this.scale.y = value; }
@@ -67,6 +79,8 @@ class enttx extends Phaser.Text {
 
 	set src(value: ent) { value.addChild(this); }
 
+    private id: number;
+
 	constructor(t: Phaser.Group, x: number, y: number, text: string, style?: Phaser.PhaserTextStyle,
 		fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, upd?: (m: enttx) => void }) {
 		super(t.game, x, y, text, style);
@@ -74,6 +88,8 @@ class enttx extends Phaser.Text {
 		this.exists = true; this.visible = true; this.alive = true; this.z = t.children.length;
 		t.addChild(this);
 		if (t.enableBody) { t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug); }
-		if (t.cursor === null) { t.cursor = this; }
+        if (t.cursor === null) { t.cursor = this; }
+        this.id = enttx.entList.length;
+        enttx.entList.push(this);
 	}
 }

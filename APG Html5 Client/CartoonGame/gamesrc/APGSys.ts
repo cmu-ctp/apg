@@ -74,6 +74,11 @@ interface Cacher {
 
 interface APGSys {
 
+    /**
+    * If this is set to true, the client is longer receiving network traffic from the server and needs to return to notify the user and return to a "try to connect" state.
+    */
+    disconnected: boolean;
+
      /**
      * The Phase.Game instance used by the app.  Phaser is a very fully featured, very powerful HTML5 library - see https://phaser.io/examples for examples
      * of how to use Phaser.
@@ -99,6 +104,11 @@ interface APGSys {
      * A Dictionary of JSON assets that were optionally precached at app launch with the Cacher.json function.
      */
     readonly JSONAssets: { any };
+
+     /**
+     * 
+     */
+    SetKeepAliveStatus( val:boolean ): APGSys;
 
     /* _____________________________________Output______________________________________ */
 
@@ -158,6 +168,13 @@ interface APGSys {
      * @param funcForServerMessage A network message handler that is executed when the server sends a message of type "msgName".
      */
 	RegisterString(msgName: string, funcForServerMessage: (parmsForHandler: string) => void ): APGSys;
+
+     /**
+     * Register a message handler for situations when the client stops receiving server messages for too long.
+     *
+     * @param disconnectFunc A message handler that is executed when the client stops receiving server messages for too long.
+     */
+	RegisterDisconnect(disconnectFunc: () => void ): APGSys;
 
 
 

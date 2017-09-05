@@ -5,22 +5,27 @@ using v3 = UnityEngine.Vector3;
 
 public class Players:MonoBehaviour {
 	public GameObject textName;
-	public Sprite[] clouds, friends, heads, actions, anims;
+	public Sprite[] clouds, friends, heads, actions, anims, buildingActions, items, buildings;
 	public Sprite player, angel, shadow, player1, player2, angel1, angel2, player1flash, player2flash;
-	public Sprite owMsg, ughMsg, thudMsg, healthBar, staminaBar;
+	public Sprite owMsg, ughMsg, thudMsg, healthBar, healthBar2, healthBarCenter, actionBkg;
 	public AudioClip blowSound, bumpSound, hurtSound, dieSound;
 
 	public APG.APGBasicGameLogic basicGameLogic;
 } 
 
 public class PlayerSys {
+
+	public float team1Health = 30;
+	public float team2Health = 30;
+	public float team1MaxHealth = 30;
+	public float team2MaxHealth = 30;
+
 	public ent playerEnt = null, player2Ent = null;
 
-	const int breathChargeTime = 90;
+	const float breathChargeTime = 90;
 
 	GameSys gameSys;
 	Players players;
-
 	ReactSys reactSys;
 
 	public void Setup(GameSys theGameSys, Players thePlayers, FoeSys foeSys, ReactSys theReactSys) {
@@ -48,7 +53,7 @@ public class PlayerSys {
 					if( e.scale < .01f )e.active=false;
 					e.ang += cloudRot;
 					e.vel = b;
-					if(cloudNum == 0 && blowing && e.scale > .1f) {gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.breathTouch(targ, me, new TouchInfo { strength=(int)chargeStrength, src=owner });});}}};
+					if(cloudNum == 0 && blowing && e.scale > .1f) {gameSys.grid.Find(e.pos, .5f+.5f*chargeStrength, e, (me, targ) => { targ.breathTouch(targ, me, new TouchInfo { flags = 0, strength = (int)chargeStrength, src=owner });});}}};
 			blow.Add((srcPos, blowVx, blowVy, chargeSize) => {
 				f.active=true;
 				var size = 1f;
@@ -137,13 +142,13 @@ public class PlayerSys {
 						if(tick-useDownTime == breathChargeTime) {foreach(var b in inhaleBig) b(e.pos, lastAimDir.x, lastAimDir.y, 1);}
 						useDown = true;
 						if( id == 1 || id == 0 ) {
-							players.basicGameLogic.player1ChargeRatio = (tick-useDownTime)/115f;
+							players.basicGameLogic.player1ChargeRatio = (tick-useDownTime)/ breathChargeTime;
 							if( players.basicGameLogic.player1ChargeRatio > 1f ) {
 								players.basicGameLogic.player1ChargeRatio = 1f;
 								if( tick % 45 == 0 ) {e.sprite = players.player1flash; foreach(var b in inhale) b(e.pos, lastAimDir.x, lastAimDir.y, 1);}
 								if( tick % 45 == 4 )e.sprite = players.player1;}}
 						else {
-							players.basicGameLogic.player2ChargeRatio = (tick-useDownTime)/115f;
+							players.basicGameLogic.player2ChargeRatio = (tick-useDownTime)/ breathChargeTime;
 							if( players.basicGameLogic.player2ChargeRatio > 1f ) {
 								players.basicGameLogic.player2ChargeRatio = 1f;
 								if( tick % 45 == 0 ) {e.sprite = players.player2flash;foreach(var b in inhale) b(e.pos, lastAimDir.x, lastAimDir.y, 1);}
@@ -175,7 +180,14 @@ public class PlayerSys {
 				if( e.pos.x < -10.25f )e.MoveTo(-10.25f, e.pos.y, e.pos.z);
 				if( e.pos.x > 10.25f )e.MoveTo(10.25f, e.pos.y, e.pos.z);
 				e.ang = -rot * .1f;
-				gameSys.grid.Find(e.pos - nm.v3y( .7f ), 1, e, (me, targ) => { targ.playerTouch(targ, me, new TouchInfo {strength= 1 });});},
+				gameSys.grid.Find(e.pos - nm.v3y( .7f ), 1, e, (me, targ) => { targ.playerTouch(targ, me, new TouchInfo { flags = 0, strength = 1 });});},
+			onHurt = (e, src, dmg) => {
+				if (id == 1) {
+					if (dmg.damage < 0) { team1Health++; if (team1Health > team1MaxHealth) team1Health = team1MaxHealth; }
+					else team1Health -= dmg.damage;}
+				if (id == 2) {
+					if (dmg.damage < 0) { team2Health++; if (team2Health > team2MaxHealth) team2Health = team2MaxHealth; }
+					else team2Health -= dmg.damage;}},
 			breathTouch = (e, user, info) => {
 				if( info.src == e )return;
 				e.knockback += user.vel * .08f;

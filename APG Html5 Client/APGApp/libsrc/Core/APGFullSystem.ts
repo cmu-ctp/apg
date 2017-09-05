@@ -1,5 +1,7 @@
 ﻿class APGFullSystem implements APGSys {
 
+    disconnected: boolean;
+
     networkTestSequence: boolean;
 
 	g: Phaser.Game;
@@ -8,20 +10,31 @@
 
     allowFullScreen: boolean;
 
+    useKeepAlive: boolean;
+
 	JSONAssets: { any };
 
 	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any, networkTestSequence:boolean, allowFullScreen:boolean ) {
 		this.g = g;
         this.JSONAssets = JSONAssets;
-        if (playerName == "") playerName = "defaultPlayerName";
+        if (playerName == "") playerName = "ludolab";
+        this.useKeepAlive = false;
         this.playerName = playerName;
         this.allowFullScreen = allowFullScreen;
         this.networkTestSequence = networkTestSequence;
 		this.network = new IRCNetwork(() => this.handlers, playerName, logicIRCChannelName, chat);
 	}
 
+    SetKeepAliveStatus(val: boolean): APGSys {
+        this.useKeepAlive = val;
+        return this;
+    }
+
 	update(): void {
-		this.network.update();
+        this.network.update( this.useKeepAlive );
+        // under what conditions shouldn't the disconnect function be called?
+        if (this.disconnected == false && this.network.disconnected == true && this.onDisconnect != null) this.onDisconnect();
+        this.disconnected = this.network.disconnected;
 	}
 
     CheckMessageParameters<T>(funcName: string, message: string, parmsForMessageToServer: T): boolean {
@@ -89,33 +102,38 @@
         this.network.clearLocalMessages();
     }
 
-	ResetServerMessageRegistry(): APGSys { this.handlers = new NetworkMessageHandler(); return this; }
+    ResetServerMessageRegistry(): APGSys { this.handlers = new NetworkMessageHandler(); this.onDisconnect = null; return this; }
 
     Register<T>(message: string, handlerForServerMessage: (parmsForHandler: T) => void): APGSys {
-        if (!this.CheckMessageRegisterFunction("Register", message, handlerForServerMessage)) return;
+        if (!this.CheckMessageRegisterFunction("Register", message, handlerForServerMessage)) return this;
 
 		this.handlers.Add<T>(message, handlerForServerMessage);
 		return this;
 	}
 
     RegisterPeer<T>(message: string, handlerForServerMessage: (user: string, parmsForHandler: T) => void): APGSys {
-        if (!this.CheckMessageRegisterFunction("RegisterPeer", message, handlerForServerMessage)) return;
+        if (!this.CheckMessageRegisterFunction("RegisterPeer", message, handlerForServerMessage)) return this;
 
 		this.handlers.AddPeerMessage<T>(message, handlerForServerMessage);
 		return this;
 	}
 
     RegisterString(message: string, handlerForServerMessage: (parmsForHandler: string) => void): APGSys {
-        if (!this.CheckMessageRegisterFunction("RegisterString", message, handlerForServerMessage)) return;
+        if (!this.CheckMessageRegisterFunction("RegisterString", message, handlerForServerMessage)) return this;
 
         this.handlers.AddString(message, handlerForServerMessage);
         return this;
     }
 
+    RegisterDisconnect(disconnectFunc: () => void): APGSys {
+        this.onDisconnect = disconnectFunc;
+        return this;
+    }
 
 	//____________________________________________________
 
-	private handlers: NetworkMessageHandler;
+    private handlers: NetworkMessageHandler;
+    private onDisconnect: () => void;
 
 	private network: IRCNetwork;
 

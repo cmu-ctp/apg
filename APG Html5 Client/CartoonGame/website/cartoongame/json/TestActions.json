@@ -1,52 +1,47 @@
 {"all":[
   {
     "name": "Move",
-    "x": 300,
-    "y": 288,
+    "x": 344,
+    "y": 128,
+    "isActions": 0,
     "choices": [
-	  {"x": 0, "y": 0, "name": "Discoteque", "pic": "buildings/building1","tip": "Dance Club.  The Dance Club has lots of useful abilities and properties, which will be detailed here eventually!"},
-      {"x": 64, "y": 0, "name": "Fishing Pond", "pic": "buildings/building2","tip": "Fishing Pond.  The Fishing Pond has lots of useful abilities and properties, which will be detailed here eventually!"},
-      {"x": 128, "y": 0, "name": "Bed and Breakfast", "pic": "buildings/building3","tip": "Bed and Breakfast.  The Bed and Breakfast has lots of useful abilities and properties, which will be detailed here eventually!"},
-      {"x": 192, "y": 0, "name": "Commuter Airport", "pic": "buildings/building4","tip": "Commuter Airport.  The Commuter Airport has lots of useful abilities and properties, which will be detailed here eventually!"},
-      {"x": 256, "y": 0, "name": "Day Spa", "pic": "buildings/building5","tip": "Day Spa.  The Day Spa has lots of useful abilities and properties, which will be detailed here eventually!"},
-      {"x": 320, "y": 0, "name": "Office Park","pic": "buildings/building6","tip": "Office Park.  The Office Park has lots of useful abilities and properties, which will be detailed here eventually!"}
+	  {"x": 0, "y": 0, "name": "Rustic Farm", "pic": "buildings/building1",     "tip": "farm"},
+      {"x": 64, "y": 0, "name": "Fishing Pond", "pic": "buildings/building2",   "tip": "pond"},
+      {"x": 128, "y": 0, "name": "Bed and Breakfast", "pic": "buildings/building3","tip": "greenhouse"},
+      {"x": 192, "y": 0, "name": "Commuter Airport", "pic": "buildings/building4","tip": "airport"},
+      {"x": 256, "y": 0, "name": "Day Spa", "pic": "buildings/building5",       "tip": "police"},
+      {"x": 320, "y": 0, "name": "Office Park","pic": "buildings/building6",    "tip": "hospital"}
     ] },
   {
     "name": "Action", 
     "x": 700,
-    "y": 150,
+    "y": 210,
+    "isActions": 0,
       "choices":[
-      {"x": 0, "y": 0, "name": "Back", "pic": "movein","tip": "Stand in the back row.  Attacks will hit players standing in front of you, but they'll collect falling treats too.  Good for building and activating."},
-      {"x": 0, "y": 64, "name": "Mid", "pic": "middle","tip": "Stand in the middle row.  Average defense and collecting.  Good for healing and assisting."},
-      {"x": 0, "y": 128, "name": "Forward","pic": "moveback","tip": "Stand in the front row.  Attacks and treats will hit you first.  Good for defending and extracting."}
+      {"x": 0, "y": 0, "name": "Back", "pic": "movein",                                "tip": "BACK ROW.  This offers the most protection from flying attacks, but you likely won't collect falling treats.  Gives priority for buildings abilities and Extract."},
+      {"x": 0, "y": 64, "name": "Mid", "pic": "middle",                                 "tip": "MIDDLE ROW.  A balanced position.  Back row will have priority using buildings. Front row will take hits from flying attacks and collect falling treats first."},
+      {"x": 0, "y": 128, "name": "Forward","pic": "moveback",                    "tip": "FRONT ROW.  Stand here to collect all falling treats, but prepared to be hit by flying attacks too.  Not good for using buildings."}
     ]},
   {
     "name": "Items",
-    "x": 40,
-    "y": 160,
+    "x": 80,
+    "y": 260,
+    "isActions": 1,
     "choices": [
-      {"x": 0, "y": 0, "name": "Attack",  "pic": "build","tip":"" },
-      {"x": 64, "y": 0, "name": "Defend", "pic": "defend","tip":"Protect yourself and all players standing at the same building as you.  You will all take less damage." },
-      {"x": 128, "y": 0, "name": "Heal","pic": "heal","tip": "Heal other players next to you, as well as yourself."},
-	  {"x": 0, "y": 64, "name": "Extract", "pic": "harvest","tip":"Extract resources from the building you're at.  What is extracted depends on the building type." },      
-      {"x": 64, "y": 64, "name": "Activate", "pic": "activate","tip":"Use special ability of building you're at." },
-      {"x": 128, "y": 64, "name": "Special", "pic": "assist","tip": ""},
-      {"x": 0, "y": 128, "name": "Item 1","pic": "bag1","tip": "This will be the first item that you collect over the course of the game."},
-      {"x": 64, "y": 128, "name": "Item 2","pic": "bag2","tip": "This will be the second item that you collect over the course of the game."},
-      {"x": 128, "y": 128, "name": "Item 3","pic": "bag3","tip": "This will be the third item that you collect over the course of the game."}
+      {"x": 0, "y": 0, "name": "Do Slash",  "pic": "slash",                                "tip":"SLASH: Slash at your foe.  This move will interrupt Building abilities.  If your foe Retaliates, though, expect it to hurt!" },
+      {"x": 64, "y": 0, "name": "Do Reckless Slash", "pic": "recklessability",     "tip":"RECKLESS ATTACK: Recklessly attack your foe for extra damage.  This move will interrupts foes who are Extracting, using Building abilities, and Items.  But watch out!  If your foe is Retaliating, you will be hurt badly!" },
+      {"x": 128, "y": 0, "name": "Do Retaliate","pic": "strikeback",                   "tip": "RETALIATE: Adopt a defensive pose and protect against melee attacks.  If your foe Slashes or Recklessly attacks, you won't take any damage, and they will instead."},
+	  {"x": 0, "y": 64, "name": "Do Extract", "pic": "harvest", "harvest": 1,       "tip":"extract" },
+      {"x": 64, "y": 64, "name": "building1", "pic": "activate", "specialID": 2, "tip":"building1" },
+      {"x": 128, "y": 64, "name": "building2", "pic": "activate", "specialID": 3,"tip": "building2"},
+      {"x": 0, "y": 128, "name": "item1","pic": "bag1", "specialID": 4,        "tip": "item1"},
+      {"x": 64, "y": 128, "name": "item2","pic": "bag2", "specialID": 5,       "tip": "item2"},
+      {"x": 128, "y": 128, "name": "item3","pic": "bag3", "specialID": 6,      "tip": "item3"}
     ]
   },
  {
     "name": "System",
-    "x": 52,
-    "y": 368,
-    "choices": [
-      {"x": 0, "y": 0, "name": "Redo Actions","pic": "redo","tip": "Redo these choices"}
-    ]
-  },
-  {
-    "name": "System2",
-    "x": 560,
+    "x": 602,
     "y": 378,
     "choices": [
       {"x": 0, "y": 0, "name": "Confirm Actions","pic": "accept","tip": "Accept these choices"}

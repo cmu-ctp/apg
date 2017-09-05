@@ -18,12 +18,17 @@ if (typeof Object.assign != 'function') {
 }
 
 class ent extends Phaser.Sprite {
+    static entList: ent[] = [];
+    static clearAll(): void {
+        for (var k = 0; k < ent.entList.length; k++) { if (ent.entList[k] != null ) ent.entList[k].eliminate(); }
+        ent.entList = [];}
+
 	upd: (m: ent) => void = null;
-    update() {
+	update() { if (this.upd != null) this.upd(this); }
 
-        if (this.upd != null) this.upd(this);
+    eliminate() { ent.entList[this.id] = null; this.destroy(true); this.id = -1; }
 
-    }
+    set color(value: number) { this.tint = value; }
 
 	set scalex(value: number) { this.scale.x = value; }
 	set scaley(value: number) { this.scale.y = value; }
@@ -37,33 +42,43 @@ class ent extends Phaser.Sprite {
 	ialpha(value: number, speed: number): ent { this.alpha = this.alpha * (1 - speed) + speed * value; return this; }
 	irotation(value: number, speed: number): ent { this.rotation = this.rotation * (1 - speed) + speed * value; return this; }
 
-    set tex(value: string) { this.loadTexture(value); }
-    set color(value: number) { this.tint = value; }
+	set tex(value: string) {this.loadTexture(value);}
 
 	set src(value: ent) { value.addChild( this ); }
 
+    id: number;
+
 	constructor(t: Phaser.Group, x: number, y: number, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture,
-		fields?: { src?:ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, scalex?: number, scaley?: number, color?:number, anchorx?: number, anchory?: number, upd?: (m: ent) => void }) {
+        fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, color?: number, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, upd?: (m: ent) => void }) {
 		super(t.game, x, y, key);
 		if (fields) Object.assign(this, fields);
 		this.exists = true; this.visible = true; this.alive = true; this.z = t.children.length;
 		t.addChild(this);
 		if (t.enableBody) { t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug); }
-		if (t.cursor === null) { t.cursor = this; }
+        if (t.cursor === null) { t.cursor = this; }
+        this.id = ent.entList.length;
+        ent.entList.push(this);
 	}
 }
 
 class enttx extends Phaser.Text {
-	upd: (m: enttx) => void = null;
-	update() { if (this.upd != null) this.upd(this); }
+    static entList: enttx[] = [];
 
-	set tx(value: string) { this.text = value; }
+    static clearAll(): void {
+        for (var k = 0; k < enttx.entList.length; k++) { if (enttx.entList[k] != null) enttx.entList[k].eliminate(); }
+        enttx.entList = [];}
+
+	upd: (m: enttx) => void = null;
+    update() { if (this.upd != null) this.upd(this); }
+
+    eliminate() { enttx.entList[this.id] = null; this.destroy(true); this.id = -1; }
+
+    set tx(value: string) { this.text = value; }
 
 	set scx(value: number) { this.scale.x = value; }
 	set scy(value: number) { this.scale.y = value; }
 	set anchorx(value: number) { this.anchor.x = value; }
     set anchory(value: number) { this.anchor.y = value; }
-
     set verticalSpacing(value: number) { this.lineSpacing = value; }
 
 	ix(value: number, speed: number): enttx { this.x = this.x * (1 - speed) + speed * value; return this; }
@@ -76,13 +91,17 @@ class enttx extends Phaser.Text {
 
 	set src(value: ent) { value.addChild(this); }
 
+    id: number;
+
 	constructor(t: Phaser.Group, x: number, y: number, text: string, style?: Phaser.PhaserTextStyle,
-		fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, verticalSpacing?:number, upd?: (m: enttx) => void }) {
-        super(t.game, x, y, text, style);
+        fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, verticalSpacing?: number, upd?: (m: enttx) => void }) {
+		super(t.game, x, y, text, style);
 		if (fields) Object.assign(this, fields);
 		this.exists = true; this.visible = true; this.alive = true; this.z = t.children.length;
 		t.addChild(this);
 		if (t.enableBody) { t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug); }
-		if (t.cursor === null) { t.cursor = this; }
+        if (t.cursor === null) { t.cursor = this; }
+        this.id = enttx.entList.length;
+        enttx.entList.push(this);
 	}
 }

@@ -1,0 +1,82 @@
+﻿<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+    <title>APG Game</title>
+
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="https://ttv-api.s3.amazonaws.com/twitch.min.js"></script>
+    <script src="http://cdn.tmijs.org/js/latest/1.x/tmi.min.js"></script>
+    <script src="phaser.min.js"></script>
+    <script src="APGApp.js"></script>
+    <script src="CartoonGame.js"></script>
+
+    <link rel="stylesheet" href="client.css" type="text/css" />
+
+    <script>
+
+        devParms = {
+            disableNetworking: true,
+
+            networkingTestSequence: true,
+
+            skipAuthentication: false,
+            forceChatIRCChannelName: "ludolab",
+            forceLogicIRCChannelName: "ludolab_",
+            forcePlayerName: "",
+            forcePlayerOauth: "",
+            forceClientID: '',
+
+            forceMobile: true
+        };
+
+        appParms = {
+
+            cacheFunction: CartoonAssetCache,
+
+            gameLaunchFunction: WaitingToJoin,
+
+            gameName: "Gods of Socks and Spoons",
+
+            allowClientReposition: true,
+
+            gameWidth: 800,
+            gameHeight: 450,
+            landscapeOnly: true,
+            portraitOnly: false,
+
+            videoWidth: 1024,
+            videoHeight: 768,
+            chatWidth: 400,
+            chatHeight: 720
+        };
+
+    </script>
+</head>
+<body onload="launchAPGClient(devParms, appParms);">
+    <h1><div id="loadLabel">Please wait while the audience app loads</div></h1>
+    <h1><div id="orientationWarning"></div></h1>
+    <h1><div id="appErrorMessage"></div></h1>
+    <div class="mobile">
+        <center>
+            <div id="APGInputWidgetMobile"></div>
+        </center>
+    </div>
+    <div class="browser">
+        <center>
+            <div id="container">
+                <div class="chat">
+                    <div id="TwitchChat"></div>
+                </div>
+                <div class="video">
+                    <div id="TwitchVideo"></div>
+                </div>
+                <div class="gameClient">
+                    <div id="APGInputWidget"></div>
+                </div>
+            </div>
+        </center>
+    </div>
+</body>
+</html>
