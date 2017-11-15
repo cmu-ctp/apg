@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 28284a680965f4c459a1d481c04bd9ae
+timeCreated: 1507219343
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - bomb: {fileID: 21300000, guid: ca17c1ac392956e4eaabee5ae2f2be2e, type: 3}
+  - dagger: {fileID: 21300000, guid: 6691c360b53e03846a1e1c32c2d153e2, type: 3}
+  - dart: {fileID: 21300000, guid: 5163fa8632f635948b194b2cf33b5de7, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

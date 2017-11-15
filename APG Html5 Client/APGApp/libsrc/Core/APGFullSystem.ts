@@ -14,9 +14,12 @@
 
 	JSONAssets: { any };
 
-	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any, networkTestSequence:boolean, allowFullScreen:boolean ) {
+	metadata: MetadataFullSys;
+
+	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any, networkTestSequence:boolean, allowFullScreen:boolean, metadataSys:MetadataFullSys ) {
 		this.g = g;
-        this.JSONAssets = JSONAssets;
+		this.JSONAssets = JSONAssets;
+		this.metadata = metadataSys;
         if (playerName == "") playerName = "ludolab";
         this.useKeepAlive = false;
         this.playerName = playerName;
@@ -34,7 +37,8 @@
         this.network.update( this.useKeepAlive );
         // under what conditions shouldn't the disconnect function be called?
         if (this.disconnected == false && this.network.disconnected == true && this.onDisconnect != null) this.onDisconnect();
-        this.disconnected = this.network.disconnected;
+		this.disconnected = this.network.disconnected;
+		this.metadata.Update();
 	}
 
     CheckMessageParameters<T>(funcName: string, message: string, parmsForMessageToServer: T): boolean {
@@ -129,6 +133,12 @@
         this.onDisconnect = disconnectFunc;
         return this;
     }
+
+	SetMetadataUpdateFunc(func: (metaDataSys: MetadataFullSys) => void): void {
+		this.metadata.onUpdateFunc = func;
+	}
+
+	public Metadata<T>(msgName: string): T { return this.metadata.Data<T>(msgName); }
 
 	//____________________________________________________
 

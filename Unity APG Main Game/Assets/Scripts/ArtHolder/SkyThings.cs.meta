@@ -1,10 +1,17 @@
 fileFormatVersion: 2
 guid: 495ee85c5ce5a3643a774ec02f577dd7
-timeCreated: 1502747867
+timeCreated: 1507219156
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - popMsg: {instanceID: 0}
+  - cloudGuy: {fileID: 21300000, guid: b0e2417865a738f478a4cd0087ab0f01, type: 3}
+  - sunEggRise: {fileID: 21300000, guid: 9defd4df0f60a56488ba2cf8ed741cb5, type: 3}
+  - sun: {fileID: 21300000, guid: 1bd9ad1d5c82ab6458a396020d6241f1, type: 3}
+  - sunEgg: {fileID: 21300000, guid: 5bb35a16d8292b94da5b87009b6016ad, type: 3}
+  - sunFace: {fileID: 21300000, guid: 644772009e7f45e4f95048626fd17650, type: 3}
+  - fezCloud: {fileID: 21300000, guid: e301c6dd2cda6c14db5cc535ed048794, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

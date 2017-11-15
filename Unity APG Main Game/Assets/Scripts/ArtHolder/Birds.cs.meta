@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 4d86a6afb48a59d41b8b03567bcc3b84
+timeCreated: 1507216743
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - blueBirdHead: {fileID: 21300000, guid: 92b148a168843dd4fb16cb70a2a94ef3, type: 3}
+  - straightJacket: {fileID: 21300000, guid: 531af7219bc30cc48a60ca0c908143c1, type: 3}
+  - redBird: {fileID: 21300000, guid: a3d6835a3db564641bac716bb9a68424, type: 3}
+  - bluePenguin: {fileID: 21300000, guid: ed8c72c8aade4ed47ba89e633b48b946, type: 3}
+  - wanderBird: {fileID: 21300000, guid: df54e3e19b35eb24c923f4a62eb3f02b, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

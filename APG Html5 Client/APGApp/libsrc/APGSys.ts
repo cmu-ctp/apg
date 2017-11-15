@@ -176,7 +176,11 @@ interface APGSys {
      */
 	RegisterDisconnect(disconnectFunc: () => void ): APGSys;
 
+    /* _____________________________________Metadata______________________________________ */
 
+	SetMetadataUpdateFunc(func: (metaDataSys: MetadataFullSys) => void): void;
+
+	Metadata<T>(msgName: string): T;
 
     /* _____________________________________Testing______________________________________ */
 

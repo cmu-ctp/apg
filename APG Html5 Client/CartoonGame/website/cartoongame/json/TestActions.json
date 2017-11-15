@@ -15,7 +15,7 @@
   {
     "name": "Action", 
     "x": 700,
-    "y": 210,
+    "y": 190,
     "isActions": 0,
       "choices":[
       {"x": 0, "y": 0, "name": "Back", "pic": "movein",                                "tip": "BACK ROW.  This offers the most protection from flying attacks, but you likely won't collect falling treats.  Gives priority for buildings abilities and Extract."},
@@ -24,7 +24,7 @@
     ]},
   {
     "name": "Items",
-    "x": 80,
+    "x": 40,
     "y": 260,
     "isActions": 1,
     "choices": [
@@ -41,8 +41,8 @@
   },
  {
     "name": "System",
-    "x": 602,
-    "y": 378,
+    "x": 702,
+    "y": 388,
     "choices": [
       {"x": 0, "y": 0, "name": "Confirm Actions","pic": "accept","tip": "Accept these choices"}
     ]

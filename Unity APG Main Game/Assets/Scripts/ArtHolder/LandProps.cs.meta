@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c780455c75670c340954c20af6f02d18
+timeCreated: 1507219101
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - tree: {fileID: 21300000, guid: d2ef4adde025c70458553e985787a616, type: 3}
+  - volcano: {fileID: 21300000, guid: 65606dd2214f0694bb2f5fc64a93c772, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

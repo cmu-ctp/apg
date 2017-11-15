@@ -1,18 +1,16 @@
 ﻿/*
-
-// round start plaque - health
-
+// round start plaque - health, stat update, team stats, new opponent
 */
 
 function CartoonAssetCache(c: Cacher): void {
-    c.images('cartoongame/imgs', ['blueorb.png', 'flag1small.png', 'flag2small.png', 'littleperson.png', 'littleperson2.png', 'bodyleft.png', 'bodyright.png', 'bkg_guide4.png', 'test.png', 'whiteblock.png', 'arrowcap.png', 'arrowmid.png', 'arrowhead.png', 'hudselect.png']);
+	c.images('cartoongame/imgs', ['blueorb.png', 'flag1small.png', 'flag2small.png', 'littleperson.png', 'littleperson2.png', 'bodyleft.png', 'bodyright.png', 'bkg_guide4.png', 'ClientUI9.png', 'tooltip2.png', 'test.png', 'whiteblock.png', 'arrowcap.png', 'arrowmid.png', 'arrowhead.png', 'hudselect.png']);
     c.images('cartoongame/imgs/buildings', ['building1.png', 'building2.png', 'building3.png', 'building4.png', 'building5.png', 'building6.png']);
     c.images('cartoongame/imgs/heads', ['headbig1.png', 'headbig2.png', 'headbig3.png', 'headbig4.png', 'headbig5.png', 'headbig6.png', 'headbig7.png', 'headbig8.png', 'headbig9.png', 'headbig10.png', 'headbig11.png', 'headbig12.png', 'headbig13.png', 'headbig14.png', 'headbig15.png', 'headbig16.png', 'headbig17.png', 'headbig18.png', 'headbig19.png', 'headbig20.png']);
     c.images('cartoongame/imgs/sheads', ['shead1.png', 'shead2.png', 'shead3.png', 'shead4.png', 'shead5.png', 'shead6.png', 'shead7.png', 'shead8.png', 'shead9.png', 'shead10.png', 'shead11.png', 'shead12.png', 'shead13.png', 'shead14.png', 'shead15.png', 'shead16.png', 'shead17.png', 'shead18.png', 'shead19.png', 'shead20.png']);
     c.images('cartoongame/imgs/resources', ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png']);
     c.images('cartoongame/imgs/sitems', ['stennisball.png', 'sbaseballbat.png', 'sbomb.png', 'sbroom.png', 'sclock.png', 'scomputer.png', 'shammer2.png', 'sknighthelmet.png', 'sscarymask.png', 'svacanteyemask.png', 'srocket2.png', 'sscissors2.png', 'sshield.png', 'sfalseteeth.png']);
 	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3', 'strokeup.mp3', 'strokeup4.mp3']);
-	c.json(['cartoongame/json/TestActions.json']);
+    c.json(['cartoongame/json/TestActions.json', 'cartoongame/json/MoveActions.json', 'cartoongame/json/PlayActions.json']);
 
 	WaitingToJoinCache(c);
 	JoinAcknowledgeCache(c);
@@ -89,6 +87,8 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
     var ability1Pics: string[] = ['cow', 'fish', 'flowers', 'biplane', 'policecopter', 'meds'];
     var ability2Pics: string[] = ['broccoli', 'turtles', 'sun', 'blimp', 'policecar', 'fairyability'];
 
+	var buildingNames = ['farm', 'pond', 'greenhouse', 'airport', 'police station', 'hospital'];
+
     var itemHints = [
         "This button will use and use up an item... eventually.  But you need an item to use first!",
         "TENNIS BALL - Collect a handful of tennis balls and send them hurtling towards the enemy streamer in low, fast arcs.",
@@ -130,7 +130,8 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
     var headEntLeft: ent, headEntRight: ent;
     var roundNumber: number = 2;
     var nameLeft: enttx, nameRight: enttx;
-    var healthLeft: ent, foeHealthBk: ent, healthRight: ent;
+	var healthLeft: ent, foeHealthBk: ent, healthRight: ent;
+	var actionLabel: enttx;
     // foe name color
     var choices: number[] = [1, 1, 1, 1, 1, 1];
     var myStats: PlayerUpdate = {
@@ -168,13 +169,16 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
 
     var roundColors = ['#468', '#846', '#684'];
 
-    var roundx = 100;
+    var roundx = 80;
 
     var tipx = 70; var tipy = 90;
     var mapRowx = 0; var mapRowy = 60;
-    var mapBuildingx = 44; var mapBuildingy = -160;
-    var statx = -110; var staty = -176;
-    var foestatx = -60; var foestaty = -176; 
+	var mapBuildingx = 44; var mapBuildingy = -160;
+
+	var allStx = -30; var allSty = -50;
+
+	var statx = -110 + allStx; var staty = -176 + allSty;
+	var foestatx = -60 + allStx; var foestaty = -176 + allSty; 
 
     var foeAdd = 130;
     var foeActive = false, foeActiveOld = true;
@@ -216,7 +220,9 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
 
         // ____________________________________________
 
-        buildingPic.tex = 'cartoongame/imgs/buildings/building' + (curBuilding + 1) + '.png';
+		buildingPic.tex = 'cartoongame/imgs/buildings/building' + (curBuilding + 1) + '.png';
+
+		actionLabel.text = "1. Action at " + buildingNames[curBuilding];
 
         if (team == 1) {
             if (foeActive && !foeActiveOld) {
@@ -343,7 +349,12 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
             playerStats = {};
 			apg.WriteToServer<SelectionParms>("upd", { choices: choices });});
 
-    function setToolTip(str: string): void { toolTip = str; }
+	var toolTime = 0;
+
+	function setToolTip(str: string): void {
+		toolTip = str;
+		toolTime = 3;
+	}
 
     // __________________________________________________________________________
 
@@ -351,7 +362,7 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
 
     var tick: number = 0;
 
-    new ent(w, 0, 0, 'cartoongame/imgs/bkg_guide4.png', {
+    new ent(w, 0, 0, 'cartoongame/imgs/ClientUI9.png', {
         upd: e => {
             tick++;
 
@@ -370,10 +381,12 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
             choiceButtons[2].update(true );
             choiceButtons[3].update(true);}});
 
+	new ent(w, 0, 0, 'cartoongame/imgs/tooltip2.png', { upd: e => { toolTime--; if (toolTime == 0) toolTip = ""; e.visible = (toolTip == "") ? false : true; } });
+
     choiceButtons = addActions(choices, setToolTip);
 
-    new enttx(w, roundx+260, 25, "Choices for ", { font: '36px ' + fontName, fill: '#444' });
-    new enttx(w, roundx +420, 25, "Round ", { font: '36px ' + fontName, fill: roundColors[1] }, {
+    new enttx(w, roundx+260, 16, "Choices for ", { font: '45px ' + fontName, fill: '#444' });
+    new enttx(w, roundx +440, 16, "Round ", { font: '45px ' + fontName, fill: roundColors[1] }, {
         upd: e => {
             if (roundNumber != lastRoundUpdate) {
                 e.text = "Round " + (roundNumber);
@@ -391,18 +404,18 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
     function a1l(l): void { for (var e in l) playerLeft.push(l[e]); }
     function a2l(l): void { for (var e in l)playerRight.push(l[e]); }
 
-    new enttx(w, 30 + 100, 34, "1. Action Here", { font: '24px ' + fontName, fill: '#A00' });
+    actionLabel = new enttx(w, 60, 210, "1. Action Here", { font: '20px ' + fontName, fill: '#A00' });
 
-    buildingPic = new ent(w, 140, 86, buildingPicName, { color: 0xa0a0a0 });
+	buildingPic = new ent(w, allStx + 140, allSty+86, buildingPicName, { color: 0xa0a0a0 });
 
-    vsLabel = new enttx(w, 160, -90 + 18 + nameHeight, 'VS', { font: '24px ' + fontName });
+	vsLabel = new enttx(w, allStx + 160, allSty + -90 + 18 + nameHeight, 'VS', { font: '24px ' + fontName });
    
-    headEntLeft = new ent(w, 50, (team == 1) ? 50 : 80, (team == 1) ? headPic : foeHeadPic, { scalex: (team == 1) ? .75 : .5, scaley: (team == 1) ? .75 : .5, color: (team == 1) ? 0xffffff : 0xa0a0a0 }); a1(headEntLeft);
-    nameLeft = new enttx(w, 50, nameHeight, (team == 1) ? apg.playerName : foeNameString, { font: '12px ' + fontName, fill: (team == 1) ? nameColor : foenameColor }); a1(nameLeft);
-    a1( new ent(w, 46, healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }) );
-    healthLeft = new ent(w, 47, healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 }); a1(healthLeft);
-    
-    var itemLeft: number = 136; var itemRight = 192; var itemVert: number = 170;
+	headEntLeft = new ent(w, allStx + 50, allSty+((team == 1) ? 50 : 80), (team == 1) ? headPic : foeHeadPic, { scalex: (team == 1) ? .75 : .5, scaley: (team == 1) ? .75 : .5, color: (team == 1) ? 0xffffff : 0xa0a0a0 }); a1(headEntLeft);
+	nameLeft = new enttx(w, allStx + 50, allSty+nameHeight, (team == 1) ? apg.playerName : foeNameString, { font: '12px ' + fontName, fill: (team == 1) ? nameColor : foenameColor }); a1(nameLeft);
+	a1(new ent(w, allStx + 46, allSty +healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }) );
+	healthLeft = new ent(w, allStx + 47, allSty +healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 }); a1(healthLeft);
+
+	var itemLeft: number = allStx + 136; var itemRight = allStx + 192; var itemVert: number = allSty +170;
 
     itemLabelLeft = new enttx(w, itemLeft, itemVert - 14, 'Items', { font: '10px ' + fontName, fill: '#555' }); a1(itemLabelLeft);
     itemPicsLeft = [new ent(w, itemLeft, itemVert, 'cartoongame/imgs/sitems/srocket2.png'),
@@ -410,7 +423,7 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
         new ent(w, itemLeft, itemVert + 32, 'cartoongame/imgs/sitems/srocket2.png')];
     a1l(itemPicsLeft);
 
-    a1(new enttx(w, 52, healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }) );
+	a1(new enttx(w, allStx + 52, allSty +healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }) );
 
     function category(msg: string, x: number, y: number): enttx {return new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' });}
     function inCategory(x: number, y: number, add: number, labels: string[], bump1:boolean = false ): enttx[] {
@@ -435,12 +448,12 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
     new ent(w, itemRight, itemVert + 32, 'cartoongame/imgs/sitems/sbomb.png')];
     a2l(itemPicsRight);
 
-    headEntRight = new ent(w, 230+ (team==1 ? 0:-40), (team == 1) ? 80 : 50, (team == 1) ? foeHeadPic : headPic, { scalex: (team == 1) ? .5 : .75, scaley: (team == 1) ? .5 : .75, color: (team == 1) ? 0xa0a0a0:0xffffff }); a2(headEntRight);
-    nameRight = new enttx(w, 210, nameHeight, (team==1)?foeNameString:apg.playerName, { font: '12px ' + fontName, fill: (team==1)?foenameColor:nameColor }); a2(nameRight);
-    a2( new ent(w, 250, healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }) );
-    healthRight = new ent(w, 251, healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 }); a2(healthRight);
+	headEntRight = new ent(w, allStx + 230 + (team == 1 ? 0 : -40), allSty+((team == 1) ? 80 : 50), (team == 1) ? foeHeadPic : headPic, { scalex: (team == 1) ? .5 : .75, scaley: (team == 1) ? .5 : .75, color: (team == 1) ? 0xa0a0a0:0xffffff }); a2(headEntRight);
+	nameRight = new enttx(w, allStx + 210, allSty+nameHeight, (team==1)?foeNameString:apg.playerName, { font: '12px ' + fontName, fill: (team==1)?foenameColor:nameColor }); a2(nameRight);
+	a2(new ent(w, allStx + 250, allSty +healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }) );
+	healthRight = new ent(w, allStx + 251, allSty +healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 }); a2(healthRight);
 
-    a2( new enttx(w, 280, healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }) );
+	a2(new enttx(w, allStx + 280, allSty +healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }) );
     a2( new enttx(w, foestatx + 60 + -20 + 240, foestaty + 186 + 158, 'Resources', { font: '12px ' + fontName, fill: '#222' }) );
 
     statPicsRight = picCategory(foestatx + foeAdd + 194 - 50, foestaty + 360, 13, ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png']); a2l(statPicsRight);
@@ -448,12 +461,12 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
 
     // 2. Location
 
-    new enttx(w, 100+mapBuildingx + 325, mapBuildingy+240, "2. Then Move Here", { font: '24px ' + fontName, fill: '#A00' });
+    new enttx(w, 80+mapBuildingx + 325, 104+mapBuildingy+240, "2. Then, Move Here", { font: '20px ' + fontName, fill: '#A00' });
     new ent(w, mapBuildingx + 270, mapBuildingy +265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png');
     new ent(w, mapBuildingx + 680, mapBuildingy +265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2)+'small.png');
     locBody = new ent(w, mapBuildingx + 330 + 64 * curBuilding, mapBuildingy +16+285, bodyPic, { scalex: 1, scaley: 1, color:bodyColor});
     locHead = new ent(w, mapBuildingx + 320 + 64 * curBuilding, mapBuildingy +16 +271, sheadPic);
-    playerLabel = new enttx(w, mapBuildingx + 320 + 64 * curBuilding, mapBuildingy +16 +320, apg.playerName, { font: '12px ' + fontName, fill: nameColor });
+    playerLabel = new enttx(w, mapBuildingx + 320 + 64 * curBuilding, mapBuildingy +16 +320-6, apg.playerName, { font: '12px ' + fontName, fill: nameColor });
 
     var moveArrow = [];
     for (var k = 0; k < 6; k++) { var art = 'mid'; if (k == 0) art = 'cap'; if (k == 5) art = 'head';  moveArrow.push(new ent(w, 310 + mapBuildingx + 64 * k, 280 + mapBuildingy, 'cartoongame/imgs/arrow' + art + '.png', { alpha: .5, upd: e => { e.alpha = .2 + .2 * Math.cos( tick * .03); } })); moveArrow[k].visible = false;}
@@ -526,8 +539,8 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
                 if (toolTip == 'hospital') doBuildingTip(e, 5);}}
     });
 
-    category("Time", -110+650, 30+336);
-    new enttx(w, -110 +650, 30 +354, "", { font: '40px ' + fontName, fill: '#688' }, { upd: e => { e.text = "" + timer; e.fill = roundColors[(roundNumber-1) % roundColors.length];}});
+	category("Time", -130 + 650 + 200, -360 + 48 + 336);
+	new enttx(w, -130 + 650 + 200, -360 + 48 + 354, "", { font: '40px ' + fontName, fill: '#688' }, { upd: e => { e.text = "" + timer; e.fill = roundColors[(roundNumber-1) % roundColors.length];}});
 
     if (apg.allowFullScreen) {new enttx(w, 100, 700, "Your actions were submitted just fine!  Now just relax until the next round.", { font: '18px ' + fontName, fill: '#433' });}
 

@@ -1,4 +1,4 @@
-function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence, disableNetworking, isMobile, gameWidth, gameHeight, logicIRCChannelName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd, handleOrientation) {
+function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence, disableNetworking, isMobile, gameWidth, gameHeight, logicIRCChannelName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd, handleOrientation, metadataSys) {
     if (gameWidth === void 0) { gameWidth = 400; }
     if (gameHeight === void 0) { gameHeight = 300; }
     if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
@@ -58,7 +58,7 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence
         }
         function launchGame() {
             onLoadEnd();
-            var apg = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence, allowFullScreen);
+            var apg = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence, allowFullScreen, metadataSys);
             var showingOrientationWarning = false;
             setInterval(function () {
                 handleOrientation();
@@ -69,10 +69,11 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence
     }
 }
 var APGFullSystem = (function () {
-    function APGFullSystem(g, logicIRCChannelName, playerName, chat, JSONAssets, networkTestSequence, allowFullScreen) {
+    function APGFullSystem(g, logicIRCChannelName, playerName, chat, JSONAssets, networkTestSequence, allowFullScreen, metadataSys) {
         var _this = this;
         this.g = g;
         this.JSONAssets = JSONAssets;
+        this.metadata = metadataSys;
         if (playerName == "")
             playerName = "ludolab";
         this.useKeepAlive = false;
@@ -442,6 +443,15 @@ var IRCNetwork = (function () {
     };
     return IRCNetwork;
 }());
+var MetadataFullSys = (function () {
+    function MetadataFullSys(url) {
+    }
+    MetadataFullSys.prototype.Connect = function (url) { };
+    MetadataFullSys.prototype.Register = function (msgName, funcForMetadataMessage) { return this; };
+    MetadataFullSys.prototype.ClearLocalMessages = function () { };
+    MetadataFullSys.prototype.Update = function () { };
+    return MetadataFullSys;
+}());
 var NetworkMessageHandler = (function () {
     function NetworkMessageHandler() {
         this.inputs = {};
@@ -517,46 +527,6 @@ var debugPrintMessages = false;
 var debugLogIncomingIRCChat = true;
 var debugLogOutgoingIRCChat = true;
 var debugShowAssetMessages = false;
-function AddAppReposition(divName, width) {
-    var mouseDown = false;
-    var startx = 0, starty = 0;
-    var mx = 0, my = 0;
-    var curx = 0, cury = 0;
-    var clickx, clicky;
-    var d = null;
-    var dragging = false;
-    document.onmousedown = function () {
-        if (mouseDown === false) {
-            if (mx > curx && mx < curx + width && my > cury && my < cury + 32) {
-                curx = 800;
-                cury = 0;
-                d.style.position = "absolute";
-                d.style.left = '800px';
-                d.style.top = '0px';
-            }
-        }
-        mouseDown = true;
-    };
-    document.onmouseup = function () {
-        mouseDown = false;
-    };
-    document.onmousemove = function (e) {
-        mx = e.clientX;
-        my = e.clientY;
-    };
-    setInterval(function () {
-        if (d === null) {
-            d = document.getElementById(divName);
-            if (d !== null) {
-                curx = 800;
-                cury = 0;
-                d.style.position = "absolute";
-                d.style.left = '800px';
-                d.style.top = '0px';
-            }
-        }
-    }, 1000 / 30);
-}
 function setTwitchIFrames(isMobile, chatIRCChannelName, chatWidth, chatHeight, videoWidth, videoHeight) {
     if (isMobile) {
         $('.browser').removeClass();
@@ -703,12 +673,10 @@ function launchAPGClient(devParms, appParms) {
             }
         });
     }
+    var metadataSys = new MetadataFullSys(location.hash);
     var phaserDivName = (isMobile ? "APGInputWidgetMobile" : "APGInputWidget");
     document.getElementById(phaserDivName).style.display = 'none';
     var ClearOnLoadEnd = AddPreloader(phaserDivName, appParms.gameName);
-    if (!isMobile && appParms.allowClientReposition) {
-        AddAppReposition("APGInputWidget", appParms.gameWidth);
-    }
     function FatalError() { Error.apply(this, arguments); this.name = "FatalError"; }
     FatalError.prototype = Object.create(Error.prototype);
     if (appFailedWithoutRecovery) {
@@ -721,7 +689,7 @@ function launchAPGClient(devParms, appParms) {
     document.getElementById("appErrorMessage").style.display = 'none';
     setTwitchIFrames(isMobile, chatIRCChannelName, appParms.chatWidth, appParms.chatHeight, appParms.videoWidth, appParms.videoHeight);
     var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
-    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.networkingTestSequence, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
+    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.networkingTestSequence, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation, metadataSys);
 }
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||

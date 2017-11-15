@@ -17,6 +17,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
+    <Use64BitIISExpress />
   </PropertyGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
@@ -37,6 +38,7 @@
     <TypeScriptCompile Include="libsrc\Core\Libraries\p2.d.ts" />
     <TypeScriptCompile Include="libsrc\Core\Libraries\phaser.d.ts" />
     <TypeScriptCompile Include="libsrc\Core\Libraries\pixi.comments.d.ts" />
+    <TypeScriptCompile Include="libsrc\Core\MetadataFullSys.ts" />
     <TypeScriptCompile Include="libsrc\Core\NetworkMessageHandler.ts" />
     <TypeScriptCompile Include="libsrc\Core\Settings.ts" />
     <TypeScriptCompile Include="libsrc\Core\Webpage.ts" />

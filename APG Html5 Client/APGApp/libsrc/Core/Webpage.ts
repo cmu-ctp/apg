@@ -13,64 +13,6 @@ interface tmiIFace {
 declare var Twitch: TwitchIFace;
 declare var tmi: tmiIFace;
 
-function AddAppReposition(divName:string, width:number):void {
-	var mouseDown = false;
-	var startx = 0, starty = 0;
-	var mx = 0, my = 0;
-	var curx = 0, cury = 0;
-	var clickx, clicky;
-	var d = null;
-    var dragging = false;
-    document.onmousedown = function () {
-		if (mouseDown === false) {
-			if (mx > curx && mx < curx + width && my > cury && my < cury + 32) {
-				/*startx = mx;
-				starty = my;
-				clickx = curx;
-				clicky = cury;
-				dragging = true;*/
-                curx = 800;
-                cury = 0;
-                d.style.position = "absolute";
-                d.style.left = '800px';
-                d.style.top = '0px';
-			}
-		}
-		mouseDown = true;
-	};
-    document.onmouseup = function () {
-        mouseDown = false;
-		/*dragging = false;
-		mouseDown = false;*/
-	};
-	document.onmousemove = function (e) {
-		mx = e.clientX;
-		my = e.clientY;
-	};
-    setInterval(function () {
-        if (d === null) {
-            d = document.getElementById(divName);
-            if (d !== null) {
-                curx = 800;
-                cury = 0;
-                d.style.position = "absolute";
-                d.style.left = '800px';
-                d.style.top = '0px';
-            }
-        }
-		/*if (dragging) {
-			if (d === null) {
-				d = document.getElementById(divName);
-			}
-			d.style.position = "absolute";
-			curx = clickx + (mx - startx);
-			cury = clicky + (my - starty);
-			d.style.left = "" + curx + 'px';
-			d.style.top = "" + cury + 'px';
-		}*/
-	}, 1000 / 30);
-}
-
 function setTwitchIFrames(isMobile:boolean, chatIRCChannelName:string, chatWidth:number, chatHeight:number, videoWidth:number, videoHeight:number ):void {
 
 	if (isMobile) {
@@ -162,6 +104,8 @@ function launchAPGClient(devParms, appParms) {
 		clientID:'',
 		chat: null,
 		chatLoadedFunction: null,
+		metadataLoadedFunction: null,
+		metadataDoneLoading: false,
 		playerName: "",
 		playerOauth: ""
 	};
@@ -244,14 +188,21 @@ function launchAPGClient(devParms, appParms) {
 		});
 	}
 
+	var metadataLoadSuccess = () => {
+		engineParms.metadataDoneLoading = true;
+		if (engineParms.metadataLoadedFunction != null) {
+			engineParms.metadataLoadedFunction();
+		}
+	};
+	var metadataLoadFail = errorMessage => {
+		AppFail('Metadata System Initialization Error: ' + errorMessage);
+	};
+	var metadataSys = new MetadataFullSys(location.hash, metadataLoadSuccess, metadataLoadFail);
+
 	var phaserDivName = (isMobile ? "APGInputWidgetMobile" : "APGInputWidget");
 	document.getElementById(phaserDivName).style.display = 'none';
 
 	var ClearOnLoadEnd = AddPreloader(phaserDivName, appParms.gameName);
-
-    if (!isMobile && appParms.allowClientReposition) {
-		AddAppReposition("APGInputWidget", appParms.gameWidth);
-	}
 
 	function FatalError() { Error.apply(this, arguments); this.name = "FatalError"; }
 	FatalError.prototype = Object.create(Error.prototype);
@@ -268,5 +219,5 @@ function launchAPGClient(devParms, appParms) {
 
 	var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
 
-    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.networkingTestSequence, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation);
+	ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.networkingTestSequence, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation, metadataSys);
 }

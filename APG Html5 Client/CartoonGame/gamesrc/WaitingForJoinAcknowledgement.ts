@@ -7,20 +7,22 @@ interface EmptyParms {}
 declare var ticksPerSecond: any;
 function WaitingForJoinAcknowledgeTestSequence(apg: APGSys): void {
     apg.ClearLocalMessages();
-    //apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 1 });
-    apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 2 });
+    apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 1 });
+    //apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 2 });
 }
 function WaitingForJoinAcknowledement(apg: APGSys): void {
 	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
     var endSubgame: boolean = false, timeOut: number = 0, retry: number = 0; var playerID = -1, team = -1, connected = false;
 
+	var gameLaunchFunc = MainPlayerInput;//PlayerActionNew;//PlayerAction;//PlayerMovement;//
+
     apg.ResetServerMessageRegistry()
         .SetKeepAliveStatus(false)
 		.Register<ClientJoinParms>("join", p => {
-			if (p.name != apg.playerName) return;
-            if (p.started) { endSubgame = true; endOfRoundSound.play(); MainPlayerInput(apg, p.playerID, p.team); }
+			if (p.name.toLowerCase() != apg.playerName.toLowerCase()) return;
+            if (p.started) { endSubgame = true; endOfRoundSound.play(); gameLaunchFunc(apg, p.playerID, p.team); }
             else { connected = true; playerID = p.playerID; team = p.team; msg.tx = "Connected!  Waiting for streamer to start playing!";} })
-        .Register<EmptyParms>("start", p => { endSubgame = true; endOfRoundSound.play(); MainPlayerInput(apg, playerID, team); });
+        .Register<EmptyParms>("start", p => { endSubgame = true; endOfRoundSound.play(); gameLaunchFunc(apg, playerID, team); });
 
     if (apg.networkTestSequence) { WaitingForJoinAcknowledgeTestSequence(apg); }
 

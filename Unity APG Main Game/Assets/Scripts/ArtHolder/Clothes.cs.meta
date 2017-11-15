@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 84f719e09c9849943a80e43e7121ce89
+timeCreated: 1507218928
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - falseTeeth: {fileID: 21300000, guid: 4646c3f26aae999489794fc53a58dcc6, type: 3}
+  - glasses: {fileID: 21300000, guid: 671db8aab3ec09241906ee123a3e766a, type: 3}
+  - shield: {fileID: 21300000, guid: 134c0d14b8886234a8798e76150fc526, type: 3}
+  - shoe: {fileID: 21300000, guid: c03e3ce2698868044a80d6acb78af6a7, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

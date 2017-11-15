@@ -5,6 +5,8 @@ using v3 = UnityEngine.Vector3;
 
 public enum TouchFlag { IsAirbourne = 1<<0 }
 
+public enum Team { None, Player1, Player2 }
+
 public struct TouchInfo {
 	public int damage;
 	public int strength;
@@ -20,6 +22,9 @@ public struct TouchInfo {
 // All of the Serializable / SerialField annotations  are purely for debugging - it makes them visible and inspectable in the UnityEditor at runtime.
 [Serializable]
 public class ent {
+
+    public static GameSys BaseGameSys;
+
 	[SerializeField] GameSys gameSys;
 	[SerializeField] GameObject src;
 
@@ -30,8 +35,9 @@ public class ent {
 
 	[SerializeField] EntLink updLink;
 	[SerializeField] EntLink gridLink;
+    EntLink activeLink;
 
-	public ent textLabel = null;
+    public ent textLabel = null;
 
 	public int health;
 	public ent leader;
@@ -77,7 +83,7 @@ public class ent {
 	public bool inGrid {
 		set { if(value == true) { usingGrid = true; gridLink.Link(gameSys.GridLink(pos)); } else { usingGrid = false; gridLink.Unlink(); } }
 	}
-	public void remove() {
+	public void remove( bool removePool = false ) {
 		if( removed ) {
 			// print error message
 			return;
@@ -87,12 +93,14 @@ public class ent {
 		update = null;
 		gridLink.Unlink();
 
-		if( pool != null ) {
+		if( pool != null && !removePool) {
 			active = false;
 			pool.Reclaim( this );
 		}
 		else {
-			gridLink = null;
+            activeLink.Unlink();
+            activeLink = null;
+            gridLink = null;
 			updLink = null;
 			UnityEngine.Object.Destroy(src);
 		}
@@ -138,8 +146,9 @@ public class ent {
 		}
 		return false;
 	}
-	public ent(GameSys sys, GameObject prefab = null) {
-		src = (GameObject)UnityEngine.Object.Instantiate((prefab != null) ? prefab : sys.basePrefab, new v3(0, 0, 0), Quaternion.identity);
+	public ent(GameObject prefab = null) {
+        var sys = BaseGameSys;
+        src = (GameObject)UnityEngine.Object.Instantiate((prefab != null) ? prefab : sys.basePrefab, new v3(0, 0, 0), Quaternion.identity);
 
 		var entHolder = src.GetComponent<EntHolder>();
 		if( entHolder != null ) {
@@ -155,7 +164,9 @@ public class ent {
 		gameSys = sys;
 		updLink = new EntLink(this);
 		gridLink = new EntLink(this);
-		itemTouch = (e, user, info) => { };
+        activeLink = new EntLink(this);
+        activeLink.Link(gameSys.activeEnts);
+        itemTouch = (e, user, info) => { };
 		breathTouch = (e, user, info) => { };
 		playerTouch = (e, user, info) => { };
 		buddyTouch = (e, user, info) => { };
@@ -174,11 +185,13 @@ public class ent {
 	public float scale { get { return trans.localScale.x; } set { trans.localScale = new v3(value, value, value); } }
 	public v3 scale3 { get { return trans.localScale; } set { trans.localScale = value; } }
 	public float ang { get { return trans.eulerAngles.z; } set { trans.eulerAngles = new v3(0, 0, value); } }
-	public void MoveBy(v3 moveVector) { if(removed) return; gridLink.Unlink(); trans.Translate(moveVector, Space.World); if(moveVector.z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
+    public v3 ang3 { get { return trans.eulerAngles; } set { trans.eulerAngles = value; } }
+    public void MoveBy(v3 moveVector) { if(removed) return; gridLink.Unlink(); trans.Translate(moveVector, Space.World); if(moveVector.z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public void MoveBy(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.Translate(new v3(x, y, z), Space.World); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public void MoveTo(float x, float y, float z) { if(removed) return; gridLink.Unlink(); trans.position = new v3(x, y, z); if(z != 0) SortByZ(); gridLink.Link(gameSys.GridLink(pos)); }
 	public Sprite sprite { set { if( spr != null)spr.sprite = value; } get { return spr.sprite; } }
-	public Material material { set { if (spr != null) spr.material = value; } }
+    public Team team;
+    public Material material { set { if (spr != null) spr.material = value; } }
 	public void SortByZ() {
 		if(ren != null ) {
 			if( isShadow ) {
@@ -209,7 +222,10 @@ public class ent {
 				case Layers.UIBkg:
 					s = "UIBkg";
 					break;
-				case Layers.Game:
+                case Layers.OverlayFX:
+                    s = "OverlayFX";
+                    break;
+                case Layers.Game:
 					s = "Default";
 					break;
 				case Layers.Background:
@@ -223,10 +239,10 @@ public class ent {
 	public ent parent {
 		set { trans.parent = value.src.transform; }
 	}
-	public MonoBehaviour parentMono {
-		set { trans.parent = value.transform; }
-	}
-	public List<ent> children { set { foreach(var child in value) { child.trans.parent = trans; child.trans.localPosition = new v3(0, 0, 0); } } }
+    public Transform parentTrans {
+        set { trans.parent = value; }
+    }
+    public List<ent> children { set { foreach(var child in value) { child.trans.parent = trans; child.trans.localPosition = new v3(0, 0, 0); } } }
 
 	public string text { set { tx.text = value;} get { return tx.text; } }
 	public Color textColor { set { tx.color = value;} get { return tx.color; } }
@@ -243,22 +259,22 @@ public class FixedEntPool {
 	[SerializeField] int nextToSpawn = 0;
 	[SerializeField] ent dummyEnt = null;
 
-	public FixedEntPool( GameSys gameSys, int poolSize, string poolName, bool getFirstFree=false, GameObject prefab = null ) {
+	public FixedEntPool( int poolSize, string poolName, bool getFirstFree=false, GameObject prefab = null ) {
 		name = poolName;
 		useFirstFree = getFirstFree;
 		size = poolSize;
 		entSet = new ent[size];
 		ent lastEnt = null;
 
-		var src = new ent(gameSys) { name=poolName };
+		var src = new ent() { name=poolName };
 
 		for( var k = 0; k < size; k++ ) {
-			entSet[k] = new ent(gameSys, prefab) { poolNext = lastEnt, pool = this, active=false, parent=src };
+			entSet[k] = new ent(prefab) { poolNext = lastEnt, pool = this, active=false, parent=src };
 			lastEnt = entSet[k];
 		}
 		allocHead = entSet[size-1];
 
-		dummyEnt = new ent(gameSys, prefab ) { active=false, parent=src, name="dummy" };
+		dummyEnt = new ent(prefab ) { active=false, parent=src, name="dummy" };
 	}
 	public void Reclaim( ent e ) {
 		e.poolNext = allocHead;
@@ -316,13 +332,13 @@ class PoolEnt {
 	public float scale { set { e.scale=value; } }
 	public float ang { set { e.ang=value; } }
 	public Sprite sprite { set { e.sprite=value; } }
-	public Color color { set { e.color = value; } }
+    public Team team { set { e.team = value; } }
+    public Color color { set { e.color = value; } }
 	public bool flipped { set { e.flipped = value; } }
 	public string name { set { e.name = value;} }
 	public bool active { set {  e.active = value; } }
 	public Layers layer { set { e.layer = value; } }
 	public ent parent {set { e.parent = value; }}
-	public MonoBehaviour parentMono { set { e.parentMono=value; }}
 	public List<ent> children { set { e.children = value; } }
 	public string text { set { e.text = value;}  }
 	public Color textColor { set { e.textColor = value;}  }

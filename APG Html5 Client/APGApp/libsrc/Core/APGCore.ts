@@ -1,5 +1,5 @@
 ﻿function ApgSetup(assetCacheFunction: (Cacher) => void, gameLaunchFunction: (APGSys) => void, networkingTestSequence: boolean, disableNetworking: boolean, isMobile: boolean, gameWidth: number = 400, gameHeight: number = 300,
-    logicIRCChannelName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms: any, onLoadEnd: () => void, handleOrientation: () => void) {
+	logicIRCChannelName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms: any, onLoadEnd: () => void, handleOrientation: () => void, metadataSys:MetadataFullSys) {
 
 	if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
 		ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", "  + gameHeight +".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
@@ -68,6 +68,16 @@
 		}
 
 		function launchGame() {
+			if (engineParms.metadataDoneLoading == false) {
+				engineParms.metadataLoadedFunction = launchGameFull();
+			}
+			else {
+				launchGameFull();
+			}
+		}
+
+		function launchGameFull() {
+
             onLoadEnd();
 
            // ...
@@ -75,13 +85,14 @@
             var pp = videoList[0];
             pp.style.display = 'none';*/
 
-            var apg: APGFullSystem = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence, allowFullScreen );
+            var apg: APGFullSystem = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence, allowFullScreen, metadataSys );
 			var showingOrientationWarning = false;
 			setInterval(function () {
 				handleOrientation();
 				apg.update();
 			}, 1000 / 60);
-            gameLaunchFunction(apg);
+			gameLaunchFunction(apg);
+
 		}
 	}
 }

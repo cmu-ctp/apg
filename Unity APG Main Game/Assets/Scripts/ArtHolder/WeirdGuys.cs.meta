@@ -1,0 +1,32 @@
+fileFormatVersion: 2
+guid: 15d90e2340faa22429b3150c2c74913c
+timeCreated: 1507219481
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - bellyHatGuy: {fileID: 21300000, guid: cdb7106c728266d46bf7d56e2da6c642, type: 3}
+  - bigHobo: {fileID: 21300000, guid: 40920ca84863e2643a1bcdb203480f7f, type: 3}
+  - dancingNakedGuy: {fileID: 21300000, guid: cf61bcac319f628438042e8a7b77f4d5, type: 3}
+  - deerMan: {fileID: 21300000, guid: 77c63f30452c1384eb4441133ae55663, type: 3}
+  - dopeyGuy: {fileID: 21300000, guid: c68ef6e5686c95949b4d35e0e943379c, type: 3}
+  - flyingGuy: {fileID: 21300000, guid: 4279c37579ba18340bbdb7f3c000ccac, type: 3}
+  - hunchedRobeMan: {fileID: 21300000, guid: 32be9a311d9cb5e458b5b1d1625648d4, type: 3}
+  - jauntyBody: {fileID: 21300000, guid: 078bb11b99d6de34eb3216ecba324254, type: 3}
+  - jumpingDevil: {fileID: 21300000, guid: 0ee079e2e15ddf94d82a42e025b0c4e5, type: 3}
+  - leaningLincoln: {fileID: 21300000, guid: 4559721a90f24e440870de5a76934405, type: 3}
+  - leapingLincoln: {fileID: 21300000, guid: 8f917aaa8f88cfe428c0a6a8df612396, type: 3}
+  - mugHatMan: {fileID: 21300000, guid: 197159761c0271445a916e126a0b5d1d, type: 3}
+  - shirtlessMan: {fileID: 21300000, guid: 21553a574c5567a4faa883ba8368e383, type: 3}
+  - stompingStickMan: {fileID: 21300000, guid: fc02ff477277465418580ce0425a3422, type: 3}
+  - thinScientist: {fileID: 21300000, guid: bfe091bb68dd5d04881a198be78c2b4e, type: 3}
+  - tongueGuy: {fileID: 21300000, guid: 3ffd09c0775aee242bc0e72d6311cd69, type: 3}
+  - triangleBlueGuy: {fileID: 21300000, guid: 9dd05ddf12566d7428c7d1280c35913f, type: 3}
+  - weirdDevilBullMan: {fileID: 21300000, guid: 636513266a15ee04ab6cf266ebd6f9b9,
+      type: 3}
+  - wizard: {fileID: 21300000, guid: 6ef2f8f4256fb9b40acd1ea08d95b86b, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

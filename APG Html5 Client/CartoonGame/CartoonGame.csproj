@@ -17,6 +17,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
+    <Use64BitIISExpress />
   </PropertyGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
@@ -41,6 +42,9 @@
     <TypeScriptCompile Include="gamesrc\Libraries\phaser.d.ts" />
     <TypeScriptCompile Include="gamesrc\Libraries\pixi.comments.d.ts" />
     <TypeScriptCompile Include="gamesrc\MainPlayerInput.ts" />
+    <TypeScriptCompile Include="gamesrc\PlayerAction.ts" />
+    <TypeScriptCompile Include="gamesrc\PlayerActionNew.ts" />
+    <TypeScriptCompile Include="gamesrc\PlayerMovement.ts" />
     <TypeScriptCompile Include="gamesrc\ShowSubmitted.ts" />
     <TypeScriptCompile Include="gamesrc\WaitingForJoinAcknowledgement.ts" />
     <TypeScriptCompile Include="gamesrc\WaitingToJoin.ts" />

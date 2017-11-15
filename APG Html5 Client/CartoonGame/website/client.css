@@ -25,7 +25,7 @@ body {
     width : 800px;
     height : 450px;
     position: absolute;
-    transform: translate(0px, 0px);
+    transform: translate(750px, 0px);
 }
 
 .video {
