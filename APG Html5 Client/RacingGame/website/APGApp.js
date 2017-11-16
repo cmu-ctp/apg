@@ -1,3 +1,17 @@
+var MetadataFullSys = (function () {
+    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
+        this.currentFrame = 0;
+        this.onUpdateFunc = null;
+        onConnectionComplete();
+    }
+    MetadataFullSys.prototype.Data = function (msgName) { return null; };
+    MetadataFullSys.prototype.Update = function () {
+        if (this.onUpdateFunc != null) {
+            this.onUpdateFunc(this);
+        }
+    };
+    return MetadataFullSys;
+}());
 function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence, disableNetworking, isMobile, gameWidth, gameHeight, logicIRCChannelName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd, handleOrientation, metadataSys) {
     if (gameWidth === void 0) { gameWidth = 400; }
     if (gameHeight === void 0) { gameHeight = 300; }
@@ -396,7 +410,7 @@ var IRCNetwork = (function () {
         this.lastSendMessageTime--;
         this.tick++;
         if (useKeepAlive && (this.tick % keepAliveTime == 0)) {
-            this.sendMessageToServer("alive###{}");
+            this.sendMessageToServer("alive###{t:" + (this.tick / keepAliveTime) + "}");
         }
         if (this.chat != null && this.tick - this.lastReadMessageTime > disconnectionTime) {
             this.disconnected = true;
@@ -455,20 +469,6 @@ var IRCNetwork = (function () {
         this.lastSendMessageTime = IRCWriteDelayInSeconds * ticksPerSecond;
     };
     return IRCNetwork;
-}());
-var MetadataFullSys = (function () {
-    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
-        this.currentFrame = 0;
-        this.onUpdateFunc = null;
-        onConnectionComplete();
-    }
-    MetadataFullSys.prototype.Data = function (msgName) { return null; };
-    MetadataFullSys.prototype.Update = function () {
-        if (this.onUpdateFunc != null) {
-            this.onUpdateFunc(this);
-        }
-    };
-    return MetadataFullSys;
 }());
 var NetworkMessageHandler = (function () {
     function NetworkMessageHandler() {

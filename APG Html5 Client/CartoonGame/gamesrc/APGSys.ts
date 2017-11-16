@@ -66,6 +66,33 @@ interface Cacher {
 	json(fileNames: string[]): void;
 }
 
+// This system gets data whenever and however it does.
+// During Update, it possibly advances the frame number.
+// Add an onUpdate callback.
+// And then there needs to be a way to get specific data.
+// 
+
+class MetadataFullSys {
+
+	currentFrame: number = 0;
+
+	onUpdateFunc: (metadataSys: MetadataFullSys) => void = null;
+
+	constructor(url: string, onConnectionComplete: () => void, onConnectionFail: (string) => void) {
+
+		onConnectionComplete();
+
+	}
+
+	public Data<T>(msgName: string): T { return null; }
+
+	public Update(): void {
+		if (this.onUpdateFunc != null) {
+			this.onUpdateFunc(this);
+		}
+	}
+}
+
 /**
  * This is the interface for client games to interact with the client app framework.  It contains functionality for
  * working with Phaser, pre-caching of several asset types, and reading and writing network messages over Twtich's
@@ -218,3 +245,4 @@ interface APGSys {
     */
     ClearLocalMessages(): void;
 }
+

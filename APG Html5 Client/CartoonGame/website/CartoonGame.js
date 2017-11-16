@@ -8,6 +8,20 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var MetadataFullSys = (function () {
+    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
+        this.currentFrame = 0;
+        this.onUpdateFunc = null;
+        onConnectionComplete();
+    }
+    MetadataFullSys.prototype.Data = function (msgName) { return null; };
+    MetadataFullSys.prototype.Update = function () {
+        if (this.onUpdateFunc != null) {
+            this.onUpdateFunc(this);
+        }
+    };
+    return MetadataFullSys;
+}());
 function ButtonCache(c) {
     c.images('cartoongame/imgs', ['blueorb.png', 'buttontest.png', 'middle.png', 'activate.png', 'assist.png', 'bag1.png', 'bag2.png', 'bag3.png', 'build.png', 'defend.png', 'harvest.png', 'heal.png', 'leftarrow.png', 'moveback.png', 'movein.png', 'rightarrow.png', 'accept.png', 'redo.png', 'strikeback.png', 'slash.png', 'recklessability.png', 'hudselect.png']);
     c.images('cartoongame/imgs/items', ['ball.png', 'baseballbat.png', 'bomb.png', 'broom.png', 'clock.png', 'computer.png', 'hammer.png', 'helmet.png', 'mask.png', 'mask2.png', 'rocket.png', 'scissors.png', 'shield.png', 'teeth.png']);
@@ -2539,7 +2553,7 @@ function WaitingForJoinAcknowledement(apg) {
     var playerID = -1, team = -1, connected = false;
     var gameLaunchFunc = MainPlayerInput;
     apg.ResetServerMessageRegistry()
-        .SetKeepAliveStatus(false)
+        .SetKeepAliveStatus(true)
         .Register("join", function (p) {
         if (p.name.toLowerCase() != apg.playerName.toLowerCase())
             return;

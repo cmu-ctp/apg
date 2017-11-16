@@ -39,7 +39,9 @@ namespace APG {
 		struct RoundUpdate{ public int round; public int time; }
 		[Serializable]
 		struct EmptyParms{ }
-		[Serializable]
+        [Serializable]
+        struct AliveParms { public int t; }
+        [Serializable]
 		struct RoundParms { public int health1; public int health2; }
 		// join
 		[Serializable]
@@ -103,7 +105,7 @@ namespace APG {
 			nextChatInviteTime = FullGame.ticksPerSecond * 10;
 			apg = network.GetAudienceSys();
 			apg.ResetClientMessageRegistry()
-				.Register<EmptyParms>("alive", (user, p) => {SetPlayerMessageTime(user);})
+				.Register<AliveParms>("alive", (user, p) => {SetPlayerMessageTime(user);})
 				.Register<EmptyParms>("join", (user, p) => {
 					if (AddPlayer(user)) {
 						SetPlayerMessageTime(user);

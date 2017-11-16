@@ -17,7 +17,7 @@ function WaitingForJoinAcknowledement(apg: APGSys): void {
 	var gameLaunchFunc = MainPlayerInput;//PlayerActionNew;//PlayerAction;//PlayerMovement;//
 
     apg.ResetServerMessageRegistry()
-        .SetKeepAliveStatus(false)
+        .SetKeepAliveStatus(true)
 		.Register<ClientJoinParms>("join", p => {
 			if (p.name.toLowerCase() != apg.playerName.toLowerCase()) return;
             if (p.started) { endSubgame = true; endOfRoundSound.play(); gameLaunchFunc(apg, p.playerID, p.team); }

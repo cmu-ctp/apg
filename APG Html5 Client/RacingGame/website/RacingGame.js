@@ -8,6 +8,20 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var MetadataFullSys = (function () {
+    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
+        this.currentFrame = 0;
+        this.onUpdateFunc = null;
+        onConnectionComplete();
+    }
+    MetadataFullSys.prototype.Data = function (msgName) { return null; };
+    MetadataFullSys.prototype.Update = function () {
+        if (this.onUpdateFunc != null) {
+            this.onUpdateFunc(this);
+        }
+    };
+    return MetadataFullSys;
+}());
 if (typeof Object.assign != 'function') {
     (function () {
         Object.assign = function (target) {
