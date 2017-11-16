@@ -111,7 +111,7 @@ public class TwitchNetworking:MonoBehaviour {
 	void LoadNetworkSettings() {
 		settings = new NetworkSettings { ChatChannelName = ChatChannelName, LogicChannelName = LogicChannelName, LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = "" };
 
-		var settingPath = Application.dataPath+"\\"+ NetworkSettingPath;
+		var settingPath = Application.dataPath+ Path.DirectorySeparatorChar + NetworkSettingPath;
 
 		try { 
 			using (StreamReader sr = new StreamReader(settingPath)){
