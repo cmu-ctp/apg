@@ -456,6 +456,20 @@ var IRCNetwork = (function () {
     };
     return IRCNetwork;
 }());
+var MetadataFullSys = (function () {
+    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
+        this.currentFrame = 0;
+        this.onUpdateFunc = null;
+        onConnectionComplete();
+    }
+    MetadataFullSys.prototype.Data = function (msgName) { return null; };
+    MetadataFullSys.prototype.Update = function () {
+        if (this.onUpdateFunc != null) {
+            this.onUpdateFunc(this);
+        }
+    };
+    return MetadataFullSys;
+}());
 var NetworkMessageHandler = (function () {
     function NetworkMessageHandler() {
         this.inputs = {};
@@ -869,18 +883,4 @@ var TestGame = (function () {
 function TestInput(apg) {
     new TestGame(apg);
 }
-var MetadataFullSys = (function () {
-    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
-        this.currentFrame = 0;
-        this.onUpdateFunc = null;
-        onConnectionComplete();
-    }
-    MetadataFullSys.prototype.Data = function (msgName) { return null; };
-    MetadataFullSys.prototype.Update = function () {
-        if (this.onUpdateFunc != null) {
-            this.onUpdateFunc(this);
-        }
-    };
-    return MetadataFullSys;
-}());
 //# sourceMappingURL=APGApp.js.map

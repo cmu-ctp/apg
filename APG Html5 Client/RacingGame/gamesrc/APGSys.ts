@@ -176,6 +176,12 @@ interface APGSys {
      */
 	RegisterDisconnect(disconnectFunc: () => void ): APGSys;
 
+    /* _____________________________________Metadata______________________________________ */
+
+	SetMetadataUpdateFunc(func: (metaDataSys: MetadataFullSys) => void): void;
+
+	Metadata<T>(msgName: string): T;
+
     /* _____________________________________Testing______________________________________ */
 
     /**
@@ -211,20 +217,4 @@ interface APGSys {
     * When changing game modes, make sure that any delayed messages from previous modes are cleared.
     */
     ClearLocalMessages(): void;
-}
-
-/**
-way this should work:
-url gets sent down
-
-*/
-
-interface MetadataSys {
-	Connect(url: string): void;
-
-	Register<T>(msgName: string, funcForMetadataMessage: (parmsForHandler: T) => void): MetadataSys;
-
-	ClearLocalMessages(): void;
-
-	Update(): void;
 }

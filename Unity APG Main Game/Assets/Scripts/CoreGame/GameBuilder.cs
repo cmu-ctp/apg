@@ -108,8 +108,8 @@ class SpawnContent{
 		var bigPositive = new SpawnEntry[] { treatSys.balloonGridLeft, treatSys.balloonGridRight };
 		var bigPositiveUnbiased = new SpawnEntry[] { treatSys.balloonGridAll, treatSys.balloonGridCenter };
 
-        //var normalFoes = new SpawnEntry[] { foeSys.beardGuy, foeSys.beardGuy, foeSys.plantGuy };
-        var normalFoes = new SpawnEntry[] { foeSys.dogGame.dog };
+        var normalFoes = new SpawnEntry[] { foeSys.beardGame.beardGuy, foeSys.beardGame.beardGuy, foeSys.plantGame.plantGuy};
+        //var normalFoes = new SpawnEntry[] { foeSys.dogGame.dog };
 
         //var normalFoeGames = new Subgame[] { foeSys.dogGame };
         var normalFoeGames = new Subgame[] { foeSys.beardGame };

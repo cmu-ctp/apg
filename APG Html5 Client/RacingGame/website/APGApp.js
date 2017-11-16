@@ -57,6 +57,14 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence
             }
         }
         function launchGame() {
+            if (engineParms.metadataDoneLoading == false) {
+                engineParms.metadataLoadedFunction = launchGameFull();
+            }
+            else {
+                launchGameFull();
+            }
+        }
+        function launchGameFull() {
             onLoadEnd();
             var apg = new APGFullSystem(game, logicIRCChannelName, engineParms.playerName, engineParms.chat, cache.JSONAssets, networkingTestSequence, allowFullScreen, metadataSys);
             var showingOrientationWarning = false;
@@ -91,6 +99,7 @@ var APGFullSystem = (function () {
         if (this.disconnected == false && this.network.disconnected == true && this.onDisconnect != null)
             this.onDisconnect();
         this.disconnected = this.network.disconnected;
+        this.metadata.Update();
     };
     APGFullSystem.prototype.CheckMessageParameters = function (funcName, message, parmsForMessageToServer) {
         if (message == "") {
@@ -169,6 +178,10 @@ var APGFullSystem = (function () {
         this.onDisconnect = disconnectFunc;
         return this;
     };
+    APGFullSystem.prototype.SetMetadataUpdateFunc = function (func) {
+        this.metadata.onUpdateFunc = func;
+    };
+    APGFullSystem.prototype.Metadata = function (msgName) { return this.metadata.Data(msgName); };
     return APGFullSystem;
 }());
 var AssetCacher = (function () {
@@ -444,12 +457,17 @@ var IRCNetwork = (function () {
     return IRCNetwork;
 }());
 var MetadataFullSys = (function () {
-    function MetadataFullSys(url) {
+    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
+        this.currentFrame = 0;
+        this.onUpdateFunc = null;
+        onConnectionComplete();
     }
-    MetadataFullSys.prototype.Connect = function (url) { };
-    MetadataFullSys.prototype.Register = function (msgName, funcForMetadataMessage) { return this; };
-    MetadataFullSys.prototype.ClearLocalMessages = function () { };
-    MetadataFullSys.prototype.Update = function () { };
+    MetadataFullSys.prototype.Data = function (msgName) { return null; };
+    MetadataFullSys.prototype.Update = function () {
+        if (this.onUpdateFunc != null) {
+            this.onUpdateFunc(this);
+        }
+    };
     return MetadataFullSys;
 }());
 var NetworkMessageHandler = (function () {
@@ -602,6 +620,8 @@ function launchAPGClient(devParms, appParms) {
         clientID: '',
         chat: null,
         chatLoadedFunction: null,
+        metadataLoadedFunction: null,
+        metadataDoneLoading: false,
         playerName: "",
         playerOauth: ""
     };
@@ -673,7 +693,16 @@ function launchAPGClient(devParms, appParms) {
             }
         });
     }
-    var metadataSys = new MetadataFullSys(location.hash);
+    var metadataLoadSuccess = function () {
+        engineParms.metadataDoneLoading = true;
+        if (engineParms.metadataLoadedFunction != null) {
+            engineParms.metadataLoadedFunction();
+        }
+    };
+    var metadataLoadFail = function (errorMessage) {
+        AppFail('Metadata System Initialization Error: ' + errorMessage);
+    };
+    var metadataSys = new MetadataFullSys(location.hash, metadataLoadSuccess, metadataLoadFail);
     var phaserDivName = (isMobile ? "APGInputWidgetMobile" : "APGInputWidget");
     document.getElementById(phaserDivName).style.display = 'none';
     var ClearOnLoadEnd = AddPreloader(phaserDivName, appParms.gameName);
