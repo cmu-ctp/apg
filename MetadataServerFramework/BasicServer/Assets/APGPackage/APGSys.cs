@@ -6,6 +6,15 @@ namespace APG {
 	 * reading and writing network messages over Twtich's IRC channels.
 	*/
 
+    public class MetadataSys{
+        public int currentFrame = 0;
+        public void AdvanceFrame() { currentFrame++; }
+        public void Write<T>(string msg, T parms)
+        {
+
+        }
+    }
+
 	public interface APGSys {
 
 		/**
@@ -36,6 +45,8 @@ namespace APG {
 		 * @param msg The message to send to chat.
 		 */
 		void WriteToChat( string msg );
+
+        MetadataSys GetMetadataSys();
 
 		/* _____________________________________Input______________________________________ */
 

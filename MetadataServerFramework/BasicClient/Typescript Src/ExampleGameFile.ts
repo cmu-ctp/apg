@@ -24,20 +24,14 @@
 // around downloaded to clients before the app launches.
 
 function CacheGameAssets(c: Cacher): void {
-    c.images('assets', ['night.jpg', 'firework.png']);
-    c.sounds('assets', ['boom.mp3']);
-	c.googleWebFonts(['Anton']);
+    c.images('assets', ['hudselect.png']);
 }
 
 // These two interfaces are the parameters for network messages.  They'll be serialized into JSON and then trasmitted across Twitch's IRC.
 // These need to stay in sync (by both type and name) with the C# code.
 
 interface ServerFirework{
-    x: number;
-    y: number;
-}
-
-interface clientFirework {
+	ID: number;
     x: number;
     y: number;
 }
@@ -46,8 +40,7 @@ class BasicGame {
 
     // Phaser assets we'll be using
 
-    fireworkPic: Phaser.Sprite = null;
-    boomSound: Phaser.Sound = null;
+    highlighter: Phaser.Sprite = null;
 
     // This is a debugging aid, for testing the client without being attached to a server.  This sequence of server messages will
     // be run if apg.networkTestSequence is set to true.
@@ -61,7 +54,7 @@ class BasicGame {
         // And then registered a bunch of server firework messages.
 
         for (var k: number = 2; k < 60; k+=3) {
-            apg.WriteLocalAsServer<ServerFirework>(k, "serverFirework", { x: Math.floor(50 + Math.random() * 750), y: Math.floor(50 + Math.random() * 350) });
+            apg.WriteLocalAsServer<ServerFirework>(k, "serverFirework", { ID:0, x: Math.floor(50 + Math.random() * 750), y: Math.floor(50 + Math.random() * 350) });
         }
     }
 
@@ -73,10 +66,9 @@ class BasicGame {
         // This function takes the firework locaton from the server and repositions our firework asset there, then plays a sound.
         function ServerFirework(data: ServerFirework): void {
             console.log("Got  Server Firework Message at point " + data.x + " " + data.y );
-            that.fireworkPic.x = data.x;
-            that.fireworkPic.y = data.y;
-            that.fireworkPic.scale = new Phaser.Point(1, 1);
-            that.boomSound.play();
+            /*that.highlighter.x = data.x;
+            that.highlighter.y = data.y;
+            that.highlighter.scale = new Phaser.Point(1, 1);*/
 		}
 
         // Clear registered server messages
@@ -102,40 +94,31 @@ class BasicGame {
             this.runTestSequence(apg);
         }
 
-        // Register sound asset
-
-        this.boomSound = apg.g.add.audio('assets/boom.mp3', 1, false);
-
-        // Make the sky background
-        // Additionally, add an update function that will check whether we've clicked the mouse / tapped the screen
-        // If we have, and it's been long enough since our last tap, send a message to the server about
-        // where we tapped.
-
-        var lastClickDelay: number = 0;
-        var background: Phaser.Sprite = new Phaser.Sprite(apg.g, 0, 0, 'assets/night.jpg');
-        background.update = () => {
-            lastClickDelay--;
-            if( apg.g.input.activePointer.isDown && lastClickDelay <= 0 ){
-                lastClickDelay = 120;
-
-                var data: clientFirework = { x: apg.g.input.activePointer.x, y: apg.g.input.activePointer.y };
-                apg.WriteToServer<clientFirework>("clientFirework", data);
-                console.log("Writing client firework message at point " + data.x + " " + data.y);
-            }
-        };
-        apg.g.world.addChild(background);
+		var lastClickDelay: number = 0;
+		var ID: number = 0;
 
         // Make the firework.
 
-        this.fireworkPic = new Phaser.Sprite(apg.g, 0, 0, 'assets/firework.png');
-        this.fireworkPic.blendMode = PIXI.blendModes.ADD;
-        this.fireworkPic.anchor = new Phaser.Point(.5, .5);
-        this.fireworkPic.scale = new Phaser.Point(1, 1);
-        this.fireworkPic.update = () => {
-            this.fireworkPic.scale.x *= .7;
-            this.fireworkPic.scale.y *= .7;
+		var currentFrame = 0;
+
+        this.highlighter = new Phaser.Sprite(apg.g, 0, 0, 'assets/hudselect.png');
+        this.highlighter.blendMode = PIXI.blendModes.ADD;
+        this.highlighter.anchor = new Phaser.Point(.5, .5);
+        this.highlighter.scale = new Phaser.Point(1, 1);
+		this.highlighter.update = () => {
+			currentFrame++;
+
+			this.highlighter.x = (400 + 300 * Math.cos(currentFrame * .02 - ID * .2)) / 800 * 1024;
+			this.highlighter.y = (225 - 175 * Math.sin(currentFrame * .02 - ID * .2)) / 450 * 768;
+
+			lastClickDelay--;
+			if (apg.g.input.activePointer.isDown && lastClickDelay <= 0) {
+				ID = (ID + 1) % 8;
+
+				lastClickDelay = 20;
+			}
         }
-        apg.g.world.addChild(this.fireworkPic);
+        apg.g.world.addChild(this.highlighter);
 	}
 }
 

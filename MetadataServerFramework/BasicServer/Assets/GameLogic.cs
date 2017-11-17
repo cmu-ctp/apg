@@ -24,71 +24,43 @@ public class GameLogic : MonoBehaviour {
 
 	[Serializable]
 	struct ServerFirework {
-		public int x;
-		public int y;
+        public int ID;
+		public float x;
+		public float y;
 	}
 
-	[Serializable]
-	struct ClientFirework {
-		public int x;
-		public int y;
-	}
+    public Firework[] fireworks;
 
+    // This is the monobehavior the takes care of all IRC networking.
 
-	// These are normal Unity Gameplay elements
+    public TwitchNetworking networking;
 
-	public Transform camera;
-	public Firework firework;
-	public AudioClip boomSound;
+	//
 
-
-	// This is the monobehavior the takes care of all IRC networking.
-
-	public TwitchNetworking networking;
-
-	// This is the interface for sending and recieving network messages.
-
-	APG.APGSys apg;
-
-
-	// This is a function for recieiving network messages from clients.
-	// The logic for this will work as follows: when any client taps their HTML5 client or clicks
-	// their mouse over it, we will show a firework briefly on the streamer's screen in
-	// the location of the tap.
-
-	void ClientFireWorkHandler( string sender, ClientFirework data) {
-		AudioSource.PlayClipAtPoint(boomSound, camera.position, 1);
-		firework.transform.position = new Vector3(data.x, 450-data.y, 0);
-		firework.transform.localScale = new Vector3(64,64,1);
-	}
+    APG.MetadataSys metadata;
 
 	void Start () {
 		Application.runInBackground = true;
 
 		// We call the following function to get the audience networking interface from our networking component.
 
-		apg = networking.GetAudienceSys();
+        metadata = networking.GetAudienceSys().GetMetadataSys();
+    }
 
-		// Make sure there are no registered network messages before we add ours.
+    public int GetCurrentFrame() { return metadata.currentFrame; }
 
-		apg.ResetClientMessageRegistry();
+	void FixedUpdate () {
 
-		// And now register this client message.  This is how the server knows which messages to expect.
+        foreach( var f in fireworks)
+        {
+            var data = new ServerFirework {
+                ID = f.ID,
+                x = f.transform.position.x,
+                y = f.transform.position.y
+            };
 
-		apg.Register<ClientFirework>("clientFirework", ClientFireWorkHandler );
-	}
-
-	// Our update is pretty simple.  If the streamer clicks anywhere in their playfield, send a server message
-	// down to clients to display a firework on their client screens in that location.
-
-	void Update () {
-		if (Input.GetMouseButtonDown(0)) {
-
-			// build the message, and then send it
-
-			ServerFirework data = new ServerFirework { x = (int)Input.mousePosition.x, y = 450 - (int)Input.mousePosition.y };
-			apg.WriteToClients<ServerFirework>("serverFirework", data );
-			Debug.Log("Write server firework message at point " + data.ToString());
-		}
+            metadata.Write<ServerFirework>( "firework", data );
+        }
+        metadata.AdvanceFrame();
 	}
 }

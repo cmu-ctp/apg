@@ -30,8 +30,8 @@
 
             allowClientReposition: true,                      /* In the web interface, allow the user to  reposition the Phaser canvas by clicking and dragging the top of the interface */
 
-            gameWidth: 800,                                     /* Width of the Phaser Game Canvas */
-            gameHeight: 450,                                    /* Height of the Phaser Game Canvas */
+            gameWidth: 1024,                                     /* Width of the Phaser Game Canvas */
+            gameHeight: 768,                                    /* Height of the Phaser Game Canvas */
             landscapeOnly: true,                                /* On mobile devices, display a warning if the game leaves landscape orientation */
             portraitOnly: false,                                   /* On mobile devices, display a warning if the game leaves portrait orientation */
 
@@ -49,11 +49,11 @@
             * client app launch much more quickly, which can be preferable for faster iteration.  Using this will require
             * mocking server messages for testing purposes - more on this later.
             */
-            disableNetworking: false,
+            disableNetworking: true,
 
             /*
             */
-            networkingTestSequence: false,
+            networkingTestSequence: true,
 
             /* By default, the process for launching the client app will work like this:
             * The streamer's game provides a URL (or, more likely, a shortened bit.ly URL) for clients to launch the client app.  This link will be either output as a clickable link in the streamer's

@@ -64,5 +64,12 @@ namespace APG {
 			recorder.PlaybackNetworking( messagesFromClientsFileName );
 		}
 
-	}
+        MetadataSys metadata = new MetadataSys();
+
+        public MetadataSys GetMetadataSys()
+        {
+            return metadata;
+        }
+
+    }
 }
