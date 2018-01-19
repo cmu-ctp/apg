@@ -24,43 +24,42 @@ public class GameLogic : MonoBehaviour {
 
 	[Serializable]
 	struct ServerFirework {
-        public int ID;
 		public float x;
 		public float y;
 	}
+    [Serializable]
+    struct ServerFireworks
+    {
+        public ServerFirework[] items;
+    }
 
     public Firework[] fireworks;
 
     // This is the monobehavior the takes care of all IRC networking.
 
     public TwitchNetworking networking;
+    APG.APGSys apg;
 
-	//
-
-    APG.MetadataSys metadata;
+    ServerFireworks metadataUpdate;
 
 	void Start () {
 		Application.runInBackground = true;
 
-		// We call the following function to get the audience networking interface from our networking component.
+        apg = networking.GetAudienceSys();
 
-        metadata = networking.GetAudienceSys().GetMetadataSys();
+        metadataUpdate = new ServerFireworks();
+        metadataUpdate.items = new ServerFirework[fireworks.Length];
     }
 
-    public int GetCurrentFrame() { return metadata.currentFrame; }
+    public int GetCurrentFrame() { return networking.GetTime(); }
 
 	void FixedUpdate () {
 
-        foreach( var f in fireworks)
+        for( var k = 0; k < fireworks.Length; k++ )
         {
-            var data = new ServerFirework {
-                ID = f.ID,
-                x = f.transform.position.x,
-                y = f.transform.position.y
-            };
-
-            metadata.Write<ServerFirework>( "firework", data );
+            metadataUpdate.items[k].x = fireworks[k].transform.position.x;
+            metadataUpdate.items[k].y = fireworks[k].transform.position.y;
         }
-        metadata.AdvanceFrame();
+        apg.WriteMetadata<ServerFireworks>("firework", metadataUpdate);
 	}
 }

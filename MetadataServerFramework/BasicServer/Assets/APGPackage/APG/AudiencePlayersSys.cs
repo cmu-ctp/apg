@@ -64,12 +64,10 @@ namespace APG {
 			recorder.PlaybackNetworking( messagesFromClientsFileName );
 		}
 
-        MetadataSys metadata = new MetadataSys();
-
-        public MetadataSys GetMetadataSys()
+        public void WriteMetadata<T>(string msg, T parms)
         {
-            return metadata;
+            // make this cache a message
+            // then make the TwitchNetworking component send the entire message in its FixedUpdate function
         }
-
     }
 }

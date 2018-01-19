@@ -219,6 +219,8 @@ public class TwitchNetworking:MonoBehaviour {
 		return settings.BitlyLink;
 	}
 
+    public int GetTime() { return time; }
+
 	void Awake() {
 		Debug.Log( "Starting GameLogicChat");
 

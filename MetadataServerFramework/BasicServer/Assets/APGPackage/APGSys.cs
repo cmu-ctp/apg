@@ -6,15 +6,6 @@ namespace APG {
 	 * reading and writing network messages over Twtich's IRC channels.
 	*/
 
-    public class MetadataSys{
-        public int currentFrame = 0;
-        public void AdvanceFrame() { currentFrame++; }
-        public void Write<T>(string msg, T parms)
-        {
-
-        }
-    }
-
 	public interface APGSys {
 
 		/**
@@ -34,6 +25,8 @@ namespace APG {
 		 * parameters.  The message will be converted into a JSON representation and will then be decoded in the clients Typescript / HTML5 game.
 		 * The message will need a corresponding message handler on the clients, and the parameter object will need to be mirrored and kept in sync in the Typescript code of
 		 * the HTML5 game.
+         * NOTE: This function will send the data via Twitch's IRC channels.  This provides security and some other useful features, but it means messages need to be small
+         * and infrequent - no more than about 500 unicode character messages every couple seconds.  And IRC has a fair bit of latency.
 		 *
 		 * @param msg The message name for this message being sent to the clients.
 		 * @param parms The parameters connected to this message.  This field will be converted into a JSON-encoded string.
@@ -46,7 +39,20 @@ namespace APG {
 		 */
 		void WriteToChat( string msg );
 
-        MetadataSys GetMetadataSys();
+        /**
+		 * Communicate a message to the clients.  The message should a combination of a string message name, and an object that contains the message's
+		 * parameters.  The message will be converted into a JSON representation and will then be decoded in the clients Typescript / HTML5 game.
+		 * The message will need a corresponding message handler on the clients, and the parameter object will need to be mirrored and kept in sync in the Typescript code of
+		 * the HTML5 game.
+         * NOTE:  This function will route the message through the external metadata server.  This is intended for larger, more frequent messages that are fairly
+         * time sensitive.  The metadata server broadcasts a large number of messages down to the HTML5 client, 
+         * where they are buffered and then synced up with Twitches high latency video.  This is primarily
+         * intended for per-frame information used for compositing client side graphics and HUD information over the video stream.
+		 *
+		 * @param msg The message name for this message being sent to the clients.
+		 * @param parms The parameters connected to this message.  This field will be converted into a JSON-encoded string.
+		 */
+        void WriteMetadata<T>(string msg, T parms);
 
 		/* _____________________________________Input______________________________________ */
 

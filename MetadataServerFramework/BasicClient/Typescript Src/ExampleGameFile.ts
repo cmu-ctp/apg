@@ -31,9 +31,16 @@ function CacheGameAssets(c: Cacher): void {
 // These need to stay in sync (by both type and name) with the C# code.
 
 interface ServerFirework{
-	ID: number;
     x: number;
     y: number;
+}
+
+interface ServerFireworks{
+	items: ServerFirework[];
+}
+
+class ServerFireworksInst {
+	items: ServerFirework[];
 }
 
 class BasicGame {
@@ -42,42 +49,44 @@ class BasicGame {
 
     highlighter: Phaser.Sprite = null;
 
+	metadataInfo: ServerFireworks = null;
+
     // This is a debugging aid, for testing the client without being attached to a server.  This sequence of server messages will
     // be run if apg.networkTestSequence is set to true.
 
     runTestSequence(apg: APGSys): void{
 
-            // Clear local debug test messages.
+		// Clear local debug test messages.
 
         apg.ClearLocalMessages();
 
-        // And then registered a bunch of server firework messages.
+        // And then registered a bunch of server firework messages for testing purposes
 
-        for (var k: number = 2; k < 60; k+=3) {
-            apg.WriteLocalAsServer<ServerFirework>(k, "serverFirework", { ID:0, x: Math.floor(50 + Math.random() * 750), y: Math.floor(50 + Math.random() * 350) });
+		// this will be 5 minutes worth of updates
+		for (var k: number = 0; k < 60*60*5; k++) {
+			var fireworks: ServerFireworks = new ServerFireworksInst();
+			fireworks.items = [];
+			for (var j: number = 0; j < 8; j++) {
+				fireworks.items.push({ x: (400 + 300 * Math.cos(k * .02 - j * .2)) / 800 * 1024, y: (225 - 175 * Math.sin(k * .02 - j * .2)) / 450 * 768 } );
+			}
+            apg.WriteLocalAsServer<ServerFireworks>(k/60, "serverFirework", fireworks);
         }
     }
 
     // In this function we'll register all possible server network messages.
 
 	registerServerMessages(apg: APGSys): void {
-		var that = this;
-
-        // This function takes the firework locaton from the server and repositions our firework asset there, then plays a sound.
-        function ServerFirework(data: ServerFirework): void {
-            console.log("Got  Server Firework Message at point " + data.x + " " + data.y );
-            /*that.highlighter.x = data.x;
-            that.highlighter.y = data.y;
-            that.highlighter.scale = new Phaser.Point(1, 1);*/
-		}
 
         // Clear registered server messages
 
 		apg.ResetServerMessageRegistry();
 
         // Register the server firework message
+		// This registered function will get called when 1) the current video frame advances and 
+		// 2) the apg system sees that is has new metadata associated with that frame
+		// The callback here could contain more complicated logic if desired.
 
-        apg.Register<ServerFirework>("serverFirework", ServerFirework);
+		apg.Register<ServerFireworks>("serverFirework", data => this.metadataInfo = data );
 	}
 
     // This is our main entry point
@@ -99,22 +108,20 @@ class BasicGame {
 
         // Make the firework.
 
-		var currentFrame = 0;
-
         this.highlighter = new Phaser.Sprite(apg.g, 0, 0, 'assets/hudselect.png');
         this.highlighter.blendMode = PIXI.blendModes.ADD;
         this.highlighter.anchor = new Phaser.Point(.5, .5);
         this.highlighter.scale = new Phaser.Point(1, 1);
 		this.highlighter.update = () => {
-			currentFrame++;
 
-			this.highlighter.x = (400 + 300 * Math.cos(currentFrame * .02 - ID * .2)) / 800 * 1024;
-			this.highlighter.y = (225 - 175 * Math.sin(currentFrame * .02 - ID * .2)) / 450 * 768;
+			if (this.metadataInfo != null) {
+				this.highlighter.x = this.metadataInfo.items[ID].x;
+				this.highlighter.y = this.metadataInfo.items[ID].y;
+			}
 
 			lastClickDelay--;
 			if (apg.g.input.activePointer.isDown && lastClickDelay <= 0) {
 				ID = (ID + 1) % 8;
-
 				lastClickDelay = 20;
 			}
         }
