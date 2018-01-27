@@ -64,10 +64,8 @@ namespace APG {
 			recorder.PlaybackNetworking( messagesFromClientsFileName );
 		}
 
-        public void WriteMetadata<T>(string msg, T parms)
-        {
-            // make this cache a message
-            // then make the TwitchNetworking component send the entire message in its FixedUpdate function
+        public void WriteMetadata<T>(string msg, T parms){
+            network.WriteMetadata(msg, parms);
         }
     }
 }

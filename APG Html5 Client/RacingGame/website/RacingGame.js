@@ -13,9 +13,63 @@ var MetadataFullSys = (function () {
         this.currentFrame = 0;
         this.onUpdateFunc = null;
         onConnectionComplete();
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = 100;
+        this.canvas.height = 100;
+        this.vid = undefined;
     }
+    MetadataFullSys.prototype.SetVideoPlayer = function (player) {
+        this.videoPlayer = player;
+    };
     MetadataFullSys.prototype.Data = function (msgName) { return null; };
+    MetadataFullSys.prototype.SetVideoStream = function () {
+        var thePlayer = this.videoPlayer;
+        if (thePlayer == undefined)
+            return false;
+        var bridge = thePlayer._bridge;
+        if (bridge == undefined)
+            return false;
+        var iframe = bridge._iframe;
+        if (iframe == undefined)
+            return false;
+        var doc = iframe.contentWindow.document;
+        if (doc == undefined)
+            return false;
+        var elements = doc.getElementsByClassName("player-video");
+        if (elements == undefined)
+            return false;
+        for (var j = 0; j < elements.length; j++) {
+            var player = elements[j];
+            if (player != undefined && player.children != null && player.children.length > 0) {
+                for (var k = 0; k < player.children.length; k++) {
+                    var inner = player.children[k];
+                    if (inner.className == "js-ima-ads-container ima-ads-container")
+                        continue;
+                    this.vid = inner;
+                }
+            }
+        }
+        return true;
+    };
     MetadataFullSys.prototype.Update = function () {
+        if (this.vid == undefined) {
+            this.SetVideoStream();
+        }
+        if (this.vid != undefined) {
+            this.canvas.getContext('2d').drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, 100, 100);
+            var bx = 16, by = 12, sx = 18, sy = 18;
+            var ctx = this.canvas.getContext('2d');
+            var frameNumber = 0;
+            for (var j = 0; j < 4; j++) {
+                for (var k = 0; k < 4; k++) {
+                    var pix = ctx.getImageData(bx + sx * j, by + sy * k, 1, 1).data[0];
+                    if (pix > 127)
+                        frameNumber |= 1 << (j + k * 4);
+                }
+            }
+            console.log("" + frameNumber);
+            this.frameNumber = frameNumber;
+        }
         if (this.onUpdateFunc != null) {
             this.onUpdateFunc(this);
         }

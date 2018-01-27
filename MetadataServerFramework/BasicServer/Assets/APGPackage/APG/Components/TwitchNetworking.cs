@@ -185,7 +185,17 @@ public class TwitchNetworking:MonoBehaviour {
 	StringBuilder bufferedCommands = new StringBuilder( maxIRCMsgLength + 1 );
 	Queue<string> commandQueue = new Queue<string>();
 
-	public void WriteMessageToClient<T>( string msg, T parms ) {
+    public void WriteMetadata<T>(string msg, T parms)
+    {
+        var parmsString = JsonUtility.ToJson(parms);
+
+        // METADATA - Send the message along with parmsString to the metadata server
+
+        // make this cache a message
+        // then send the entire message in its FixedUpdate function
+    }
+
+    public void WriteMessageToClient<T>( string msg, T parms ) {
 		var s = msg+"###"+JsonUtility.ToJson(parms);
 
 		if( bufferedCommands.Length + splitterLength + s.Length > maxIRCMsgLength ) {
@@ -240,6 +250,7 @@ public class TwitchNetworking:MonoBehaviour {
 	void Start() {
 		InitIRCChat();
 		InitIRCLogicChannel();
+        // METADATA - Init connection to metadata server here
 	}
 
 	void FixedUpdate() {

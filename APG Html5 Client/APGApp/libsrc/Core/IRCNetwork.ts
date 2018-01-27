@@ -79,7 +79,7 @@ class IRCNetwork{
         this.tick++;
 
 		if (useKeepAlive && (this.tick % keepAliveTime == 0)) {
-			this.sendMessageToServer("alive###{t:" + (this.tick / keepAliveTime)+"}");
+			this.sendMessageToServer("alive###{\"t\":" + (this.tick / keepAliveTime)+"}");
         }
 
         if (this.chat != null && this.tick - this.lastReadMessageTime > disconnectionTime) {

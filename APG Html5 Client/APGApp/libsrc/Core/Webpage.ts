@@ -3,6 +3,7 @@
 interface TwitchIFace {
 	init(parms: Object, fn: Function): void;
 	api(parms: Object, fn: Function): void;
+	Player(name: string, parms: any): void;
 	getToken(): string;
 }
 
@@ -13,7 +14,7 @@ interface tmiIFace {
 declare var Twitch: TwitchIFace;
 declare var tmi: tmiIFace;
 
-function setTwitchIFrames(isMobile:boolean, chatIRCChannelName:string, chatWidth:number, chatHeight:number, videoWidth:number, videoHeight:number ):void {
+function setTwitchIFrames(isMobile: boolean, chatIRCChannelName: string, chatWidth: number, chatHeight: number, videoWidth: number, videoHeight: number, metadataSys:MetadataFullSys ):void {
 
 	if (isMobile) {
 		$('.browser').removeClass();
@@ -31,12 +32,21 @@ function setTwitchIFrames(isMobile:boolean, chatIRCChannelName:string, chatWidth
 	iframe.setAttribute("height", '' +chatHeight);
 	document.getElementById("TwitchChat").appendChild(iframe);
 
-	iframe = document.createElement('iframe');
+	/*iframe = document.createElement('iframe');
 	iframe.setAttribute("allowfullscreen", "true");
 	iframe.setAttribute("src", "http://player.twitch.tv/?channel=" + chatIRCChannelName);
 	iframe.setAttribute("width", "" + '' +videoWidth);
 	iframe.setAttribute("height", "" + '' +videoHeight);
-	document.getElementById("TwitchVideo").appendChild(iframe);
+	document.getElementById("TwitchVideo").appendChild(iframe);*/
+
+	var options = {
+		width: videoWidth,
+		height: videoHeight,
+		channel: chatIRCChannelName
+	};
+	var player = new Twitch.Player("TwitchVideo", options);
+	player.setVolume(0.5);
+	metadataSys.SetVideoPlayer(player);
 }
 
 function AddPreloader(phaserDivName:string, gameName:string ):()=>void {
@@ -215,7 +225,7 @@ function launchAPGClient(devParms, appParms) {
 	}
 	document.getElementById("appErrorMessage").style.display = 'none';
 
-	setTwitchIFrames(isMobile, chatIRCChannelName, appParms.chatWidth, appParms.chatHeight, appParms.videoWidth, appParms.videoHeight);
+	setTwitchIFrames(isMobile, chatIRCChannelName, appParms.chatWidth, appParms.chatHeight, appParms.videoWidth, appParms.videoHeight, metadataSys );
 
 	var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
 

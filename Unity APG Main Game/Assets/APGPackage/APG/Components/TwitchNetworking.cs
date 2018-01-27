@@ -276,10 +276,13 @@ public class TwitchNetworking:MonoBehaviour {
 		InitIRCLogicChannel();
 	}
 
-	void FixedUpdate() {
+    [Serializable]
+    struct AliveParms { public int t; }
+
+    void FixedUpdate() {
 		time++;
 		if( (time % (50 * 20)) == 0 ) {
-			WriteMessageToClient("alive", new EmptyMsg());
+			WriteMessageToClient("alive", new AliveParms());
 		}
 		if (time - lastLogicWriteTime > 30) {
 			if (bufferedCommands.Length > 0) {

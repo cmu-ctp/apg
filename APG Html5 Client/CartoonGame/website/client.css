@@ -45,3 +45,12 @@ body {
     position: absolute;
     transform: translate(1024px, 0px);
 }
+
+.debug {
+    background: #0;
+    color: white;
+    width: 500px;
+    height: 400px;
+    position: absolute;
+    transform: translate(1024px, 720px);
+}
