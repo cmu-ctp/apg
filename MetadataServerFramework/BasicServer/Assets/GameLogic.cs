@@ -24,8 +24,8 @@ public class GameLogic : MonoBehaviour {
 
 	[Serializable]
 	struct ServerFirework {
-		public float x;
-		public float y;
+		public int x;
+		public int y;
 	}
     [Serializable]
     struct ServerFireworks
@@ -51,14 +51,18 @@ public class GameLogic : MonoBehaviour {
         metadataUpdate.items = new ServerFirework[fireworks.Length];
     }
 
-    public int GetCurrentFrame() { return networking.GetTime(); }
+    public int GetCurrentFrame() { return time; }
+
+    int time = 0;
 
 	void FixedUpdate () {
 
+        time++;
+
         for( var k = 0; k < fireworks.Length; k++ )
         {
-            metadataUpdate.items[k].x = fireworks[k].transform.position.x;
-            metadataUpdate.items[k].y = fireworks[k].transform.position.y;
+            metadataUpdate.items[k].x = (int)fireworks[k].transform.position.x;
+            metadataUpdate.items[k].y = (int)fireworks[k].transform.position.y;
         }
         apg.WriteMetadata<ServerFireworks>("firework", metadataUpdate);
 	}

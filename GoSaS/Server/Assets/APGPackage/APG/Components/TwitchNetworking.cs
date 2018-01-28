@@ -296,8 +296,8 @@ public class TwitchNetworking:MonoBehaviour {
 	}
 
 	void Start() {
-        System.IO.DirectoryInfo di = new DirectoryInfo(".." + Path.DirectorySeparatorChar + "BasicClient" + Path.DirectorySeparatorChar + "website" + Path.DirectorySeparatorChar + "TestTraffic");
-        foreach (FileInfo file in di.GetFiles()) file.Delete();
+        //System.IO.DirectoryInfo di = new DirectoryInfo(".." + Path.DirectorySeparatorChar + "BasicClient" + Path.DirectorySeparatorChar + "website" + Path.DirectorySeparatorChar + "TestTraffic");
+        //foreach (FileInfo file in di.GetFiles()) file.Delete();
 
         InitIRCChat();
         InitIRCLogicChannel();

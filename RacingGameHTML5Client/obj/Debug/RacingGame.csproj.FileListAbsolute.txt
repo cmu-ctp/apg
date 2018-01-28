@@ -1,0 +1,7 @@
+C:\apg\apg\apg\APG Html5 Client\RacingGame\bin\RacingGame.dll.config
+C:\apg\apg\apg\APG Html5 Client\RacingGame\bin\RacingGame.dll
+C:\apg\apg\apg\APG Html5 Client\RacingGame\bin\RacingGame.pdb
+C:\apg\apg\apg\APG Html5 Client\RacingGame\obj\Debug\RacingGame.csproj.CoreCompileInputs.cache
+C:\apg\apg\apg\APG Html5 Client\RacingGame\obj\Debug\RacingGame.dll
+C:\apg\apg\apg\APG Html5 Client\RacingGame\obj\Debug\RacingGame.pdb
+C:\apg\apg\apg\APG Html5 Client\RacingGame\obj\Debug\RacingGame.csprojResolveAssemblyReference.cache
