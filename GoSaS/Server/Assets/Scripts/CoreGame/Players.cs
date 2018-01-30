@@ -10,9 +10,10 @@ public class Players:MonoBehaviour {
 	public Sprite owMsg, ughMsg, thudMsg, healthBar, healthBar2, healthBarCenter, actionBkg;
 	public AudioClip blowSound, bumpSound, hurtSound, dieSound;
 
-	public APG.APGBasicGameLogic basicGameLogic;} 
+	public APG.APGBasicGameLogic basicGameLogic;}
 
-class PlayerAttacks{
+class PlayerAttacks
+{
 	public static void MakeBreath( GameSys gameSys, Sprite[] clouds, ent owner, List<Action<v3, float, float, float>> blow, List<Action<v3, float, float, float>> inhale, List<Action<v3, float, float, float>> inhaleBig ) {
 		var src = new ent() { name="breatheSet" };
 		for( var k = 0; k < 20; k++ ) {

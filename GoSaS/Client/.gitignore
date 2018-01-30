@@ -7,6 +7,11 @@ CartoonGame/libsrc
 CartoonGame/obj
 CartoonGame/bin
 
+libsrc
+obj
+bin
+
+
 RacingGame/libsrc
 RacingGame/obj
 RacingGame/bin

@@ -1,79 +1,6 @@
-var MetadataFullSys = (function () {
-    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
-        this.currentFrame = 0;
-        this.onUpdateFunc = null;
-        onConnectionComplete();
-        this.canvas = document.createElement("canvas");
-        this.canvas.width = 100;
-        this.canvas.height = 100;
-        this.vid = undefined;
-    }
-    MetadataFullSys.prototype.SetVideoPlayer = function (player) {
-        this.videoPlayer = player;
-    };
-    MetadataFullSys.prototype.Data = function (msgName) { return null; };
-    MetadataFullSys.prototype.SetVideoStream = function () {
-        var thePlayer = this.videoPlayer;
-        if (thePlayer == undefined)
-            return false;
-        var bridge = thePlayer._bridge;
-        if (bridge == undefined)
-            return false;
-        var iframe = bridge._iframe;
-        if (iframe == undefined)
-            return false;
-        var doc = iframe.contentWindow.document;
-        if (doc == undefined)
-            return false;
-        var elements = doc.getElementsByClassName("player-video");
-        if (elements == undefined)
-            return false;
-        for (var j = 0; j < elements.length; j++) {
-            var player = elements[j];
-            if (player != undefined && player.children != null && player.children.length > 0) {
-                for (var k = 0; k < player.children.length; k++) {
-                    var inner = player.children[k];
-                    if (inner.className == "js-ima-ads-container ima-ads-container")
-                        continue;
-                    if (inner.localName != "video")
-                        continue;
-                    this.vid = inner;
-                    return true;
-                }
-            }
-        }
-        return false;
-    };
-    MetadataFullSys.prototype.Update = function () {
-        if (this.vid == undefined) {
-            this.SetVideoStream();
-        }
-        if (this.vid != undefined) {
-            this.canvas.getContext('2d').drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, 100, 100);
-            var bx = 16, by = 12, sx = 18, sy = 18;
-            var ctx = this.canvas.getContext('2d');
-            var frameNumber = 0;
-            for (var j = 0; j < 4; j++) {
-                for (var k = 0; k < 4; k++) {
-                    var pix = ctx.getImageData(bx + sx * j, by + sy * k, 1, 1).data[0];
-                    if (pix > 127)
-                        frameNumber |= 1 << (j + k * 4);
-                }
-            }
-            console.log("" + frameNumber);
-            this.frameNumber = frameNumber;
-        }
-        if (this.onUpdateFunc != null) {
-            this.onUpdateFunc(this);
-        }
-    };
-    return MetadataFullSys;
-}());
-function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence, disableNetworking, isMobile, gameWidth, gameHeight, logicIRCChannelName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd, handleOrientation, metadataSys) {
-    if (gameWidth === void 0) { gameWidth = 400; }
-    if (gameHeight === void 0) { gameHeight = 300; }
-    if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
-        ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", " + gameHeight + ".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
+function ApgSetup(appParms, networkingTestSequence, disableNetworking, logicIRCChannelName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd, handleOrientation, metadataSys) {
+    if (appParms.gameWidth < 1 || appParms.gameWidth > 8192 || appParms.gameHeight < 1 || appParms.gameHeight > 8192) {
+        ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + appParms.gameWidth + ", " + appParms.gameHeight + ".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
         return;
     }
     if (disableNetworking == false) {
@@ -87,11 +14,11 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence
         return;
     }
     var cache = new AssetCacher();
-    assetCacheFunction(cache);
+    appParms.cacheFunction(cache);
     cache.LoadJSONAsset(LoadPhaserAssets);
     function LoadPhaserAssets() {
         var _this = this;
-        var game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
+        var game = new Phaser.Game(appParms.gameWidth, appParms.gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
             preload: function () {
                 game.stage.disableVisibilityChange = true;
                 if (allowFullScreen) {
@@ -129,7 +56,7 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence
         }
         function launchGame() {
             if (engineParms.metadataDoneLoading == false) {
-                engineParms.metadataLoadedFunction = launchGameFull();
+                engineParms.metadataLoadedFunction = launchGameFull;
             }
             else {
                 launchGameFull();
@@ -143,7 +70,7 @@ function ApgSetup(assetCacheFunction, gameLaunchFunction, networkingTestSequence
                 handleOrientation();
                 apg.update();
             }, 1000 / 60);
-            gameLaunchFunction(apg);
+            appParms.gameLaunchFunction(apg);
         }
     }
 }
@@ -527,6 +454,77 @@ var IRCNetwork = (function () {
     };
     return IRCNetwork;
 }());
+var MetadataFullSys = (function () {
+    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
+        this.currentFrame = 0;
+        this.onUpdateFunc = null;
+        onConnectionComplete();
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = 100;
+        this.canvas.height = 100;
+        this.vid = undefined;
+    }
+    MetadataFullSys.prototype.SetVideoPlayer = function (player) {
+        this.videoPlayer = player;
+    };
+    MetadataFullSys.prototype.Data = function (msgName) { return null; };
+    MetadataFullSys.prototype.SetVideoStream = function () {
+        var thePlayer = this.videoPlayer;
+        if (thePlayer == undefined)
+            return false;
+        var bridge = thePlayer._bridge;
+        if (bridge == undefined)
+            return false;
+        var iframe = bridge._iframe;
+        if (iframe == undefined)
+            return false;
+        var doc = iframe.contentWindow.document;
+        if (doc == undefined)
+            return false;
+        var elements = doc.getElementsByClassName("player-video");
+        if (elements == undefined)
+            return false;
+        for (var j = 0; j < elements.length; j++) {
+            var player = elements[j];
+            if (player != undefined && player.children != null && player.children.length > 0) {
+                for (var k = 0; k < player.children.length; k++) {
+                    var inner = player.children[k];
+                    if (inner.className == "js-ima-ads-container ima-ads-container")
+                        continue;
+                    if (inner.localName != "video")
+                        continue;
+                    this.vid = inner;
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    MetadataFullSys.prototype.Update = function () {
+        if (this.vid == undefined) {
+            this.SetVideoStream();
+        }
+        if (this.vid != undefined) {
+            this.canvas.getContext('2d').drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, 100, 100);
+            var bx = 16, by = 12, sx = 18, sy = 18;
+            var ctx = this.canvas.getContext('2d');
+            var frameNumber = 0;
+            for (var j = 0; j < 4; j++) {
+                for (var k = 0; k < 4; k++) {
+                    var pix = ctx.getImageData(bx + sx * j, by + sy * k, 1, 1).data[0];
+                    if (pix > 127)
+                        frameNumber |= 1 << (j + k * 4);
+                }
+            }
+            console.log("" + frameNumber);
+            this.frameNumber = frameNumber;
+        }
+        if (this.onUpdateFunc != null) {
+            this.onUpdateFunc(this);
+        }
+    };
+    return MetadataFullSys;
+}());
 var NetworkMessageHandler = (function () {
     function NetworkMessageHandler() {
         this.inputs = {};
@@ -777,7 +775,7 @@ function launchAPGClient(devParms, appParms) {
     document.getElementById("appErrorMessage").style.display = 'none';
     setTwitchIFrames(isMobile, chatIRCChannelName, appParms.chatWidth, appParms.chatHeight, appParms.videoWidth, appParms.videoHeight, metadataSys);
     var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
-    ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.networkingTestSequence, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation, metadataSys);
+    ApgSetup(appParms, devParms.networkingTestSequence, devParms.disableNetworking, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation, metadataSys);
 }
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||

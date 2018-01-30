@@ -100,14 +100,14 @@
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y /D "$(ProjectDir)website\APGApp.js" "$(ProjectDir)..\CartoonGame\website"
-xcopy /Y /D "$(ProjectDir)website\APGApp.js.map" "$(ProjectDir)..\CartoonGame\website"
-xcopy /Y /D "$(ProjectDir)libsrc\APGSys.ts" "$(ProjectDir)..\CartoonGame\gamesrc"
-xcopy /Y /D /E "$(ProjectDir)libsrc" "$(ProjectDir)..\CartoonGame\libsrc"
-xcopy /Y /D "$(ProjectDir)website\APGApp.js" "$(ProjectDir)..\..\..\MetadataServerFramework\BasicClient\website"
-xcopy /Y /D "$(ProjectDir)website\APGApp.js.map" "$(ProjectDir)..\..\..\MetadataServerFramework\BasicClient\website"
-xcopy /Y /D "$(ProjectDir)libsrc\APGSys.ts" "$(ProjectDir)..\..\..\MetadataServerFramework\BasicClient\gamesrc"
-xcopy /Y /D /E "$(ProjectDir)libsrc" "$(ProjectDir)..\..\..\MetadataServerFramework\BasicClient\libsrc"
+    <PostBuildEvent>xcopy /Y /D "$(ProjectDir)website\APGApp.js" "$(ProjectDir)..\website"
+xcopy /Y /D "$(ProjectDir)website\APGApp.js.map" "$(ProjectDir)..\website"
+xcopy /Y /D "$(ProjectDir)libsrc\APGSys.ts" "$(ProjectDir)..\gamesrc"
+xcopy /Y /D /E "$(ProjectDir)libsrc" "$(ProjectDir)..\libsrc"
+xcopy /Y /D "$(ProjectDir)website\APGApp.js" "$(ProjectDir)..\..\..\MetadataServerFramework\Client\website"
+xcopy /Y /D "$(ProjectDir)website\APGApp.js.map" "$(ProjectDir)..\..\..\MetadataServerFramework\Client\website"
+xcopy /Y /D "$(ProjectDir)libsrc\APGSys.ts" "$(ProjectDir)..\..\..\MetadataServerFramework\Client\gamesrc"
+xcopy /Y /D /E "$(ProjectDir)libsrc" "$(ProjectDir)..\..\..\MetadataServerFramework\Client\libsrc"
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

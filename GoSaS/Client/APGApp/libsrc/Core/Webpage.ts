@@ -14,6 +14,47 @@ interface tmiIFace {
 declare var Twitch: TwitchIFace;
 declare var tmi: tmiIFace;
 
+interface DevParms{
+	disableNetworking: boolean;
+
+	networkingTestSequence: boolean;
+
+	skipAuthentication: boolean;
+	forceChatIRCChannelName: string;
+	forceLogicIRCChannelName: string;
+	forcePlayerName: string;
+	forcePlayerOauth: string;
+	forceClientID: string;
+
+	forceMobile: boolean;
+}
+
+interface AppParms{
+	cacheFunction: (AssetCacher) => void;
+
+	gameLaunchFunction: (APGFullSystem) => void;
+
+	gameName: string;
+
+	gameWidth: number;
+	gameHeight: number;
+
+	videoWidth: number;
+	videoHeight: number;
+	chatWidth: number;
+	chatHeight: number;
+}
+
+interface EngineParms{
+	clientID: string;
+	chat: any;
+	chatLoadedFunction: () => void;
+	metadataLoadedFunction: () => void;
+	metadataDoneLoading: boolean;
+	playerName: string;
+	playerOauth: string;
+}
+
 function setTwitchIFrames(isMobile: boolean, chatIRCChannelName: string, chatWidth: number, chatHeight: number, videoWidth: number, videoHeight: number, metadataSys:MetadataFullSys ):void {
 
 	if (isMobile) {
@@ -103,14 +144,14 @@ function MakeOrientationWarning(isMobile:boolean, phaserDivName:string):()=>void
 * Entry point for launching the APG Client HTML5 App from a containing web page.
 * The fields of devParms and appParms are specified in the .html file.
 */
-function launchAPGClient(devParms, appParms) {
+function launchAPGClient(devParms: DevParms, appParms: AppParms) {
 
 	var isMobile = true;
 
 	var chatIRCChannelName = "";
 	var logicIRCChannelName = "";
 
-	var engineParms = {
+	var engineParms:EngineParms = {
 		clientID:'',
 		chat: null,
 		chatLoadedFunction: null,
@@ -123,7 +164,7 @@ function launchAPGClient(devParms, appParms) {
 	var appFailMessage = '';
 	var appFailedWithoutRecovery = false;
 
-	function AppFail(s) {
+	function AppFail(s:string):void {
 		appFailMessage = s;
 		appFailedWithoutRecovery = true;
 	}
@@ -229,5 +270,6 @@ function launchAPGClient(devParms, appParms) {
 
 	var HandleOrientation = MakeOrientationWarning(isMobile, phaserDivName);
 
-	ApgSetup(appParms.cacheFunction, appParms.gameLaunchFunction, devParms.networkingTestSequence, devParms.disableNetworking, isMobile, appParms.gameWidth, appParms.gameHeight, logicIRCChannelName, phaserDivName, isMobile, engineParms, ClearOnLoadEnd, HandleOrientation, metadataSys);
+	ApgSetup( appParms, devParms.networkingTestSequence, devParms.disableNetworking, logicIRCChannelName, phaserDivName, isMobile,
+		engineParms, ClearOnLoadEnd, HandleOrientation, metadataSys);
 }

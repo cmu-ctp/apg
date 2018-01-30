@@ -4,6 +4,9 @@ using v3 = UnityEngine.Vector3;
 using APG;
 using System.Collections.Generic;
 
+[Serializable]
+struct PlayerMetadata { public int id; public int x; public int y; }
+
 public class GameBuilder : MonoBehaviour {
 	public GameObject basicSpriteObject;
 	public Material glowMaterial;
@@ -368,6 +371,9 @@ class MainGame{
         bool pauseLatch = false;
 
         new ent { ignorePause = true, update = e => {
+
+            a.gameLogicChat.WriteMetadata("frame", new PlayerMetadata { id = 1, x = (int)FullGame.tick, y = 0 });
+
             FullGame.tick++;
 		    if (!a.basicGameLogic.waitingForGameToStart) tick2++;
 		    treatSys.soundTick = tick2;

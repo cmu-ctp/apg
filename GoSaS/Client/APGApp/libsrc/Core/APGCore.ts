@@ -1,8 +1,8 @@
-﻿function ApgSetup(assetCacheFunction: (Cacher) => void, gameLaunchFunction: (APGSys) => void, networkingTestSequence: boolean, disableNetworking: boolean, isMobile: boolean, gameWidth: number = 400, gameHeight: number = 300,
-	logicIRCChannelName: string, APGInputWidgetDivName: string, allowFullScreen: boolean, engineParms: any, onLoadEnd: () => void, handleOrientation: () => void, metadataSys:MetadataFullSys) {
+﻿function ApgSetup( appParms:AppParms, networkingTestSequence: boolean, disableNetworking: boolean, logicIRCChannelName: string, APGInputWidgetDivName: string, allowFullScreen: boolean,
+	engineParms: EngineParms, onLoadEnd: () => void, handleOrientation: () => void, metadataSys: MetadataFullSys) {
 
-	if (gameWidth < 1 || gameWidth > 8192 || gameHeight < 1 || gameHeight > 8192) {
-		ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + gameWidth + ", "  + gameHeight +".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
+	if (appParms.gameWidth < 1 || appParms.gameWidth > 8192 || appParms.gameHeight < 1 || appParms.gameHeight > 8192) {
+		ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + appParms.gameWidth + ", " + appParms.gameHeight +".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
 		return;
 	}
 
@@ -19,12 +19,12 @@
 
 	var cache = new AssetCacher();
 
-	assetCacheFunction( cache );
+	appParms.cacheFunction( cache );
 
 	cache.LoadJSONAsset(LoadPhaserAssets); 
 
 	function LoadPhaserAssets() {
-		var game: Phaser.Game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
+		var game: Phaser.Game = new Phaser.Game(appParms.gameWidth, appParms.gameHeight, Phaser.AUTO, APGInputWidgetDivName, {
 			preload: () => {
 				game.stage.disableVisibilityChange = true;
 
@@ -69,7 +69,7 @@
 
 		function launchGame() {
 			if (engineParms.metadataDoneLoading == false) {
-				engineParms.metadataLoadedFunction = launchGameFull();
+				engineParms.metadataLoadedFunction = launchGameFull;
 			}
 			else {
 				launchGameFull();
@@ -91,7 +91,7 @@
 				handleOrientation();
 				apg.update();
 			}, 1000 / 60);
-			gameLaunchFunction(apg);
+			appParms.gameLaunchFunction(apg);
 
 		}
 	}

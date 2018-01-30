@@ -12,13 +12,44 @@ using ZXing.QrCode;
 using UnityEditor;
 #endif
 
+interface NetworkChannel{
+    void SendMsg(string msg);
+    void SetOAuthFunc(Func<string> func);
+    void SetChannelNameFunc(Func<string> func);
+    void SetMessageRecievedListener(UnityEngine.Events.UnityAction<string> call);
+}
+
+class NullNetwork : NetworkChannel{
+    public void SendMsg(string msg) { }
+    public void SetOAuthFunc(Func<string> func) { }
+    public void SetChannelNameFunc(Func<string> func) { }
+    public void SetMessageRecievedListener(UnityEngine.Events.UnityAction<string> call) { }
+}
+
 [RequireComponent(typeof(TwitchIRCChat))]
 [RequireComponent(typeof(TwitchIRCLogic))]
 public class TwitchNetworking:MonoBehaviour {
 
-	[Tooltip("")]
+    [Header("Main Features")]
+
+    [Tooltip("")]
+    public bool UseTwitchIRCTraffic = true;
+
+    [Tooltip("")]
+    public bool UseMetadata = false;
+
+    [Header("Testing Features")]
+
+    [Tooltip("")]
+    public bool UseSingleMachineTestNetworking = true;
+
+    public string SingleMachineTestNetworkingDirectory = ".." + Path.DirectorySeparatorChar + "Client" + Path.DirectorySeparatorChar + "website" + Path.DirectorySeparatorChar + "TestTraffic";
+
+    [Header("IRC Networking Fields")]
+
+    [Tooltip("")]
 	public string LogicOauth;
-	[Tooltip("Twitch account name for the game network traffice")]
+	[Tooltip("Twitch account name for the game network traffic")]
 	public string LogicChannelName;
 	[Tooltip("")]
 	public string ChatOauth;
@@ -33,9 +64,15 @@ public class TwitchNetworking:MonoBehaviour {
 	[Tooltip("Name of file to save network settings in, relative Assets folder.  If this file exists, the fields set in the Unity Editor will be ignored.")]
 	public string NetworkSettingPath;
 
-	//___________________________________________
+    [Header("Misc")]
 
-	public APGSys GetAudienceSys() {
+    [SerializeField] NetworkSettings settings = null;
+
+    public GameObject FrameNumber;
+
+    //___________________________________________
+
+    public APGSys GetAudienceSys() {
 		if (apg == null) Initialize();
 		return apg;
 	}
@@ -59,14 +96,14 @@ public class TwitchNetworking:MonoBehaviour {
 	
 	//___________________________________________
 
-	[SerializeField] NetworkSettings settings = null;
+	
 
 	EmptyMsg emptyMsg = new EmptyMsg();
 
-	TwitchIRCChat IRCChat;
-	TwitchIRCLogic IRCLogic;
+    NetworkChannel IRCChat;
+    NetworkChannel IRCLogic;
 
-	AudiencePlayersSys apg = null;
+    AudiencePlayersSys apg = null;
 
 	int time = 0;
 
@@ -74,39 +111,39 @@ public class TwitchNetworking:MonoBehaviour {
 
 	IRCNetworkRecorder recorder = new IRCNetworkRecorder();
 
-	//___________________________________________
+    //___________________________________________
 
-	private static Color32[] Encode(string textForEncoding, int width, int height) {
-		var writer = new BarcodeWriter { Format = BarcodeFormat.QR_CODE, Options = new QrCodeEncodingOptions { Height = height, Width = width } };
-		return writer.Write(textForEncoding);
-	}
+    private static Color32[] Encode(string textForEncoding, int width, int height){
+        var writer = new BarcodeWriter { Format = BarcodeFormat.QR_CODE, Options = new QrCodeEncodingOptions { Height = height, Width = width } };
+        return writer.Write(textForEncoding);
+    }
 
-	private Texture2D generateQR(string text) {
-		var encoded = new Texture2D(256, 256);
-		var color32 = Encode(text, encoded.width, encoded.height);
-		encoded.SetPixels32(color32);
-		encoded.Apply();
-		return encoded;
-	}
+    private Texture2D generateQR(string text){
+        var encoded = new Texture2D(256, 256);
+        var color32 = Encode(text, encoded.width, encoded.height);
+        encoded.SetPixels32(color32);
+        encoded.Apply();
+        return encoded;
+    }
 
-	private Uri ShortenUri(Uri longUri, string login, string apiKey, bool addHistory) {
-	  const string bitlyUrl = @"http://api.bit.ly/shorten?longUrl={0}&apiKey={1}&login={2}&version=2.0.1&format=json&history={3}";
-	  var request = WebRequest.Create(string.Format(bitlyUrl, longUri, apiKey, login, addHistory ? "1" : "0"));
-	  var response = (HttpWebResponse)request.GetResponse();
-	  string bitlyResponse;
-	  using (var reader = new StreamReader(response.GetResponseStream())) {
-		bitlyResponse = reader.ReadToEnd();
-	  }
-	  response.Close();
-	  if (!string.IsNullOrEmpty(bitlyResponse)) {
-		const RegexOptions options = ((RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline) | RegexOptions.IgnoreCase);
-		const string rx = "\"shortUrl\":\\ \"(?<short>.*?)\"";
-		Regex reg = new Regex(rx, options);
-		string tmp = reg.Match(bitlyResponse).Groups["short"].Value;
-		return string.IsNullOrEmpty(tmp) ? longUri : new Uri(tmp);
-	  }
-	  return longUri;
-	}
+    private Uri ShortenUri(Uri longUri, string login, string apiKey, bool addHistory){
+        const string bitlyUrl = @"http://api.bit.ly/shorten?longUrl={0}&apiKey={1}&login={2}&version=2.0.1&format=json&history={3}";
+        var request = WebRequest.Create(string.Format(bitlyUrl, longUri, apiKey, login, addHistory ? "1" : "0"));
+        var response = (HttpWebResponse)request.GetResponse();
+        string bitlyResponse;
+        using (var reader = new StreamReader(response.GetResponseStream())){
+            bitlyResponse = reader.ReadToEnd();
+        }
+        response.Close();
+        if (!string.IsNullOrEmpty(bitlyResponse)){
+            const RegexOptions options = ((RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline) | RegexOptions.IgnoreCase);
+            const string rx = "\"shortUrl\":\\ \"(?<short>.*?)\"";
+            Regex reg = new Regex(rx, options);
+            string tmp = reg.Match(bitlyResponse).Groups["short"].Value;
+            return string.IsNullOrEmpty(tmp) ? longUri : new Uri(tmp);
+        }
+        return longUri;
+    }
 
 	void LoadNetworkSettings() {
 		settings = new NetworkSettings { ChatChannelName = ChatChannelName, LogicChannelName = LogicChannelName, LogicOauth = LogicOauth, ChatOauth = ChatOauth, GameClientID = GameClientID, RedirectLink = RedirectLink, BitlyLink = "" };
@@ -171,7 +208,7 @@ public class TwitchNetworking:MonoBehaviour {
 		
 		//IRC.SendCommand("CAP REQ :twitch.tv/tags"); //register for additional data such as emote-ids, name color etc.
 
-		IRCChat.messageRecievedEvent.AddListener(msg => {
+		IRCChat.SetMessageRecievedListener(msg => {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
 			string msgString = msg.Substring(msgIndex + settings.ChatChannelName.Length + 11);
 			string user = msg.Substring(1, msg.IndexOf('!') - 1);
@@ -185,7 +222,7 @@ public class TwitchNetworking:MonoBehaviour {
 
 	void InitIRCLogicChannel() {
 
-		IRCLogic.messageRecievedEvent.AddListener(msg => {
+		IRCLogic.SetMessageRecievedListener(msg => {
 			int msgIndex = msg.IndexOf("PRIVMSG #");
 			string msgString = msg.Substring(msgIndex + settings.LogicChannelName.Length + 11);
 			string user = msg.Substring(1, msg.IndexOf('!') - 1);
@@ -205,18 +242,17 @@ public class TwitchNetworking:MonoBehaviour {
 	StringBuilder bufferedCommands = new StringBuilder( maxIRCMsgLength + 1 );
 	Queue<string> commandQueue = new Queue<string>();
 
-
     StringBuilder cachedMetaData = new StringBuilder();
 
     public void WriteMetadata<T>(string msg, T parms){
         var parmsString = JsonUtility.ToJson(parms);
 
-        //Debug.Log("metadata is " + time + " " + msg + " " + parmsString);
-
         cachedMetaData.Append("" + time + ", " + msg + ", " + parmsString + '\n');
 
         if ((time % 60) == 0){
-            System.IO.File.WriteAllText(".." + Path.DirectorySeparatorChar + "BasicClient" + Path.DirectorySeparatorChar + "website" + Path.DirectorySeparatorChar + "TestTraffic" + Path.DirectorySeparatorChar + "test" + Mathf.Floor(time / 60) + ".txt", cachedMetaData.ToString());
+            if (UseSingleMachineTestNetworking){
+                System.IO.File.WriteAllText(SingleMachineTestNetworkingDirectory + Path.DirectorySeparatorChar + "test" + Mathf.Floor(time / 60) + ".txt", cachedMetaData.ToString());
+            }
             cachedMetaData.Length = 0;
         }
 
@@ -225,7 +261,6 @@ public class TwitchNetworking:MonoBehaviour {
         // make this cache a message
         // then send the entire message in its FixedUpdate function
     }
-
 
     public void WriteMessageToClient<T>(string msg, T parms) {
 		WriteMessageStringToClient(msg, JsonUtility.ToJson(parms));
@@ -236,11 +271,9 @@ public class TwitchNetworking:MonoBehaviour {
 
 		if( bufferedCommands.Length + splitterLength + s.Length > maxIRCMsgLength ) {
 			if (time - lastLogicWriteTime < 30 ) {
-				//Debug.Log("Enqueing " + time+ " " + bufferedCommands);
 				commandQueue.Enqueue(bufferedCommands.ToString());
 			}
 			else {
-				//Debug.Log("Sending " + time + " " + bufferedCommands);
 				IRCLogic.SendMsg(bufferedCommands.ToString());
 				lastLogicWriteTime = time;
 			}
@@ -272,7 +305,6 @@ public class TwitchNetworking:MonoBehaviour {
 		return mobileQRCode;
 	}
 
-
 	void Initialize() {
 		Debug.Log("Starting GameLogicChat");
 
@@ -280,14 +312,19 @@ public class TwitchNetworking:MonoBehaviour {
 
 		LoadNetworkSettings();
 
-		IRCChat = this.GetComponent<TwitchIRCChat>();
-		IRCChat.oauthFunc = () => settings.ChatOauth;
-		IRCChat.channelNameFunc = () => settings.ChatChannelName;
-
-		IRCLogic = this.GetComponent<TwitchIRCLogic>();
-		IRCLogic.oauthFunc = () => settings.LogicOauth;
-		IRCLogic.channelNameFunc = () => settings.LogicChannelName;
-	}
+        if (UseSingleMachineTestNetworking){
+            IRCChat = new NullNetwork();
+            IRCLogic = new NullNetwork();
+        }
+        else{
+            IRCChat = this.GetComponent<TwitchIRCChat>();
+            IRCLogic = this.GetComponent<TwitchIRCLogic>();
+        }
+        IRCChat.SetOAuthFunc(() => settings.ChatOauth);
+        IRCChat.SetChannelNameFunc(() => settings.ChatChannelName);
+        IRCLogic.SetOAuthFunc(() => settings.LogicOauth);
+        IRCLogic.SetChannelNameFunc(() => settings.LogicChannelName);
+    }
 
     public int GetTime() { return time; }
 
@@ -296,8 +333,12 @@ public class TwitchNetworking:MonoBehaviour {
 	}
 
 	void Start() {
-        //System.IO.DirectoryInfo di = new DirectoryInfo(".." + Path.DirectorySeparatorChar + "BasicClient" + Path.DirectorySeparatorChar + "website" + Path.DirectorySeparatorChar + "TestTraffic");
-        //foreach (FileInfo file in di.GetFiles()) file.Delete();
+        FrameNumber.active = UseMetadata;
+
+        if (UseSingleMachineTestNetworking){
+            System.IO.DirectoryInfo di = new DirectoryInfo(SingleMachineTestNetworkingDirectory);
+            foreach (FileInfo file in di.GetFiles()) file.Delete();
+        }
 
         InitIRCChat();
         InitIRCLogicChannel();
@@ -307,27 +348,25 @@ public class TwitchNetworking:MonoBehaviour {
     [Serializable]
     struct AliveParms { public int t; }
 
-    void FixedUpdate() {
-		time++;
-		if( (time % (50 * 20)) == 0 ) {
-			WriteMessageToClient("alive", new AliveParms());
-		}
-		if (time - lastLogicWriteTime > 30) {
-			if (bufferedCommands.Length > 0) {
-				//Debug.Log("Sending buffered commands " + time +" "+ bufferedCommands );
-				IRCLogic.SendMsg(bufferedCommands.ToString());
-				bufferedCommands.Length = 0;
-				lastLogicWriteTime = time;
-			}
-			else if( commandQueue.Count > 0) {
-				var cmd = commandQueue.Dequeue();
-				//Debug.Log("Sending enqueued commands "+time+ " " + cmd);
-				IRCLogic.SendMsg( cmd );
-				lastLogicWriteTime = time;
-			}
-		}
-		apg.Update();
-
-	}
-
+    void FixedUpdate(){
+        time++;
+        if ((time % (50 * 20)) == 0){
+            WriteMessageToClient("alive", new AliveParms());
+        }
+        if (time - lastLogicWriteTime > 30){
+            if (bufferedCommands.Length > 0){
+                //Debug.Log("Sending buffered commands " + time +" "+ bufferedCommands );
+                IRCLogic.SendMsg(bufferedCommands.ToString());
+                bufferedCommands.Length = 0;
+                lastLogicWriteTime = time;
+            }
+            else if (commandQueue.Count > 0){
+                var cmd = commandQueue.Dequeue();
+                //Debug.Log("Sending enqueued commands "+time+ " " + cmd);
+                IRCLogic.SendMsg(cmd);
+                lastLogicWriteTime = time;
+            }
+        }
+        apg.Update();
+    }
 }
