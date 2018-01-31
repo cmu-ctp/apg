@@ -6,7 +6,8 @@
 // around downloaded to clients before the app launches.
 
 function CacheGameAssets(c: Cacher): void {
-    c.images('assets', ['hudselect.png']);
+	c.images('assets', ['hudselect.png', 'blueorb.png', 'background.png']);
+	c.sounds('assets', ['click.mp3']);
 }
 
 // These two interfaces are the parameters for network messages.  They'll be serialized into JSON and then trasmitted across the metadata server.
@@ -14,54 +15,101 @@ function CacheGameAssets(c: Cacher): void {
 
 interface ServerFirework{
     x: number;
-    y: number;
+	y: number;
+	scale: number;
 }
 
 interface ServerFireworks{
 	items: ServerFirework[];
 }
 
-class BasicGame {
-
-    // Phaser assets we'll be using
-    highlighter: Phaser.Sprite = null;
-
-    // This is our main entry point
-    constructor(apg: APGSys) {
-
-		var metadataInfo: ServerFireworks = null;
-
-        // Register server messages
-		apg.ResetServerMessageRegistry();
-		apg.Register<ServerFireworks>("firework", p => {
-			metadataInfo = p;
-		});
-
-		var lastClickDelay: number = 0;
-		var ID: number = 0;
-
-        // Make the highlighter.
-        this.highlighter = new Phaser.Sprite(apg.g, 0, 0, 'assets/hudselect.png');
-        this.highlighter.blendMode = PIXI.blendModes.ADD;
-        this.highlighter.anchor = new Phaser.Point(.5, .5);
-        this.highlighter.scale = new Phaser.Point(1, 1);
-		this.highlighter.update = () => {
-
-			if (metadataInfo != null) {
-				this.highlighter.x = metadataInfo.items[ID].x * 1024 / 10000;
-				this.highlighter.y = (1 - metadataInfo.items[ID].y / 10000) * (768 - 96 - 96);
-			}
-
-			lastClickDelay--;
-			if (apg.g.input.activePointer.isDown && lastClickDelay <= 0) {
-				ID = (ID + 1) % 8;
-				lastClickDelay = 20;
-			}
-        }
-        apg.g.world.addChild(this.highlighter);
-	}
-}
-
 function InitializeGame(apg: APGSys): void {
-	new BasicGame( apg );
+	var metadataInfo: ServerFireworks = null;
+
+	// Register server messages
+	apg.ResetServerMessageRegistry();
+	apg.Register<ServerFireworks>("firework", p => {
+		metadataInfo = p;
+	});
+
+	var lastClickDelay: number = 0;
+	var ID: number = 0;
+
+	var clickSound: Phaser.Sound = apg.g.add.audio('assets/click.mp3', .4, false);
+
+	var background = new Phaser.Sprite(apg.g, -640, -320, 'assets/background.png');
+	apg.g.world.addChild(background);
+
+	var highlighter = new Phaser.Sprite(apg.g, 0, 0, 'assets/blueorb.png');
+	highlighter.blendMode = PIXI.blendModes.ADD;
+	highlighter.anchor = new Phaser.Point(.5, .5);
+	highlighter.scale = new Phaser.Point(1, 1);
+	highlighter.update = () => {
+		lastClickDelay--;
+		if (metadataInfo != null) {
+			var selected = false;
+			var curSelected = -1;
+			for (var k = 0; k < metadataInfo.items.length; k++) {
+				var x = metadataInfo.items[k].x * 1024 / 10000;
+				var y = (1 - metadataInfo.items[k].y / 10000) * (768 - 96 - 96);
+				if (Math.abs(apg.g.input.activePointer.x - x) < 48 && Math.abs(apg.g.input.activePointer.y - y) < 48) {
+					curSelected = k;
+					highlighter.x = x;
+					highlighter.y = y;
+					highlighter.visible = true;
+					selected = true;
+				}
+			}
+			if (!selected) {
+				highlighter.visible = false;
+				if (apg.g.input.activePointer.isDown && lastClickDelay <= 0) {
+					ID = -1;
+					lastClickDelay = 20;
+				}
+			}
+			else {
+				if (apg.g.input.activePointer.isDown && lastClickDelay <= 0) {
+					ID = curSelected;
+					clickSound.play();
+					lastClickDelay = 20;
+				}
+			}
+		}
+	}
+	apg.g.world.addChild(highlighter);
+
+	// Make the selector.
+	var selector = new Phaser.Sprite(apg.g, 0, 0, 'assets/hudselect.png');
+	selector.blendMode = PIXI.blendModes.ADD;
+	selector.anchor = new Phaser.Point(.5, .5);
+	selector.scale = new Phaser.Point(1, 1);
+	selector.update = () => {
+		if (ID == -1) {
+			selector.visible = false;
+		}
+		else if (metadataInfo != null && metadataInfo != undefined ) {
+			selector.visible = true;
+			selector.x = metadataInfo.items[ID].x * 1024 / 10000;
+			selector.y = (1 - metadataInfo.items[ID].y / 10000) * (768 - 96 - 96);
+		}
+		else {
+			selector.visible = false;
+		}
+	}
+	apg.g.world.addChild(selector);
+
+	var label = new Phaser.Text(apg.g, 20, 20, "", { font: '16px Caveat Brush', fill: '#112' });
+	label.update = () => {
+		if (ID == -1) {
+			label.visible = false;
+		}
+		else if (metadataInfo != null && metadataInfo != undefined) {
+			label.visible = true;
+			label.text = "ID: " + ID + "\nScale " + Math.floor( metadataInfo.items[ID].scale / 10000 * 48 );
+		}
+		else {
+			label.visible = false;
+		}
+	}
+	apg.g.world.addChild(label);
 }

@@ -26,7 +26,8 @@ public class GameLogic : MonoBehaviour {
 	struct ServerFirework {
 		public int x;
 		public int y;
-	}
+        public int scale;
+    }
     [Serializable]
     struct ServerFireworks
     {
@@ -58,14 +59,18 @@ public class GameLogic : MonoBehaviour {
     int time = 0;
 
 	void FixedUpdate () {
-
         time++;
 
-        for( var k = 0; k < fireworks.Length; k++ )
-        {
+        camera.transform.position = new Vector3( 
+            400 + 100 * Mathf.Cos( time * .013f + 72) + 100 * Mathf.Cos(time * .0065f + 172), 
+            225 + 80 * Mathf.Cos(time * .011f + 372) + 70 * Mathf.Cos(time * .0071f + 672), 
+            -400 + 30 * Mathf.Cos(time * .0073f + 1372) + 40 * Mathf.Cos(time * .0087f + 1672));
+
+        for( var k = 0; k < fireworks.Length; k++ ){
             var screenPos = camera.WorldToScreenPoint(fireworks[k].transform.position);
             metadataUpdate.items[k].x = (int)(10000 * screenPos.x / camera.pixelWidth);
             metadataUpdate.items[k].y = (int)(10000 * screenPos.y / camera.pixelHeight );
+            metadataUpdate.items[k].scale = (int)(10000 * fireworks[k].transform.localScale.x / 48f);
         }
         apg.WriteMetadata<ServerFireworks>("firework", metadataUpdate);
 	}
