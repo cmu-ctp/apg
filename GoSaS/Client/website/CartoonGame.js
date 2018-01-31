@@ -8,77 +8,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var MetadataFullSys = (function () {
-    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
-        this.currentFrame = 0;
-        this.onUpdateFunc = null;
-        onConnectionComplete();
-        this.canvas = document.createElement("canvas");
-        this.canvas.width = 100;
-        this.canvas.height = 100;
-        this.vid = undefined;
-    }
-    MetadataFullSys.prototype.SetVideoPlayer = function (player) {
-        this.videoPlayer = player;
-    };
-    MetadataFullSys.prototype.Data = function (msgName) { return null; };
-    MetadataFullSys.prototype.SetVideoStream = function () {
-        var thePlayer = this.videoPlayer;
-        if (thePlayer == undefined)
-            return false;
-        var bridge = thePlayer._bridge;
-        if (bridge == undefined)
-            return false;
-        var iframe = bridge._iframe;
-        if (iframe == undefined)
-            return false;
-        var doc = iframe.contentWindow.document;
-        if (doc == undefined)
-            return false;
-        var elements = doc.getElementsByClassName("player-video");
-        if (elements == undefined)
-            return false;
-        for (var j = 0; j < elements.length; j++) {
-            var player = elements[j];
-            if (player != undefined && player.children != null && player.children.length > 0) {
-                for (var k = 0; k < player.children.length; k++) {
-                    var inner = player.children[k];
-                    if (inner.className == "js-ima-ads-container ima-ads-container")
-                        continue;
-                    if (inner.localName != "video")
-                        continue;
-                    this.vid = inner;
-                    return true;
-                }
-            }
-        }
-        return false;
-    };
-    MetadataFullSys.prototype.Update = function () {
-        if (this.vid == undefined) {
-            this.SetVideoStream();
-        }
-        if (this.vid != undefined) {
-            this.canvas.getContext('2d').drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, 100, 100);
-            var bx = 16, by = 12, sx = 18, sy = 18;
-            var ctx = this.canvas.getContext('2d');
-            var frameNumber = 0;
-            for (var j = 0; j < 4; j++) {
-                for (var k = 0; k < 4; k++) {
-                    var pix = ctx.getImageData(bx + sx * j, by + sy * k, 1, 1).data[0];
-                    if (pix > 127)
-                        frameNumber |= 1 << (j + k * 4);
-                }
-            }
-            console.log("" + frameNumber);
-            this.frameNumber = frameNumber;
-        }
-        if (this.onUpdateFunc != null) {
-            this.onUpdateFunc(this);
-        }
-    };
-    return MetadataFullSys;
-}());
 function ButtonCache(c) {
     c.images('cartoongame/imgs', ['blueorb.png', 'buttontest.png', 'middle.png', 'activate.png', 'assist.png', 'bag1.png', 'bag2.png', 'bag3.png', 'build.png', 'defend.png', 'harvest.png', 'heal.png', 'leftarrow.png', 'moveback.png', 'movein.png', 'rightarrow.png', 'accept.png', 'redo.png', 'strikeback.png', 'slash.png', 'recklessability.png', 'hudselect.png']);
     c.images('cartoongame/imgs/items', ['ball.png', 'baseballbat.png', 'bomb.png', 'broom.png', 'clock.png', 'computer.png', 'hammer.png', 'helmet.png', 'mask.png', 'mask2.png', 'rocket.png', 'scissors.png', 'shield.png', 'teeth.png']);
@@ -2687,6 +2616,11 @@ function WaitingToJoin(apg, previousMessage) {
     } return false; }
     apg.ResetServerMessageRegistry().SetKeepAliveStatus(false);
     apg.WriteToServer("debugAppLaunch", {});
+    var vx = 0, vy = 0;
+    apg.Register("frame", function (p) {
+        vx = p.x;
+        vy = p.y;
+    });
     new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
         upd: function (e) {
             if (tryEnd(e, -30))
@@ -2719,5 +2653,8 @@ function WaitingToJoin(apg, previousMessage) {
     });
     if (apg.networkTestSequence)
         WaitingToJoinTestSequence(apg);
+    new enttx(apg.g.world, 140, 380, "A", textColor, {
+        upd: function (e) { e.x = vx; e.y = vy; }
+    });
 }
 //# sourceMappingURL=CartoonGame.js.map

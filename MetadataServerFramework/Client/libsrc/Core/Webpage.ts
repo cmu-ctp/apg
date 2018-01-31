@@ -17,6 +17,9 @@ declare var tmi: tmiIFace;
 interface DevParms{
 	disableNetworking: boolean;
 
+	useLocalTestNetworking: boolean;
+	forceMetadataFrames: boolean;
+
 	networkingTestSequence: boolean;
 
 	skipAuthentication: boolean;
@@ -33,6 +36,8 @@ interface AppParms{
 	cacheFunction: (AssetCacher) => void;
 
 	gameLaunchFunction: (APGFullSystem) => void;
+
+	useMetadata: boolean;
 
 	gameName: string;
 
@@ -248,7 +253,7 @@ function launchAPGClient(devParms: DevParms, appParms: AppParms) {
 	var metadataLoadFail = errorMessage => {
 		AppFail('Metadata System Initialization Error: ' + errorMessage);
 	};
-	var metadataSys = new MetadataFullSys(location.hash, metadataLoadSuccess, metadataLoadFail);
+	var metadataSys = new MetadataFullSys(appParms.useMetadata, location.hash, metadataLoadSuccess, metadataLoadFail, devParms.useLocalTestNetworking, devParms.forceMetadataFrames );
 
 	var phaserDivName = (isMobile ? "APGInputWidgetMobile" : "APGInputWidget");
 	document.getElementById(phaserDivName).style.display = 'none';

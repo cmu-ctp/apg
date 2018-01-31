@@ -17,8 +17,30 @@
 
     <script>
 
+        appParms = {
+
+            cacheFunction: CartoonAssetCache,
+
+            gameLaunchFunction: WaitingToJoin,
+
+            useMetadata:true,
+
+            gameName: "Gods of Socks and Spoons",
+
+            gameWidth: 800,
+            gameHeight: 450,
+
+            videoWidth: 1024,
+            videoHeight: 768,
+            chatWidth: 400,
+            chatHeight: 720
+        };
+
         devParms = {
             disableNetworking: true,
+
+            useLocalTestNetworking: true,
+            forceMetadataFrames: true,
 
             networkingTestSequence: true,
 
@@ -30,23 +52,6 @@
             forceClientID: '',
 
             forceMobile: false
-        };
-
-        appParms = {
-
-            cacheFunction: CartoonAssetCache,
-
-            gameLaunchFunction: WaitingToJoin,
-
-            gameName: "Gods of Socks and Spoons",
-
-            gameWidth: 800,
-            gameHeight: 450,
-
-            videoWidth: 1024,
-            videoHeight: 768,
-            chatWidth: 400,
-            chatHeight: 720
         };
 
     </script>

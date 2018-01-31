@@ -2,7 +2,10 @@
 	c.images('cartoongame/imgs', ['ClientUI3.png']);
 	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
 	c.googleWebFonts(['Caveat Brush']);}
-interface EmptyParms{}
+interface EmptyParms{ }
+
+interface PlayerMetadata { id:number; x:number; y:number; }
+
 function WaitingToJoinTestSequence(apg: APGSys): void { apg.ClearLocalMessages();}
 function WaitingToJoin(apg: APGSys, previousMessage: string = ""): void {
 
@@ -14,8 +17,20 @@ function WaitingToJoin(apg: APGSys, previousMessage: string = ""): void {
     apg.ResetServerMessageRegistry().SetKeepAliveStatus(false);
     apg.WriteToServer<EmptyParms>("debugAppLaunch", {});
 
+	var vx = 0, vy = 0;
+
+	apg.Register<PlayerMetadata>("frame", p => {
+		vx = p.x; vy = p.y;
+	});
+
 	new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
 		upd: e => {
+
+			/*var metadata = apg.Metadata<PlayerMetadata>("frame");
+			if (metadata != undefined) {
+				console.log("? " + metadata.x);
+			}*/
+
             if (tryEnd(e, -30)) return;
             if (apg.g.input.activePointer.isDown && !inputUsed) {
 				inputUsed = true;
@@ -30,4 +45,10 @@ function WaitingToJoin(apg: APGSys, previousMessage: string = ""): void {
             upd: e => {if (tryEnd(e, -50)) return;}});}
 	new enttx(apg.g.world, 140, 380, "Tap or click to Connect to the Streamer's Game!", textColor, {
         upd: e => { if (tryEnd(e, -50)) return; tc++; e.visible = (tc % 120 < 60) ? false: true;}});
-    if (apg.networkTestSequence) WaitingToJoinTestSequence(apg);}
+	if (apg.networkTestSequence) WaitingToJoinTestSequence(apg);
+
+	new enttx(apg.g.world, 140, 380, "A", textColor, {
+		upd: e => { e.x = vx; e.y = vy; }
+	});
+
+}

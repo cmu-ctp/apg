@@ -17,16 +17,19 @@ namespace APG {
 			return this;
 		}
 
-		public void Run(string user, string msgString) {
+		public NetworkMessageHandler RegisterString(string msgName, Action<string, string> handlerForClientMessage) {
+			commands[msgName] = handlerForClientMessage;
+			return this;
+		}
 
+		public void Run(string user, string msgString) {
 			var jsonMSG = msgString.Split(new string[] { "###" }, StringSplitOptions.None);
 
-			if (jsonMSG.Length != 2) {
+			if(jsonMSG.Length != 2) {
 				Debug.Log("Error!  Poorly formed network message from " + user + ": " + msgString);
 				return;
 			}
-
-			if (!commands.ContainsKey(jsonMSG[0])) {
+			if(!commands.ContainsKey(jsonMSG[0])) {
 				Debug.Log("Error!  Unrecognized command in message from " + user + ": " + msgString);
 				return;
 			}

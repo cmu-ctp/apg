@@ -372,7 +372,7 @@ class MainGame{
 
         new ent { ignorePause = true, update = e => {
 
-            a.gameLogicChat.WriteMetadata("frame", new PlayerMetadata { id = 1, x = (int)FullGame.tick, y = 0 });
+            a.gameLogicChat.WriteMetadata("frame", new PlayerMetadata { id = 1, x = 400 + (int)(300 * Math.Cos( FullGame.tick * .03f )), y = 300 + (int)(250 * Math.Sin(FullGame.tick * .03f)) });
 
             FullGame.tick++;
 		    if (!a.basicGameLogic.waitingForGameToStart) tick2++;

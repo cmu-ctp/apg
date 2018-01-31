@@ -37,6 +37,8 @@ public class GameLogic : MonoBehaviour {
 
     // This is the monobehavior the takes care of all IRC networking.
 
+    public Camera camera;
+
     public TwitchNetworking networking;
     APG.APGSys apg;
 
@@ -61,8 +63,9 @@ public class GameLogic : MonoBehaviour {
 
         for( var k = 0; k < fireworks.Length; k++ )
         {
-            metadataUpdate.items[k].x = (int)fireworks[k].transform.position.x;
-            metadataUpdate.items[k].y = (int)fireworks[k].transform.position.y;
+            var screenPos = camera.WorldToScreenPoint(fireworks[k].transform.position);
+            metadataUpdate.items[k].x = (int)(10000 * screenPos.x / camera.pixelWidth);
+            metadataUpdate.items[k].y = (int)(10000 * screenPos.y / camera.pixelHeight );
         }
         apg.WriteMetadata<ServerFireworks>("firework", metadataUpdate);
 	}

@@ -80,6 +80,7 @@ var APGFullSystem = (function () {
         this.g = g;
         this.JSONAssets = JSONAssets;
         this.metadata = metadataSys;
+        metadataSys.SetGetHandlers(function () { return _this.handlers; });
         if (playerName == "")
             playerName = "ludolab";
         this.useKeepAlive = false;
@@ -124,22 +125,22 @@ var APGFullSystem = (function () {
     APGFullSystem.prototype.WriteToServer = function (message, parmsForMessageToServer) {
         if (!this.CheckMessageParameters("WriteToServer", message, parmsForMessageToServer))
             return;
-        this.network.sendMessageToServer(this.handlers.JoinNetworkMessage(message, JSON.stringify(parmsForMessageToServer)));
+        this.network.sendMessageToServer(NetworkMessageHandler.JoinNetworkMessage(message, JSON.stringify(parmsForMessageToServer)));
     };
     APGFullSystem.prototype.WriteStringToServer = function (message, parmsForMessageToServer) {
         if (!this.CheckMessageParameters("WriteStringToServer", message, parmsForMessageToServer))
             return;
-        this.network.sendMessageToServer(this.handlers.JoinNetworkMessage(message, parmsForMessageToServer));
+        this.network.sendMessageToServer(NetworkMessageHandler.JoinNetworkMessage(message, parmsForMessageToServer));
     };
     APGFullSystem.prototype.WriteLocalAsServer = function (delay, message, parmsForMessageToServer) {
         if (!this.CheckMessageParameters("WriteLocalAsServer", message, parmsForMessageToServer))
             return;
-        this.network.sendServerMessageLocally(delay, this.handlers.JoinNetworkMessage(message, JSON.stringify(parmsForMessageToServer)));
+        this.network.sendServerMessageLocally(delay, NetworkMessageHandler.JoinNetworkMessage(message, JSON.stringify(parmsForMessageToServer)));
     };
     APGFullSystem.prototype.WriteLocalStringAsServer = function (delay, message, parmsForMessageToServer) {
         if (!this.CheckMessageParameters("WriteLocalStringAsServer", message, parmsForMessageToServer))
             return;
-        this.network.sendServerMessageLocally(delay, this.handlers.JoinNetworkMessage(message, parmsForMessageToServer));
+        this.network.sendServerMessageLocally(delay, NetworkMessageHandler.JoinNetworkMessage(message, parmsForMessageToServer));
     };
     APGFullSystem.prototype.WriteLocal = function (delay, user, message, parmsForMessageToServer) {
         if (user == "") {
@@ -148,7 +149,7 @@ var APGFullSystem = (function () {
         }
         if (!this.CheckMessageParameters("WriteLocal", message, parmsForMessageToServer))
             return;
-        this.network.sendMessageLocally(delay, user, this.handlers.JoinNetworkMessage(message, JSON.stringify(parmsForMessageToServer)));
+        this.network.sendMessageLocally(delay, user, NetworkMessageHandler.JoinNetworkMessage(message, JSON.stringify(parmsForMessageToServer)));
     };
     APGFullSystem.prototype.ClearLocalMessages = function () {
         this.network.clearLocalMessages();
@@ -175,9 +176,6 @@ var APGFullSystem = (function () {
     APGFullSystem.prototype.RegisterDisconnect = function (disconnectFunc) {
         this.onDisconnect = disconnectFunc;
         return this;
-    };
-    APGFullSystem.prototype.SetMetadataUpdateFunc = function (func) {
-        this.metadata.onUpdateFunc = func;
     };
     APGFullSystem.prototype.Metadata = function (msgName) { return this.metadata.Data(msgName); };
     return APGFullSystem;
@@ -455,19 +453,37 @@ var IRCNetwork = (function () {
     return IRCNetwork;
 }());
 var MetadataFullSys = (function () {
-    function MetadataFullSys(url, onConnectionComplete, onConnectionFail) {
-        this.currentFrame = 0;
-        this.onUpdateFunc = null;
+    function MetadataFullSys(useMetadata, url, onConnectionComplete, onConnectionFail, useLocalTestNetworking, forceMetadataFrames) {
+        this.frameNumber = 0;
+        this.fileReadTime = 0;
+        this.curFile = 1;
+        this.frameStorage = {};
+        this.getHandlers = null;
+        this.useLocalTestNetworking = useLocalTestNetworking;
+        this.forceMetadataFrames = forceMetadataFrames;
         onConnectionComplete();
         this.canvas = document.createElement("canvas");
         this.canvas.width = 100;
         this.canvas.height = 100;
         this.vid = undefined;
     }
+    MetadataFullSys.prototype.SetGetHandlers = function (func) {
+        this.getHandlers = func;
+    };
     MetadataFullSys.prototype.SetVideoPlayer = function (player) {
         this.videoPlayer = player;
     };
-    MetadataFullSys.prototype.Data = function (msgName) { return null; };
+    MetadataFullSys.prototype.Data = function (msgName) {
+        var j = this.frameStorage[this.frameNumber];
+        if (j != null) {
+            for (var k = 0; k < j.length; k++) {
+                if (j[k][0] == msgName) {
+                    return JSON.parse(j[k][1]);
+                }
+            }
+        }
+        return null;
+    };
     MetadataFullSys.prototype.SetVideoStream = function () {
         var thePlayer = this.videoPlayer;
         if (thePlayer == undefined)
@@ -500,15 +516,49 @@ var MetadataFullSys = (function () {
         }
         return false;
     };
+    MetadataFullSys.prototype.readTextFile = function (file) {
+        var that = this;
+        var rawFile = new XMLHttpRequest();
+        rawFile.open("GET", file, false);
+        rawFile.onreadystatechange = function () {
+            if (rawFile.readyState === 4) {
+                if (rawFile.status === 404) {
+                }
+                if (rawFile.status === 200 || rawFile.status == 0) {
+                    var allText = rawFile.responseText;
+                    var t = allText.split('\n');
+                    for (var _i = 0, t_1 = t; _i < t_1.length; _i++) {
+                        var v = t_1[_i];
+                        var s = v.split('~');
+                        var frame = s[0];
+                        if (that.frameStorage[frame] == null)
+                            that.frameStorage[frame] = [];
+                        that.frameStorage[frame].push([s[1], s[2]]);
+                    }
+                }
+            }
+        };
+        rawFile.send(null);
+    };
     MetadataFullSys.prototype.Update = function () {
+        if (this.useLocalTestNetworking) {
+            this.fileReadTime++;
+            if (this.fileReadTime >= 30) {
+                this.readTextFile("TestTraffic/test" + this.curFile + ".txt");
+                this.fileReadTime = 0;
+            }
+        }
         if (this.vid == undefined) {
             this.SetVideoStream();
         }
-        if (this.vid != undefined) {
+        var frameNumber = 0;
+        if (this.forceMetadataFrames) {
+            frameNumber = this.frameNumber + 1;
+        }
+        else if (this.vid != undefined) {
             this.canvas.getContext('2d').drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, 100, 100);
             var bx = 16, by = 12, sx = 18, sy = 18;
             var ctx = this.canvas.getContext('2d');
-            var frameNumber = 0;
             for (var j = 0; j < 4; j++) {
                 for (var k = 0; k < 4; k++) {
                     var pix = ctx.getImageData(bx + sx * j, by + sy * k, 1, 1).data[0];
@@ -516,11 +566,17 @@ var MetadataFullSys = (function () {
                         frameNumber |= 1 << (j + k * 4);
                 }
             }
-            console.log("" + frameNumber);
-            this.frameNumber = frameNumber;
         }
-        if (this.onUpdateFunc != null) {
-            this.onUpdateFunc(this);
+        if (frameNumber != 0) {
+            if (frameNumber != this.frameNumber && this.frameStorage[frameNumber] != null && this.frameStorage[frameNumber] != undefined && this.getHandlers != null) {
+                var handlers = this.getHandlers();
+                var r = this.frameStorage[frameNumber];
+                for (var k = 0; k < r.length; k++) {
+                    handlers.Run(NetworkMessageHandler.JoinNetworkMessage(r[k][0], r[k][1]));
+                }
+            }
+            this.frameNumber = frameNumber;
+            this.curFile = Math.floor(this.frameNumber / 60) + 3;
         }
     };
     return MetadataFullSys;
@@ -532,10 +588,10 @@ var NetworkMessageHandler = (function () {
         this.inputs = {};
         this.peerInputs = {};
     }
-    NetworkMessageHandler.prototype.JoinNetworkMessage = function (message, parms) {
+    NetworkMessageHandler.JoinNetworkMessage = function (message, parms) {
         return message + '###' + parms;
     };
-    NetworkMessageHandler.prototype.SplitNetworkMessage = function (joinedMessage) {
+    NetworkMessageHandler.SplitNetworkMessage = function (joinedMessage) {
         return joinedMessage.split("###");
     };
     NetworkMessageHandler.prototype.Add = function (msgName, handlerForServerMessage) {
@@ -559,7 +615,7 @@ var NetworkMessageHandler = (function () {
         return this;
     };
     NetworkMessageHandler.prototype.Run = function (message) {
-        var msgTemp = this.SplitNetworkMessage(message);
+        var msgTemp = NetworkMessageHandler.SplitNetworkMessage(message);
         if (msgTemp.length != 2) {
             ConsoleOutput.debugError("Bad Network Message: " + message, "network");
             return false;
@@ -574,7 +630,7 @@ var NetworkMessageHandler = (function () {
         return true;
     };
     NetworkMessageHandler.prototype.RunPeer = function (user, message) {
-        var msgTemp = this.SplitNetworkMessage(message);
+        var msgTemp = NetworkMessageHandler.SplitNetworkMessage(message);
         if (msgTemp.length != 2) {
             ConsoleOutput.debugError("Bad Network Message: " + message, "network");
             return false;
@@ -759,7 +815,7 @@ function launchAPGClient(devParms, appParms) {
     var metadataLoadFail = function (errorMessage) {
         AppFail('Metadata System Initialization Error: ' + errorMessage);
     };
-    var metadataSys = new MetadataFullSys(location.hash, metadataLoadSuccess, metadataLoadFail);
+    var metadataSys = new MetadataFullSys(appParms.useMetadata, location.hash, metadataLoadSuccess, metadataLoadFail, devParms.useLocalTestNetworking, devParms.forceMetadataFrames);
     var phaserDivName = (isMobile ? "APGInputWidgetMobile" : "APGInputWidget");
     document.getElementById(phaserDivName).style.display = 'none';
     var ClearOnLoadEnd = AddPreloader(phaserDivName, appParms.gameName);

@@ -4,12 +4,12 @@ using System.Collections.Generic;
 
 
 [RequireComponent(typeof(TwitchNetworking))]
-public class TwitchIRC:MonoBehaviour {
+public class TwitchIRC:MonoBehaviour, NetworkChannel{
 	string server = "irc.twitch.tv";
 	int port = 6667;
 
 	public class MsgEvent:UnityEngine.Events.UnityEvent<string> { }
-	public MsgEvent messageRecievedEvent = new MsgEvent();
+	MsgEvent messageRecievedEvent = new MsgEvent();
 
 	string buffer = string.Empty;
 	bool stopThreads = false;
@@ -19,10 +19,16 @@ public class TwitchIRC:MonoBehaviour {
 
 	protected TwitchNetworking logic;
 
-	public Func<string> oauthFunc = null;
-	public Func<string> channelNameFunc = null;
+	Func<string> oauthFunc = null;
+	Func<string> channelNameFunc = null;
 
-	void StartIRC() {
+    public void SetOAuthFunc(Func<string> func) { oauthFunc = func; }
+    public void SetChannelNameFunc(Func<string> func) { channelNameFunc = func; }
+    public void SetMessageRecievedListener(UnityEngine.Events.UnityAction<string> call) { messageRecievedEvent.AddListener(call); }
+
+    void StartIRC() {
+
+        if (oauthFunc == null) return;
 
 		System.Net.Sockets.TcpClient sock = new System.Net.Sockets.TcpClient();
 		sock.Connect(server, port);

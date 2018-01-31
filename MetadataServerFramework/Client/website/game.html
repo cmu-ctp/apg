@@ -27,14 +27,12 @@
             /* IMPORTANT!*/
             gameLaunchFunction: InitializeGame,              /* The function to launch this game once assets have been cached, Twitch has been logged into, and Phaser has been initialized.  Please see AGPSys.ts for more information about this function.*/
 
-            gameName: "DefaultApp",                          /* The string will be used in the default preloader */
+            useMetadata: true,
 
-            allowClientReposition: true,                      /* In the web interface, allow the user to  reposition the Phaser canvas by clicking and dragging the top of the interface */
+            gameName: "DefaultApp",                          /* The string will be used in the default preloader */
 
             gameWidth: 1024,                                     /* Width of the Phaser Game Canvas */
             gameHeight: 768,                                    /* Height of the Phaser Game Canvas */
-            landscapeOnly: true,                                /* On mobile devices, display a warning if the game leaves landscape orientation */
-            portraitOnly: false,                                   /* On mobile devices, display a warning if the game leaves portrait orientation */
 
             videoWidth: 1024,                                   /* In the web interface, the width of the Twitch video */
             videoHeight: 768,                                   /* In the web interface, the height of the Twitch video */
@@ -52,9 +50,12 @@
             */
             disableNetworking: true,
 
+            useLocalTestNetworking: true,
+            forceMetadataFrames: true,
+
             /*
             */
-            networkingTestSequence: true,
+            networkingTestSequence: false,
 
             /* By default, the process for launching the client app will work like this:
             * The streamer's game provides a URL (or, more likely, a shortened bit.ly URL) for clients to launch the client app.  This link will be either output as a clickable link in the streamer's
@@ -87,9 +88,9 @@
     </script>
 </head>
 <body onload="launchAPGClient(devParms, appParms);">
-    <h1><div id="loadLabel">Please wait while the audience app loads</div></h1>
-    <h1><div id="orientationWarning"></div></h1>
-    <h1><div id="appErrorMessage"></div></h1>
+    <div id="loadLabel">Please wait while the audience app loads</div>
+    <div id="orientationWarning"></div>
+    <div id="appErrorMessage"></div>
     <div class="mobile">
         <center>
             <div id="APGInputWidgetMobile"></div>
@@ -110,25 +111,5 @@
             </div>
         </center>
     </div>
-
-    <script>
-
-        /*function readTextFile(file) {
-            var rawFile = new XMLHttpRequest();
-            rawFile.open("GET", file, false);
-            rawFile.onreadystatechange = function () {
-                if (rawFile.readyState === 4) {
-                    if (rawFile.status === 200 || rawFile.status == 0) {
-                        var allText = rawFile.responseText;
-                        alert(allText);
-                    }
-                }
-            }
-            rawFile.send(null);
-        }
-        readTextFile("TestTraffic/test1.txt");*/
-
-    </script>
-
 </body>
 </html>

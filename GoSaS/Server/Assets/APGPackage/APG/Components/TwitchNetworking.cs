@@ -247,7 +247,7 @@ public class TwitchNetworking:MonoBehaviour {
     public void WriteMetadata<T>(string msg, T parms){
         var parmsString = JsonUtility.ToJson(parms);
 
-        cachedMetaData.Append("" + time + ", " + msg + ", " + parmsString + '\n');
+        cachedMetaData.Append("" + time + "~" + msg + "~" + parmsString + "\r\n");
 
         if ((time % 60) == 0){
             if (UseSingleMachineTestNetworking){

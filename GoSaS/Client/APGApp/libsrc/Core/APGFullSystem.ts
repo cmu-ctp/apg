@@ -20,6 +20,7 @@
 		this.g = g;
 		this.JSONAssets = JSONAssets;
 		this.metadata = metadataSys;
+		metadataSys.SetGetHandlers(() => this.handlers);
         if (playerName == "") playerName = "ludolab";
         this.useKeepAlive = false;
         this.playerName = playerName;
@@ -68,26 +69,26 @@
     WriteToServer<T>( message: string, parmsForMessageToServer: T): void {
         if (!this.CheckMessageParameters("WriteToServer", message, parmsForMessageToServer)) return;
 
-        this.network.sendMessageToServer(this.handlers.JoinNetworkMessage( message, JSON.stringify(parmsForMessageToServer)));
+        this.network.sendMessageToServer(NetworkMessageHandler.JoinNetworkMessage( message, JSON.stringify(parmsForMessageToServer)));
 	}
 
     WriteStringToServer(message: string, parmsForMessageToServer: string): void {
         if (!this.CheckMessageParameters("WriteStringToServer", message, parmsForMessageToServer)) return;
 
-        this.network.sendMessageToServer(this.handlers.JoinNetworkMessage( message, parmsForMessageToServer));
+		this.network.sendMessageToServer(NetworkMessageHandler.JoinNetworkMessage( message, parmsForMessageToServer));
     }
 
 
     WriteLocalAsServer<T>(delay: number, message: string, parmsForMessageToServer: T): void {
         if (!this.CheckMessageParameters("WriteLocalAsServer", message, parmsForMessageToServer)) return;
 
-        this.network.sendServerMessageLocally(delay, this.handlers.JoinNetworkMessage( message, JSON.stringify(parmsForMessageToServer) ));
+		this.network.sendServerMessageLocally(delay, NetworkMessageHandler.JoinNetworkMessage( message, JSON.stringify(parmsForMessageToServer) ));
 	}
 
     WriteLocalStringAsServer(delay: number, message: string, parmsForMessageToServer: string): void {
         if (!this.CheckMessageParameters("WriteLocalStringAsServer", message, parmsForMessageToServer)) return;
 
-        this.network.sendServerMessageLocally(delay, this.handlers.JoinNetworkMessage( message, parmsForMessageToServer ));
+		this.network.sendServerMessageLocally(delay, NetworkMessageHandler.JoinNetworkMessage( message, parmsForMessageToServer ));
     }
 
 
@@ -99,7 +100,7 @@
         }
         if (!this.CheckMessageParameters("WriteLocal", message, parmsForMessageToServer)) return;
         
-        this.network.sendMessageLocally(delay, user, this.handlers.JoinNetworkMessage( message, JSON.stringify(parmsForMessageToServer)) );
+		this.network.sendMessageLocally(delay, user, NetworkMessageHandler.JoinNetworkMessage( message, JSON.stringify(parmsForMessageToServer)) );
     }
 
     ClearLocalMessages(): void {
@@ -133,10 +134,6 @@
         this.onDisconnect = disconnectFunc;
         return this;
     }
-
-	SetMetadataUpdateFunc(func: (metaDataSys: MetadataFullSys) => void): void {
-		this.metadata.onUpdateFunc = func;
-	}
 
 	public Metadata<T>(msgName: string): T { return this.metadata.Data<T>(msgName); }
 
