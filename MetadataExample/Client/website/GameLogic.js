@@ -1,3 +1,10 @@
+var APGHelper = (function () {
+    function APGHelper() {
+    }
+    APGHelper.ScreenX = function (val) { return val / 10000 * 1024; };
+    APGHelper.ScreenY = function (val) { return (1 - val / 10000) * (768 - 96 - 96); };
+    return APGHelper;
+}());
 function CacheGameAssets(c) {
     c.images('assets', ['hudselect.png', 'blueorb.png', 'background.png']);
     c.sounds('assets', ['click.mp3']);
@@ -5,7 +12,7 @@ function CacheGameAssets(c) {
 function InitializeGame(apg) {
     var metadataInfo = null;
     apg.ResetServerMessageRegistry();
-    apg.Register("firework", function (p) {
+    apg.Register("fireflies", function (p) {
         metadataInfo = p;
     });
     var lastClickDelay = 0;
@@ -23,8 +30,8 @@ function InitializeGame(apg) {
             var selected = false;
             var curSelected = -1;
             for (var k = 0; k < metadataInfo.items.length; k++) {
-                var x = metadataInfo.items[k].x * 1024 / 10000;
-                var y = (1 - metadataInfo.items[k].y / 10000) * (768 - 96 - 96);
+                var x = APGHelper.ScreenX(metadataInfo.items[k].x);
+                var y = APGHelper.ScreenY(metadataInfo.items[k].y);
                 if (Math.abs(apg.g.input.activePointer.x - x) < 48 && Math.abs(apg.g.input.activePointer.y - y) < 48) {
                     curSelected = k;
                     highlighter.x = x;
@@ -60,8 +67,8 @@ function InitializeGame(apg) {
         }
         else if (metadataInfo != null && metadataInfo != undefined) {
             selector.visible = true;
-            selector.x = metadataInfo.items[ID].x * 1024 / 10000;
-            selector.y = (1 - metadataInfo.items[ID].y / 10000) * (768 - 96 - 96);
+            selector.x = APGHelper.ScreenX(metadataInfo.items[ID].x);
+            selector.y = APGHelper.ScreenY(metadataInfo.items[ID].y);
         }
         else {
             selector.visible = false;

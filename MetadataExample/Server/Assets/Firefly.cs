@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Firework : MonoBehaviour {
+public class Firefly : MonoBehaviour {
     public int ID;
     public GameLogic source;
 
@@ -26,6 +26,8 @@ public class Firework : MonoBehaviour {
             0);
         var dist = (new Vector3(400, 225, 0) - transform.localPosition).magnitude;
         var mul = 1 - dist / 500f;
+        var flicker = (t % 2 == 1) ? 1 : .2f;
+        mul *= flicker;
         transform.localScale = new Vector3(48*mul, 48 * mul, 1);
     }
 }

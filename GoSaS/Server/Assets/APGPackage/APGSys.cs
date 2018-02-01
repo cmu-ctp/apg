@@ -119,4 +119,15 @@ namespace APG {
 		void EndRecordingNetworkingAndSave( string messagesToClientsFileName, string messagesFromClientsFileName );
 		void PlaybackNetworking( string messagesFromClientsFileName );*/
 	}
+
+    public static class Helper{
+        public static Vector2 ScreenPosition( Camera camera, Vector3 position){
+            var screenPos = camera.WorldToScreenPoint(position);
+            return new Vector2((int)(10000 * screenPos.x / camera.pixelWidth), (int)(10000 * screenPos.y / camera.pixelHeight));
+        }
+
+        public static Vector2 ScreenPosition( Camera camera, MonoBehaviour gameObject){
+            return ScreenPosition(camera, gameObject.transform.position);
+        }
+    }
 }

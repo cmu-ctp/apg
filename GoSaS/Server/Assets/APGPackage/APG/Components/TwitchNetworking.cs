@@ -80,10 +80,6 @@ public class TwitchNetworking:MonoBehaviour {
 	//___________________________________________
 
 	[Serializable]
-	struct EmptyMsg{
-	}
-
-	[Serializable]
 	class NetworkSettings {
 		public string ChatChannelName;
 		public string ChatOauth;
@@ -95,10 +91,6 @@ public class TwitchNetworking:MonoBehaviour {
 	}
 	
 	//___________________________________________
-
-	
-
-	EmptyMsg emptyMsg = new EmptyMsg();
 
     NetworkChannel IRCChat;
     NetworkChannel IRCLogic;

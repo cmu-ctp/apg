@@ -13,22 +13,22 @@ function CacheGameAssets(c: Cacher): void {
 // These two interfaces are the parameters for network messages.  They'll be serialized into JSON and then trasmitted across the metadata server.
 // These need to stay in sync (by both type and name) with the C# code.
 
-interface ServerFirework{
+interface ServerFirefly{
     x: number;
 	y: number;
 	scale: number;
 }
 
-interface ServerFireworks{
-	items: ServerFirework[];
+interface ServerFireflies{
+	items: ServerFirefly[];
 }
 
 function InitializeGame(apg: APGSys): void {
-	var metadataInfo: ServerFireworks = null;
+	var metadataInfo: ServerFireflies = null;
 
 	// Register server messages
 	apg.ResetServerMessageRegistry();
-	apg.Register<ServerFireworks>("firework", p => {
+	apg.Register<ServerFireflies>("fireflies", p => {
 		metadataInfo = p;
 	});
 
@@ -50,8 +50,8 @@ function InitializeGame(apg: APGSys): void {
 			var selected = false;
 			var curSelected = -1;
 			for (var k = 0; k < metadataInfo.items.length; k++) {
-				var x = metadataInfo.items[k].x * 1024 / 10000;
-				var y = (1 - metadataInfo.items[k].y / 10000) * (768 - 96 - 96);
+				var x = APGHelper.ScreenX( metadataInfo.items[k].x );
+				var y = APGHelper.ScreenY( metadataInfo.items[k].y );
 				if (Math.abs(apg.g.input.activePointer.x - x) < 48 && Math.abs(apg.g.input.activePointer.y - y) < 48) {
 					curSelected = k;
 					highlighter.x = x;
@@ -89,8 +89,8 @@ function InitializeGame(apg: APGSys): void {
 		}
 		else if (metadataInfo != null && metadataInfo != undefined ) {
 			selector.visible = true;
-			selector.x = metadataInfo.items[ID].x * 1024 / 10000;
-			selector.y = (1 - metadataInfo.items[ID].y / 10000) * (768 - 96 - 96);
+			selector.x = APGHelper.ScreenX( metadataInfo.items[ID].x );
+			selector.y = APGHelper.ScreenY( metadataInfo.items[ID].y );
 		}
 		else {
 			selector.visible = false;

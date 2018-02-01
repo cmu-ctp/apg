@@ -1,3 +1,10 @@
+var APGHelper = (function () {
+    function APGHelper() {
+    }
+    APGHelper.ScreenX = function (val) { return val / 10000 * 1024; };
+    APGHelper.ScreenY = function (val) { return (1 - val / 10000) * (768 - 96 - 96); };
+    return APGHelper;
+}());
 function ApgSetup(appParms, networkingTestSequence, disableNetworking, logicIRCChannelName, APGInputWidgetDivName, allowFullScreen, engineParms, onLoadEnd, handleOrientation, metadataSys) {
     if (appParms.gameWidth < 1 || appParms.gameWidth > 8192 || appParms.gameHeight < 1 || appParms.gameHeight > 8192) {
         ConsoleOutput.debugError("ApgSetup: gameWidth and gameHeight are set to " + appParms.gameWidth + ", " + appParms.gameHeight + ".  These values should be set to the width and height of the desired HTML5 app.  400 and 300 are the defaults.", "sys");
