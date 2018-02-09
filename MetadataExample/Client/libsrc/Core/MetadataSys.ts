@@ -3,7 +3,7 @@
 // Add an onUpdate callback.
 // And then there needs to be a way to get specific data.
 
-class MetadataFullSys {
+class MetadataSys {
 	videoPlayer: any;
 	canvas: any;
 	vid: any;
@@ -52,37 +52,17 @@ class MetadataFullSys {
 		return null;
 	}
 
-	InitError(message: string): void {
-		//console.log("Metadata Error: Couldn't find " + message);
-		alert("Metadata Error: Couldn't find " + message);
-	}
-
 	SetVideoStream(): boolean {
 		var thePlayer = this.videoPlayer;
-		if (thePlayer == undefined) {
-			this.InitError("video player div");
-			return false;
-		}
+		if (thePlayer == undefined) return false;
 		var bridge = thePlayer._bridge;
-		if (bridge == undefined) {
-			this.InitError("video player div bridge component");
-			return false;
-		}
+		if (bridge == undefined) return false;
 		var iframe = bridge._iframe;
-		if (iframe == undefined) {
-			this.InitError("video iframe");
-			return false;
-		}
+		if (iframe == undefined) return false;
 		var doc = iframe.contentWindow.document;
-		if (doc == undefined) {
-			this.InitError("video iframe document");
-			return false;
-		}
+		if (doc == undefined) return false;
 		var elements = doc.getElementsByClassName("player-video");
-		if (elements == undefined) {
-			this.InitError("player-video");
-			return false;
-		}
+		if (elements == undefined) return false;
 		for (var j = 0; j < elements.length; j++) {
 			var player = elements[j];
 			if (player != undefined && player.children != null && player.children.length > 0) {
@@ -116,6 +96,7 @@ class MetadataFullSys {
 						if (that.frameStorage[frame] == null) that.frameStorage[frame] = [];
 						that.frameStorage[frame].push([s[1],s[2]]);
 					}
+					//that.curFile++;
 				}
 			}
 		}
@@ -139,7 +120,6 @@ class MetadataFullSys {
 
 		if (this.forceMetadataFrames) {
 			frameNumber = this.frameNumber + 1;
-			console.log("Debug Forcing Frame " + frameNumber);
 		}
 		else if (this.vid != undefined) {
 			this.canvas.getContext('2d').drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, 100, 100);
@@ -154,7 +134,6 @@ class MetadataFullSys {
 				}
 			}
 			//console.log("" + frameNumber);
-			console.log("Via binary encoding, extracted frame number " + frameNumber);
 		}
 
 		if (frameNumber != 0) {
@@ -166,7 +145,14 @@ class MetadataFullSys {
 				}
 			}
 			this.frameNumber = frameNumber;
+			/*if (this.curFile < Math.floor(this.frameNumber / 60) + 1) {
+				this.curFile = Math.floor(this.frameNumber / 60) + 1;
+			}*/
 			this.curFile = Math.floor(this.frameNumber / 60) + 3;
 		}
+
+		// ok. So now I have this rolling buffer of metadata attached to frames.  So now I need some way to use it.
+		// One method would be to let the client side poll for data at will.
+		// Another method would be to let the client register message handlers, and then fire off those message handlers when the frame advances.
 	}
 }

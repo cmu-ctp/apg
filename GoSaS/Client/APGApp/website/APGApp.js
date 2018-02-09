@@ -491,22 +491,35 @@ var MetadataFullSys = (function () {
         }
         return null;
     };
+    MetadataFullSys.prototype.InitError = function (message) {
+        alert("Metadata Error: Couldn't find " + message);
+    };
     MetadataFullSys.prototype.SetVideoStream = function () {
         var thePlayer = this.videoPlayer;
-        if (thePlayer == undefined)
+        if (thePlayer == undefined) {
+            this.InitError("video player div");
             return false;
+        }
         var bridge = thePlayer._bridge;
-        if (bridge == undefined)
+        if (bridge == undefined) {
+            this.InitError("video player div bridge component");
             return false;
+        }
         var iframe = bridge._iframe;
-        if (iframe == undefined)
+        if (iframe == undefined) {
+            this.InitError("video iframe");
             return false;
+        }
         var doc = iframe.contentWindow.document;
-        if (doc == undefined)
+        if (doc == undefined) {
+            this.InitError("video iframe document");
             return false;
+        }
         var elements = doc.getElementsByClassName("player-video");
-        if (elements == undefined)
+        if (elements == undefined) {
+            this.InitError("player-video");
             return false;
+        }
         for (var j = 0; j < elements.length; j++) {
             var player = elements[j];
             if (player != undefined && player.children != null && player.children.length > 0) {
@@ -561,6 +574,7 @@ var MetadataFullSys = (function () {
         var frameNumber = 0;
         if (this.forceMetadataFrames) {
             frameNumber = this.frameNumber + 1;
+            console.log("Debug Forcing Frame " + frameNumber);
         }
         else if (this.vid != undefined) {
             this.canvas.getContext('2d').drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, 100, 100);
@@ -573,6 +587,7 @@ var MetadataFullSys = (function () {
                         frameNumber |= 1 << (j + k * 4);
                 }
             }
+            console.log("Via binary encoding, extracted frame number " + frameNumber);
         }
         if (frameNumber != 0) {
             if (frameNumber != this.frameNumber && this.frameStorage[frameNumber] != null && this.frameStorage[frameNumber] != undefined && this.getHandlers != null) {
