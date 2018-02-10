@@ -23,7 +23,7 @@ body {
     background:0;
     color:white;
     width : 1024px;
-    height : 768px;
+    height : 576px;
     position: absolute;
     transform: translate(0px, 96px);
 }

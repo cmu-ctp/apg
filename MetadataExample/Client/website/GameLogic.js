@@ -10,6 +10,7 @@ function CacheGameAssets(c) {
     c.sounds('assets', ['click.mp3']);
 }
 function InitializeGame(apg) {
+    var w = apg.w;
     var metadataInfo = null;
     apg.ResetServerMessageRegistry();
     apg.Register("fireflies", function (p) {
@@ -19,7 +20,7 @@ function InitializeGame(apg) {
     var ID = 0;
     var clickSound = apg.g.add.audio('assets/click.mp3', .4, false);
     var background = new Phaser.Sprite(apg.g, -640, -320, 'assets/background.png');
-    apg.g.world.addChild(background);
+    w.addChild(background);
     var highlighter = new Phaser.Sprite(apg.g, 0, 0, 'assets/blueorb.png');
     highlighter.blendMode = PIXI.blendModes.ADD;
     highlighter.anchor = new Phaser.Point(.5, .5);
@@ -56,7 +57,7 @@ function InitializeGame(apg) {
             }
         }
     };
-    apg.g.world.addChild(highlighter);
+    w.addChild(highlighter);
     var selector = new Phaser.Sprite(apg.g, 0, 0, 'assets/hudselect.png');
     selector.blendMode = PIXI.blendModes.ADD;
     selector.anchor = new Phaser.Point(.5, .5);
@@ -74,8 +75,8 @@ function InitializeGame(apg) {
             selector.visible = false;
         }
     };
-    apg.g.world.addChild(selector);
-    var label = new Phaser.Text(apg.g, 20, 20, "", { font: '16px Caveat Brush', fill: '#112' });
+    w.addChild(selector);
+    var label = new Phaser.Text(apg.g, 20, 10, "", { font: '16px Caveat Brush', fill: '#112' });
     label.update = function () {
         if (ID == -1) {
             label.visible = false;
@@ -88,6 +89,6 @@ function InitializeGame(apg) {
             label.visible = false;
         }
     };
-    apg.g.world.addChild(label);
+    w.addChild(label);
 }
 //# sourceMappingURL=GameLogic.js.map

@@ -86,6 +86,11 @@ interface APGSys {
 	g: Phaser.Game;
 
      /**
+	* A phaser group representing your game world.  
+     */
+	w: Phaser.Group;
+
+     /**
      * If this is set to true, a client game should simulate server network traffic
      */
     networkTestSequence: boolean;

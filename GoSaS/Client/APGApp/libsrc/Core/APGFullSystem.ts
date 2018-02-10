@@ -6,6 +6,8 @@
 
 	g: Phaser.Game;
 
+	w: Phaser.Group;
+
     playerName: string;
 
     allowFullScreen: boolean;
@@ -18,9 +20,12 @@
 
 	constructor(g: Phaser.Game, logicIRCChannelName: string, playerName: string, chat: tmiClient, JSONAssets: any, networkTestSequence:boolean, allowFullScreen:boolean, metadataSys:MetadataFullSys ) {
 		this.g = g;
+		this.w = new Phaser.Group(g);
+		g.world.add(this.w);
 		this.JSONAssets = JSONAssets;
 		this.metadata = metadataSys;
 		metadataSys.SetGetHandlers(() => this.handlers);
+		metadataSys.InitSettingsMenu( this );
         if (playerName == "") playerName = "ludolab";
         this.useKeepAlive = false;
         this.playerName = playerName;

@@ -24,6 +24,8 @@ interface ServerFireflies{
 }
 
 function InitializeGame(apg: APGSys): void {
+	var w = apg.w;
+
 	var metadataInfo: ServerFireflies = null;
 
 	// Register server messages
@@ -38,7 +40,7 @@ function InitializeGame(apg: APGSys): void {
 	var clickSound: Phaser.Sound = apg.g.add.audio('assets/click.mp3', .4, false);
 
 	var background = new Phaser.Sprite(apg.g, -640, -320, 'assets/background.png');
-	apg.g.world.addChild(background);
+	w.addChild(background);
 
 	var highlighter = new Phaser.Sprite(apg.g, 0, 0, 'assets/blueorb.png');
 	highlighter.blendMode = PIXI.blendModes.ADD;
@@ -76,7 +78,7 @@ function InitializeGame(apg: APGSys): void {
 			}
 		}
 	}
-	apg.g.world.addChild(highlighter);
+	w.addChild(highlighter);
 
 	// Make the selector.
 	var selector = new Phaser.Sprite(apg.g, 0, 0, 'assets/hudselect.png');
@@ -96,9 +98,9 @@ function InitializeGame(apg: APGSys): void {
 			selector.visible = false;
 		}
 	}
-	apg.g.world.addChild(selector);
+	w.addChild(selector);
 
-	var label = new Phaser.Text(apg.g, 20, 20, "", { font: '16px Caveat Brush', fill: '#112' });
+	var label = new Phaser.Text(apg.g, 20, 10, "", { font: '16px Caveat Brush', fill: '#112' });
 	label.update = () => {
 		if (ID == -1) {
 			label.visible = false;
@@ -111,5 +113,5 @@ function InitializeGame(apg: APGSys): void {
 			label.visible = false;
 		}
 	}
-	apg.g.world.addChild(label);
+	w.addChild(label);
 }

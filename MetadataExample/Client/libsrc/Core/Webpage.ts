@@ -253,7 +253,7 @@ function launchAPGClient(devParms: DevParms, appParms: AppParms) {
 	var metadataLoadFail = errorMessage => {
 		AppFail('Metadata System Initialization Error: ' + errorMessage);
 	};
-	var metadataSys = new MetadataFullSys(appParms.useMetadata, location.hash, metadataLoadSuccess, metadataLoadFail, devParms.useLocalTestNetworking, devParms.forceMetadataFrames );
+	var metadataSys = new MetadataFullSys(appParms.useMetadata, appParms.videoWidth, appParms.videoHeight, location.hash, metadataLoadSuccess, metadataLoadFail, devParms.useLocalTestNetworking, devParms.forceMetadataFrames );
 
 	var phaserDivName = (isMobile ? "APGInputWidgetMobile" : "APGInputWidget");
 	document.getElementById(phaserDivName).style.display = 'none';

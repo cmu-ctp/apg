@@ -310,13 +310,13 @@ public class TwitchNetworking:MonoBehaviour {
 
 		apg = new AudiencePlayersSys(this, recorder);
 
-		LoadNetworkSettings();
-
         if (UseSingleMachineTestNetworking){
             IRCChat = new NullNetwork();
             IRCLogic = new NullNetwork();
         }
         else{
+            LoadNetworkSettings();
+
             IRCChat = this.GetComponent<TwitchIRCChat>();
             IRCLogic = this.GetComponent<TwitchIRCLogic>();
         }
