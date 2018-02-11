@@ -19,7 +19,8 @@
 
 	var cache = new AssetCacher();
 
-	appParms.cacheFunction( cache );
+	appParms.cacheFunction(cache);
+	CacheMetadataAssets(cache);
 
 	cache.LoadJSONAsset(LoadPhaserAssets); 
 

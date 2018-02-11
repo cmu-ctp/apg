@@ -44,7 +44,7 @@
         // under what conditions shouldn't the disconnect function be called?
         if (this.disconnected == false && this.network.disconnected == true && this.onDisconnect != null) this.onDisconnect();
 		this.disconnected = this.network.disconnected;
-		this.metadata.Update();
+		this.metadata.Update( this.g.input.activePointer );
 	}
 
     CheckMessageParameters<T>(funcName: string, message: string, parmsForMessageToServer: T): boolean {

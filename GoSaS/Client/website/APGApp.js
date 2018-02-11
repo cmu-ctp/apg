@@ -22,6 +22,7 @@ function ApgSetup(appParms, networkingTestSequence, disableNetworking, logicIRCC
     }
     var cache = new AssetCacher();
     appParms.cacheFunction(cache);
+    CacheMetadataAssets(cache);
     cache.LoadJSONAsset(LoadPhaserAssets);
     function LoadPhaserAssets() {
         var _this = this;
@@ -108,7 +109,7 @@ var APGFullSystem = (function () {
         if (this.disconnected == false && this.network.disconnected == true && this.onDisconnect != null)
             this.onDisconnect();
         this.disconnected = this.network.disconnected;
-        this.metadata.Update();
+        this.metadata.Update(this.g.input.activePointer);
     };
     APGFullSystem.prototype.CheckMessageParameters = function (funcName, message, parmsForMessageToServer) {
         if (message == "") {
@@ -462,8 +463,12 @@ var IRCNetwork = (function () {
     };
     return IRCNetwork;
 }());
+function CacheMetadataAssets(c) {
+    c.images('assets/metadata', ['blueorb.png', 'metadatasettings.png']);
+}
 var MetadataFullSys = (function () {
     function MetadataFullSys(useMetadata, width, height, url, onConnectionComplete, onConnectionFail, useLocalTestNetworking, forceMetadataFrames) {
+        this.mouseLatch = false;
         this.frameNumber = 0;
         this.fileReadTime = 0;
         this.curFile = 1;
@@ -472,8 +477,8 @@ var MetadataFullSys = (function () {
         this.binaryPixelTop = 12;
         this.binaryPixelWidth = 18;
         this.binaryPixelHeight = 18;
-        this.pixelExamineWidth = 200;
-        this.pixelExamineHeight = 200;
+        this.pixelExamineWidth = 700;
+        this.pixelExamineHeight = 500;
         this.getHandlers = null;
         this.settingsActive = false;
         this.videoStatusMessage = "Unset";
@@ -490,12 +495,19 @@ var MetadataFullSys = (function () {
     }
     MetadataFullSys.prototype.InitSettingsMenu = function (apg) {
         var _this = this;
-        var key = apg.g.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+        var key = apg.g.input.keyboard.addKey(Phaser.Keyboard.ESC);
         var label, label2, frameLabel, parsingStatusLabel, videoStatus, offsetLabel, gridSquares = [], clears = [];
         var graphics1, graphics2;
         var panel = new Phaser.Group(apg.g);
         apg.g.world.add(panel);
-        key.onDown.add(function () {
+        var toggleButton = new Phaser.Sprite(apg.g, this.videoDestWidth - MetadataFullSys.settingButtonWidth, 0, 'assets/metadata/metadatasettings.png');
+        panel.add(toggleButton);
+        this.examinedVideo = apg.g.make.bitmapData(this.pixelExamineWidth, this.pixelExamineHeight);
+        this.examinedVideo.copy('assets/metadata/blueorb.png');
+        var videoPreviewClip = apg.g.make.sprite(0, 0, this.examinedVideo);
+        panel.add(videoPreviewClip);
+        videoPreviewClip.visible = false;
+        this.settingToggleFunction = function () {
             if (_this.settingsActive == false) {
                 apg.w.x = -1000;
                 _this.settingsActive = true;
@@ -503,30 +515,31 @@ var MetadataFullSys = (function () {
                 var y1 = _this.binaryPixelTop - _this.binaryPixelHeight / 2;
                 var x2 = _this.binaryPixelLeft + _this.binaryPixelWidth * 3.5;
                 var y2 = _this.binaryPixelTop + _this.binaryPixelHeight * 3.5;
-                label = new Phaser.Text(apg.g, 200, 20, "METADATA SETTINGS", { font: '24px Caveat Brush', fill: '#aac' });
+                videoPreviewClip.visible = true;
+                label = new Phaser.Text(apg.g, 200, 20, "METADATA SYSTEM INFORMATION", { font: '24px Caveat Brush', fill: '#aac' });
                 panel.add(label);
-                label2 = new Phaser.Text(apg.g, 200, 50, "Click opposite corners of the binary encoding in the video.", { font: '16px Caveat Brush', fill: '#aac' });
-                panel.add(label2);
-                graphics1 = new Phaser.Sprite(apg.g, x1, y1, 'assets/blueorb.png');
+                graphics1 = new Phaser.Sprite(apg.g, x1, y1, 'assets/metadata/blueorb.png');
                 graphics1.scale.x = graphics1.scale.y = .1;
                 panel.add(graphics1);
-                graphics2 = new Phaser.Sprite(apg.g, x2, y2, 'assets/blueorb.png');
+                graphics2 = new Phaser.Sprite(apg.g, x2, y2, 'assets/metadata/blueorb.png');
                 graphics2.scale.x = graphics2.scale.y = .1;
                 panel.add(graphics2);
                 parsingStatusLabel = new Phaser.Text(apg.g, 200, 80, "Frame number status: " + (_this.forceMetadataFrames == true ? "DEBUG, advanced by clock" : "Reading from video image"), { font: '16px Caveat Brush', fill: '#aac' });
                 panel.add(parsingStatusLabel);
                 videoStatus = new Phaser.Text(apg.g, 200, 110, "Video Status: " + _this.videoStatusMessage, { font: '16px Caveat Brush', fill: '#aac' });
                 panel.add(videoStatus);
-                offsetLabel = new Phaser.Text(apg.g, 200, 140, "Center: (" + _this.binaryPixelLeft + ", " + _this.binaryPixelTop + ")  Add:(" + _this.binaryPixelWidth + ", " + _this.binaryPixelHeight + ")", { font: '16px Caveat Brush', fill: '#aac' });
+                offsetLabel = new Phaser.Text(apg.g, 200, 140, "Center of Upper Left Binary Digit: (" + _this.binaryPixelLeft + ", " + _this.binaryPixelTop + ")  Digit Width:(" + _this.binaryPixelWidth + ", " + _this.binaryPixelHeight + ")", { font: '16px Caveat Brush', fill: '#aac' });
                 panel.add(offsetLabel);
                 frameLabel = new Phaser.Text(apg.g, 200, 170, "", { font: '16px Caveat Brush', fill: '#aac' });
                 panel.add(frameLabel);
+                label2 = new Phaser.Text(apg.g, 50, 450, "To calibrate, click opposite corners of the binary encoding in the video.", { font: '32px Caveat Brush', fill: '#f44' });
+                panel.add(label2);
                 gridSquares = [];
                 clears = [];
                 for (var j = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
                     gridSquares.push([]);
                     for (var k = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
-                        var pic = new Phaser.Sprite(apg.g, _this.binaryPixelLeft + _this.binaryPixelWidth * j, _this.binaryPixelTop + _this.binaryPixelHeight * k, 'assets/blueorb.png');
+                        var pic = new Phaser.Sprite(apg.g, _this.binaryPixelLeft + _this.binaryPixelWidth * j, _this.binaryPixelTop + _this.binaryPixelHeight * k, 'assets/metadata/blueorb.png');
                         pic.tint = 0xff0000;
                         pic.scale.x = pic.scale.y = .05;
                         panel.add(pic);
@@ -538,7 +551,7 @@ var MetadataFullSys = (function () {
                 var curSelection = 0;
                 var pointerIsDown = false;
                 _this.settingsUpdate = function () {
-                    if (apg.g.input.activePointer.isDown) {
+                    if (apg.g.input.activePointer.isDown && (apg.g.input.activePointer.x < _this.videoDestWidth - MetadataFullSys.settingButtonWidth || apg.g.input.activePointer.y > MetadataFullSys.settingButtonHeight)) {
                         if (!pointerIsDown) {
                             if (curSelection == 0) {
                                 curSelection = 1;
@@ -568,7 +581,7 @@ var MetadataFullSys = (function () {
                             _this.binaryPixelWidth = xDif;
                             _this.binaryPixelTop = yTop + yDif / 2;
                             _this.binaryPixelHeight = yDif;
-                            offsetLabel.text = "Center: (" + _this.binaryPixelLeft + ", " + _this.binaryPixelTop + ")  Add:(" + _this.binaryPixelWidth + ", " + _this.binaryPixelHeight + ")";
+                            offsetLabel.text = "Center of Upper Left Binary Digit: (" + _this.binaryPixelLeft + ", " + _this.binaryPixelTop + ")  Digit Width:(" + _this.binaryPixelWidth + ", " + _this.binaryPixelHeight + ")";
                             for (var j = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
                                 for (var k = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
                                     gridSquares[j][k].x = _this.binaryPixelLeft + _this.binaryPixelWidth * j;
@@ -594,6 +607,7 @@ var MetadataFullSys = (function () {
             }
             else {
                 apg.w.x = 0;
+                videoPreviewClip.visible = false;
                 _this.settingsActive = false;
                 panel.remove(label);
                 panel.remove(label2);
@@ -609,7 +623,8 @@ var MetadataFullSys = (function () {
                 gridSquares = [];
                 _this.settingsUpdate = null;
             }
-        }, this);
+        };
+        key.onDown.add(this.settingToggleFunction, this);
     };
     MetadataFullSys.prototype.SetGetHandlers = function (func) {
         this.getHandlers = func;
@@ -628,34 +643,55 @@ var MetadataFullSys = (function () {
         }
         return null;
     };
-    MetadataFullSys.prototype.InitError = function (message) {
+    MetadataFullSys.prototype.Update = function (activePointer) {
+        if (activePointer.isDown) {
+            if (this.mouseLatch == false && activePointer.x > this.videoDestWidth - MetadataFullSys.settingButtonWidth && activePointer.y < MetadataFullSys.settingButtonHeight) {
+                this.settingToggleFunction();
+            }
+            this.mouseLatch = true;
+        }
+        else {
+            this.mouseLatch = false;
+        }
+        if (this.settingsUpdate != null) {
+            this.settingsUpdate();
+        }
+        if (this.useLocalTestNetworking) {
+            this.ReadLocalMetadataFile();
+        }
+        if (this.vid == undefined) {
+            this.GetVideoPlugin(this.videoPlayer, this.SetVideoErrorMessage);
+        }
+        var frameNumber = this.GetFrameNumber();
+        if (frameNumber != 0) {
+            this.RunFrameHandlers(frameNumber);
+        }
+    };
+    MetadataFullSys.prototype.SetVideoErrorMessage = function (message) {
         alert("Metadata Error: Couldn't find " + message);
         this.videoStatusMessage = "Failed at " + message;
     };
-    MetadataFullSys.prototype.SetVideoStream = function () {
-        var thePlayer = this.videoPlayer;
-        if (thePlayer == undefined) {
-            this.InitError("video player div");
+    MetadataFullSys.prototype.GetVideoPlugin = function (videoPlayer, onError) {
+        if (videoPlayer == undefined) {
+            onError("video player div");
             return false;
         }
-        var bridge = thePlayer._bridge;
-        if (bridge == undefined) {
-            this.InitError("video player div bridge component");
+        if (videoPlayer._bridge == undefined) {
+            onError("video player div bridge component");
             return false;
         }
-        var iframe = bridge._iframe;
+        var iframe = videoPlayer._bridge._iframe;
         if (iframe == undefined) {
-            this.InitError("video iframe");
+            onError("video iframe");
             return false;
         }
-        var doc = iframe.contentWindow.document;
-        if (doc == undefined) {
-            this.InitError("video iframe document");
+        if (iframe.contentWindow.document == undefined) {
+            onError("video iframe document");
             return false;
         }
-        var elements = doc.getElementsByClassName("player-video");
+        var elements = iframe.contentWindow.document.getElementsByClassName("player-video");
         if (elements == undefined) {
-            this.InitError("player-video");
+            onError("player-video");
             return false;
         }
         for (var j = 0; j < elements.length; j++) {
@@ -676,7 +712,7 @@ var MetadataFullSys = (function () {
         return false;
     };
     MetadataFullSys.prototype.readTextFile = function (file) {
-        var that = this;
+        var _this = this;
         var rawFile = new XMLHttpRequest();
         rawFile.open("GET", file, false);
         rawFile.onreadystatechange = function () {
@@ -690,28 +726,23 @@ var MetadataFullSys = (function () {
                         var v = t_1[_i];
                         var s = v.split('~');
                         var frame = s[0];
-                        if (that.frameStorage[frame] == null)
-                            that.frameStorage[frame] = [];
-                        that.frameStorage[frame].push([s[1], s[2]]);
+                        if (_this.frameStorage[frame] == null)
+                            _this.frameStorage[frame] = [];
+                        _this.frameStorage[frame].push([s[1], s[2]]);
                     }
                 }
             }
         };
         rawFile.send(null);
     };
-    MetadataFullSys.prototype.Update = function () {
-        if (this.settingsUpdate != null)
-            this.settingsUpdate();
-        if (this.useLocalTestNetworking) {
-            this.fileReadTime++;
-            if (this.fileReadTime >= 30) {
-                this.readTextFile("TestTraffic/test" + this.curFile + ".txt");
-                this.fileReadTime = 0;
-            }
+    MetadataFullSys.prototype.ReadLocalMetadataFile = function () {
+        this.fileReadTime++;
+        if (this.fileReadTime >= 30) {
+            this.readTextFile("TestTraffic/test" + this.curFile + ".txt");
+            this.fileReadTime = 0;
         }
-        if (this.vid == undefined) {
-            this.SetVideoStream();
-        }
+    };
+    MetadataFullSys.prototype.GetFrameNumber = function () {
         var frameNumber = 0;
         if (this.forceMetadataFrames) {
             frameNumber = this.frameNumber + 1;
@@ -719,8 +750,13 @@ var MetadataFullSys = (function () {
         else if (this.vid != undefined) {
             var videoToContainerScaleX = this.vid.videoWidth / this.videoDestWidth;
             var videoToContainerScaleY = this.vid.videoHeight / this.videoDestHeight;
-            this.canvas.getContext('2d').drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, this.pixelExamineWidth, this.pixelExamineHeight);
+            if (this.settingsActive) {
+                this.examinedVideo.copy('assets/metadata/blueorb.png', Math.random() * 10, Math.random() * 10);
+                this.examinedVideo.canvas.getContext('2d').drawImage(this.vid, 0, 0, this.examinedVideo.canvas.width, this.examinedVideo.canvas.height, 0, 0, this.pixelExamineWidth, this.pixelExamineHeight);
+                this.examinedVideo.update();
+            }
             var ctx = this.canvas.getContext('2d');
+            ctx.drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, this.pixelExamineWidth, this.pixelExamineHeight);
             for (var j = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
                 for (var k = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
                     var pix = ctx.getImageData((this.binaryPixelLeft + this.binaryPixelWidth * j), (this.binaryPixelTop + this.binaryPixelHeight * k), 1, 1).data[0];
@@ -729,18 +765,21 @@ var MetadataFullSys = (function () {
                 }
             }
         }
-        if (frameNumber != 0) {
-            if (frameNumber != this.frameNumber && this.frameStorage[frameNumber] != null && this.frameStorage[frameNumber] != undefined && this.getHandlers != null) {
-                var handlers = this.getHandlers();
-                var r = this.frameStorage[frameNumber];
-                for (var k = 0; k < r.length; k++) {
-                    handlers.Run(NetworkMessageHandler.JoinNetworkMessage(r[k][0], r[k][1]));
-                }
-            }
-            this.frameNumber = frameNumber;
-            this.curFile = Math.floor(this.frameNumber / 60) + 3;
-        }
+        return frameNumber;
     };
+    MetadataFullSys.prototype.RunFrameHandlers = function (frameNumber) {
+        if (frameNumber != this.frameNumber && this.frameStorage[frameNumber] != null && this.frameStorage[frameNumber] != undefined && this.getHandlers != null) {
+            var handlers = this.getHandlers();
+            var r = this.frameStorage[frameNumber];
+            for (var k = 0; k < r.length; k++) {
+                handlers.Run(NetworkMessageHandler.JoinNetworkMessage(r[k][0], r[k][1]));
+            }
+        }
+        this.frameNumber = frameNumber;
+        this.curFile = Math.floor(this.frameNumber / 60) + 3;
+    };
+    MetadataFullSys.settingButtonWidth = 32;
+    MetadataFullSys.settingButtonHeight = 32;
     MetadataFullSys.binaryEncodingRows = 4;
     MetadataFullSys.binaryEncodingColumns = 4;
     MetadataFullSys.pixelBinaryCutoff = 127;
