@@ -4,7 +4,7 @@
 // And then there needs to be a way to get specific data.
 
 function CacheMetadataAssets(c: Cacher): void {
-	c.images('assets/metadata', ['blueorb.png', 'metadatasettings.png']);
+	c.images('assets/metadata', ['blueorb.png', 'metadatasettings.png', 'settingsbkg.png']);
 }
 
 class MetadataFullSys {
@@ -29,8 +29,9 @@ class MetadataFullSys {
 
 	public InitSettingsMenu(apg: APGSys): void {
 		var key = apg.g.input.keyboard.addKey(Phaser.Keyboard.ESC);
-		var label, label2, frameLabel, parsingStatusLabel, videoStatus, offsetLabel, gridSquares = [], clears = [];
-		var graphics1: Phaser.Sprite, graphics2: Phaser.Sprite;
+		var label, label2, frameLabel, frameAdvanceErrorLabel, parsingStatusLabel, videoStatus, offsetLabel, gridSquares = [], clears = [];
+		var bkg: Phaser.Sprite, graphics1: Phaser.Sprite, graphics2: Phaser.Sprite;
+		var lastFrame: number = 0;
 
 		var panel = new Phaser.Group(apg.g);
 		apg.g.world.add(panel);
@@ -49,31 +50,42 @@ class MetadataFullSys {
 				apg.w.x = -1000;
 				this.settingsActive = true;
 
-				var x1: number = this.binaryPixelLeft - this.binaryPixelWidth / 2;
-				var y1: number = this.binaryPixelTop - this.binaryPixelHeight / 2;
-				var x2: number = this.binaryPixelLeft + this.binaryPixelWidth * 3.5;
-				var y2: number = this.binaryPixelTop + this.binaryPixelHeight * 3.5;
+				var x1: number = this.binaryPixelLeft;
+				var y1: number = this.binaryPixelTop;
+				var x2: number = this.binaryPixelLeft + this.binaryPixelWidth * (MetadataFullSys.binaryEncodingColumns - 1);
+				var y2: number = this.binaryPixelTop + this.binaryPixelHeight * (MetadataFullSys.binaryEncodingRows - 1);
 
 				videoPreviewClip.visible = true;
 
-				label = new Phaser.Text(apg.g, 200, 20, "METADATA SYSTEM INFORMATION", { font: '24px Caveat Brush', fill: '#aac' });
-				panel.add(label);
+				bkg = new Phaser.Sprite(apg.g, 0, 0, 'assets/metadata/settingsbkg.png');
+				bkg.scale.x = bkg.scale.y = 40;
+				bkg.alpha = .7;
+				panel.add(bkg);
+
 				graphics1 = new Phaser.Sprite(apg.g, x1, y1, 'assets/metadata/blueorb.png');
 				graphics1.scale.x = graphics1.scale.y = .1;
+				graphics1.anchor.set(.5);
 				panel.add(graphics1);
 				graphics2 = new Phaser.Sprite(apg.g, x2, y2, 'assets/metadata/blueorb.png');
 				graphics2.scale.x = graphics2.scale.y = .1;
+				graphics2.anchor.set(.5);
 				panel.add(graphics2);
-				parsingStatusLabel = new Phaser.Text(apg.g, 200, 80, "Frame number status: " + (this.forceMetadataFrames == true ? "DEBUG, advanced by clock" : "Reading from video image"), { font: '16px Caveat Brush', fill: '#aac' });
-				panel.add(parsingStatusLabel);
-				videoStatus = new Phaser.Text(apg.g, 200, 110, "Video Status: " + this.videoStatusMessage, { font: '16px Caveat Brush', fill: '#aac' });
-				panel.add(videoStatus);
-				offsetLabel = new Phaser.Text(apg.g, 200, 140, "Center of Upper Left Binary Digit: (" + this.binaryPixelLeft + ", " + this.binaryPixelTop + ")  Digit Width:(" + this.binaryPixelWidth + ", " + this.binaryPixelHeight + ")", { font: '16px Caveat Brush', fill: '#aac' });
-				panel.add(offsetLabel);
-				frameLabel = new Phaser.Text(apg.g, 200, 170, "", { font: '16px Caveat Brush', fill: '#aac' });
-				panel.add(frameLabel);
 
-				label2 = new Phaser.Text(apg.g, 50, 450, "To calibrate, click opposite corners of the binary encoding in the video.", { font: '32px Caveat Brush', fill: '#f44' });
+				label = new Phaser.Text(apg.g, 400, 340, "METADATA SYSTEM INFORMATION", { font: '24px Caveat Brush', fill: '#aac' });
+				panel.add(label);
+				parsingStatusLabel = new Phaser.Text(apg.g, 500, 380, "Frame number status: " + (this.forceMetadataFrames == true ? "DEBUG, advanced by clock" : "Reading from video image"), { font: '16px Caveat Brush', fill: '#aac' });
+				panel.add(parsingStatusLabel);
+				videoStatus = new Phaser.Text(apg.g, 500, 410, "Video Status: " + this.videoStatusMessage, { font: '16px Caveat Brush', fill: '#aac' });
+				panel.add(videoStatus);
+				offsetLabel = new Phaser.Text(apg.g, 500, 440, "Center of Upper Left Binary Digit: (" + this.binaryPixelLeft + ", " + this.binaryPixelTop + ")  Digit Width:(" + this.binaryPixelWidth + ", " + this.binaryPixelHeight + ")", { font: '16px Caveat Brush', fill: '#aac' });
+				panel.add(offsetLabel);
+				frameLabel = new Phaser.Text(apg.g, 500, 470, "", { font: '16px Caveat Brush', fill: '#aac' });
+				panel.add(frameLabel);
+				frameAdvanceErrorLabel = new Phaser.Text(apg.g, 500, 500, "", { font: '16px Caveat Brush', fill: '#f00' });
+				panel.add(frameAdvanceErrorLabel);
+
+
+				label2 = new Phaser.Text(apg.g, 50, 530, "To calibrate, click centers of top left and bottom right binary pixels.", { font: '32px Caveat Brush', fill: '#f44' });
 				panel.add(label2);
 
 				gridSquares = [];
@@ -85,6 +97,7 @@ class MetadataFullSys {
 						var pic = new Phaser.Sprite(apg.g, this.binaryPixelLeft + this.binaryPixelWidth * j, this.binaryPixelTop + this.binaryPixelHeight * k, 'assets/metadata/blueorb.png');
 						pic.tint = 0xff0000;
 						pic.scale.x = pic.scale.y = .05;
+						pic.anchor.set(.5);
 						panel.add(pic);
 						gridSquares[j].push(pic);
 						clears.push(pic);
@@ -92,39 +105,39 @@ class MetadataFullSys {
 				}
 
 				var tick = 0;
-				var curSelection = 0;
 				var pointerIsDown = false;
 				this.settingsUpdate = () => {
 					if (apg.g.input.activePointer.isDown && (apg.g.input.activePointer.x < this.videoDestWidth - MetadataFullSys.settingButtonWidth || apg.g.input.activePointer.y > MetadataFullSys.settingButtonHeight)) {
 						if (!pointerIsDown) {
-							if (curSelection == 0) {
-								curSelection = 1;
-								x1 = graphics1.x = apg.g.input.activePointer.x - 8;
-								y1 = graphics1.y = apg.g.input.activePointer.y - 8;
+							var dif1 = Math.sqrt((x1 - apg.g.input.activePointer.x) * (x1 - apg.g.input.activePointer.x) + (y1 - apg.g.input.activePointer.y) * (y1 - apg.g.input.activePointer.y));
+							var dif2 = Math.sqrt((x2 - apg.g.input.activePointer.x) * (x2 - apg.g.input.activePointer.x) + (y2 - apg.g.input.activePointer.y) * (y2 - apg.g.input.activePointer.y));
+							if (dif1 < dif2 ) {
+								x1 = graphics1.x = apg.g.input.activePointer.x;
+								y1 = graphics1.y = apg.g.input.activePointer.y;
 							}
 							else {
-								x2 = graphics2.x = apg.g.input.activePointer.x - 8;
-								y2 = graphics2.y = apg.g.input.activePointer.y - 8;
-								curSelection = 0;
+								x2 = graphics2.x = apg.g.input.activePointer.x;
+								y2 = graphics2.y = apg.g.input.activePointer.y;
 							}
+
 							var xLeft = x1;
 							var xRight = x2;
 							if (xLeft > xRight) {
 								xLeft = x2;
 								xRight = x1;
 							}
-							var xDif = (xRight - xLeft) / MetadataFullSys.binaryEncodingColumns;
+							var xDif = (xRight - xLeft) / (MetadataFullSys.binaryEncodingColumns - 1);
 							var yTop = y1;
 							var yBottom = y2;
 							if (yTop > yBottom) {
 								yTop = y2;
 								yBottom = y1;
 							}
-							var yDif = (yBottom - yTop) / MetadataFullSys.binaryEncodingRows;
+							var yDif = (yBottom - yTop) / (MetadataFullSys.binaryEncodingRows - 1);
 
-							this.binaryPixelLeft = xLeft + xDif / 2;
+							this.binaryPixelLeft = xLeft;
 							this.binaryPixelWidth = xDif;
-							this.binaryPixelTop = yTop + yDif / 2;
+							this.binaryPixelTop = yTop;
 							this.binaryPixelHeight = yDif;
 
 							offsetLabel.text = "Center of Upper Left Binary Digit: (" + this.binaryPixelLeft + ", " + this.binaryPixelTop + ")  Digit Width:(" + this.binaryPixelWidth + ", " + this.binaryPixelHeight + ")";
@@ -142,6 +155,9 @@ class MetadataFullSys {
 					}
 					tick++;
 					frameLabel.text = "Current video frame is " + this.frameNumber;
+					if (this.frameNumber - lastFrame > 3) frameAdvanceErrorLabel.text = "Frame Advancing Incorrectly!  Try Re-calibrating..."
+					else frameAdvanceErrorLabel.text = "";
+					lastFrame = this.frameNumber;
 					if (tick == 30) {
 						graphics1.visible = graphics2.visible = false;
 
@@ -156,11 +172,13 @@ class MetadataFullSys {
 				apg.w.x = 0;
 				videoPreviewClip.visible = false;
 				this.settingsActive = false;
+				panel.remove(bkg);
 				panel.remove(label);
 				panel.remove(label2);
 				panel.remove(graphics1);
 				panel.remove(graphics2);
 				panel.remove(frameLabel);
+				panel.remove(frameAdvanceErrorLabel);
 				panel.remove(parsingStatusLabel);
 				panel.remove(videoStatus);
 				panel.remove(offsetLabel);
@@ -364,8 +382,6 @@ class MetadataFullSys {
 			ctx.drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, this.pixelExamineWidth, this.pixelExamineHeight);
 			for (var j = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
 				for (var k = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
-					//var pix = ctx.getImageData((this.binaryPixelLeft + this.binaryPixelWidth * j)*videoToContainerScaleX, (this.binaryPixelTop + this.binaryPixelHeight * k)*videoToContainerScaleY, 1, 1).data[0];
-
 					var pix = ctx.getImageData((this.binaryPixelLeft + this.binaryPixelWidth * j), (this.binaryPixelTop + this.binaryPixelHeight * k), 1, 1).data[0];
 					if (pix > MetadataFullSys.pixelBinaryCutoff) frameNumber |= 1 << (j + k * MetadataFullSys.binaryEncodingColumns);
 				}

@@ -464,7 +464,7 @@ var IRCNetwork = (function () {
     return IRCNetwork;
 }());
 function CacheMetadataAssets(c) {
-    c.images('assets/metadata', ['blueorb.png', 'metadatasettings.png']);
+    c.images('assets/metadata', ['blueorb.png', 'metadatasettings.png', 'settingsbkg.png']);
 }
 var MetadataFullSys = (function () {
     function MetadataFullSys(useMetadata, width, height, url, onConnectionComplete, onConnectionFail, useLocalTestNetworking, forceMetadataFrames) {
@@ -496,8 +496,9 @@ var MetadataFullSys = (function () {
     MetadataFullSys.prototype.InitSettingsMenu = function (apg) {
         var _this = this;
         var key = apg.g.input.keyboard.addKey(Phaser.Keyboard.ESC);
-        var label, label2, frameLabel, parsingStatusLabel, videoStatus, offsetLabel, gridSquares = [], clears = [];
-        var graphics1, graphics2;
+        var label, label2, frameLabel, frameAdvanceErrorLabel, parsingStatusLabel, videoStatus, offsetLabel, gridSquares = [], clears = [];
+        var bkg, graphics1, graphics2;
+        var lastFrame = 0;
         var panel = new Phaser.Group(apg.g);
         apg.g.world.add(panel);
         var toggleButton = new Phaser.Sprite(apg.g, this.videoDestWidth - MetadataFullSys.settingButtonWidth, 0, 'assets/metadata/metadatasettings.png');
@@ -511,28 +512,36 @@ var MetadataFullSys = (function () {
             if (_this.settingsActive == false) {
                 apg.w.x = -1000;
                 _this.settingsActive = true;
-                var x1 = _this.binaryPixelLeft - _this.binaryPixelWidth / 2;
-                var y1 = _this.binaryPixelTop - _this.binaryPixelHeight / 2;
-                var x2 = _this.binaryPixelLeft + _this.binaryPixelWidth * 3.5;
-                var y2 = _this.binaryPixelTop + _this.binaryPixelHeight * 3.5;
+                var x1 = _this.binaryPixelLeft;
+                var y1 = _this.binaryPixelTop;
+                var x2 = _this.binaryPixelLeft + _this.binaryPixelWidth * (MetadataFullSys.binaryEncodingColumns - 1);
+                var y2 = _this.binaryPixelTop + _this.binaryPixelHeight * (MetadataFullSys.binaryEncodingRows - 1);
                 videoPreviewClip.visible = true;
-                label = new Phaser.Text(apg.g, 200, 20, "METADATA SYSTEM INFORMATION", { font: '24px Caveat Brush', fill: '#aac' });
-                panel.add(label);
+                bkg = new Phaser.Sprite(apg.g, 0, 0, 'assets/metadata/settingsbkg.png');
+                bkg.scale.x = bkg.scale.y = 40;
+                bkg.alpha = .7;
+                panel.add(bkg);
                 graphics1 = new Phaser.Sprite(apg.g, x1, y1, 'assets/metadata/blueorb.png');
                 graphics1.scale.x = graphics1.scale.y = .1;
+                graphics1.anchor.set(.5);
                 panel.add(graphics1);
                 graphics2 = new Phaser.Sprite(apg.g, x2, y2, 'assets/metadata/blueorb.png');
                 graphics2.scale.x = graphics2.scale.y = .1;
+                graphics2.anchor.set(.5);
                 panel.add(graphics2);
-                parsingStatusLabel = new Phaser.Text(apg.g, 200, 80, "Frame number status: " + (_this.forceMetadataFrames == true ? "DEBUG, advanced by clock" : "Reading from video image"), { font: '16px Caveat Brush', fill: '#aac' });
+                label = new Phaser.Text(apg.g, 400, 340, "METADATA SYSTEM INFORMATION", { font: '24px Caveat Brush', fill: '#aac' });
+                panel.add(label);
+                parsingStatusLabel = new Phaser.Text(apg.g, 500, 380, "Frame number status: " + (_this.forceMetadataFrames == true ? "DEBUG, advanced by clock" : "Reading from video image"), { font: '16px Caveat Brush', fill: '#aac' });
                 panel.add(parsingStatusLabel);
-                videoStatus = new Phaser.Text(apg.g, 200, 110, "Video Status: " + _this.videoStatusMessage, { font: '16px Caveat Brush', fill: '#aac' });
+                videoStatus = new Phaser.Text(apg.g, 500, 410, "Video Status: " + _this.videoStatusMessage, { font: '16px Caveat Brush', fill: '#aac' });
                 panel.add(videoStatus);
-                offsetLabel = new Phaser.Text(apg.g, 200, 140, "Center of Upper Left Binary Digit: (" + _this.binaryPixelLeft + ", " + _this.binaryPixelTop + ")  Digit Width:(" + _this.binaryPixelWidth + ", " + _this.binaryPixelHeight + ")", { font: '16px Caveat Brush', fill: '#aac' });
+                offsetLabel = new Phaser.Text(apg.g, 500, 440, "Center of Upper Left Binary Digit: (" + _this.binaryPixelLeft + ", " + _this.binaryPixelTop + ")  Digit Width:(" + _this.binaryPixelWidth + ", " + _this.binaryPixelHeight + ")", { font: '16px Caveat Brush', fill: '#aac' });
                 panel.add(offsetLabel);
-                frameLabel = new Phaser.Text(apg.g, 200, 170, "", { font: '16px Caveat Brush', fill: '#aac' });
+                frameLabel = new Phaser.Text(apg.g, 500, 470, "", { font: '16px Caveat Brush', fill: '#aac' });
                 panel.add(frameLabel);
-                label2 = new Phaser.Text(apg.g, 50, 450, "To calibrate, click opposite corners of the binary encoding in the video.", { font: '32px Caveat Brush', fill: '#f44' });
+                frameAdvanceErrorLabel = new Phaser.Text(apg.g, 500, 500, "", { font: '16px Caveat Brush', fill: '#f00' });
+                panel.add(frameAdvanceErrorLabel);
+                label2 = new Phaser.Text(apg.g, 50, 530, "To calibrate, click centers of top left and bottom right binary pixels.", { font: '32px Caveat Brush', fill: '#f44' });
                 panel.add(label2);
                 gridSquares = [];
                 clears = [];
@@ -542,26 +551,26 @@ var MetadataFullSys = (function () {
                         var pic = new Phaser.Sprite(apg.g, _this.binaryPixelLeft + _this.binaryPixelWidth * j, _this.binaryPixelTop + _this.binaryPixelHeight * k, 'assets/metadata/blueorb.png');
                         pic.tint = 0xff0000;
                         pic.scale.x = pic.scale.y = .05;
+                        pic.anchor.set(.5);
                         panel.add(pic);
                         gridSquares[j].push(pic);
                         clears.push(pic);
                     }
                 }
                 var tick = 0;
-                var curSelection = 0;
                 var pointerIsDown = false;
                 _this.settingsUpdate = function () {
                     if (apg.g.input.activePointer.isDown && (apg.g.input.activePointer.x < _this.videoDestWidth - MetadataFullSys.settingButtonWidth || apg.g.input.activePointer.y > MetadataFullSys.settingButtonHeight)) {
                         if (!pointerIsDown) {
-                            if (curSelection == 0) {
-                                curSelection = 1;
-                                x1 = graphics1.x = apg.g.input.activePointer.x - 8;
-                                y1 = graphics1.y = apg.g.input.activePointer.y - 8;
+                            var dif1 = Math.sqrt((x1 - apg.g.input.activePointer.x) * (x1 - apg.g.input.activePointer.x) + (y1 - apg.g.input.activePointer.y) * (y1 - apg.g.input.activePointer.y));
+                            var dif2 = Math.sqrt((x2 - apg.g.input.activePointer.x) * (x2 - apg.g.input.activePointer.x) + (y2 - apg.g.input.activePointer.y) * (y2 - apg.g.input.activePointer.y));
+                            if (dif1 < dif2) {
+                                x1 = graphics1.x = apg.g.input.activePointer.x;
+                                y1 = graphics1.y = apg.g.input.activePointer.y;
                             }
                             else {
-                                x2 = graphics2.x = apg.g.input.activePointer.x - 8;
-                                y2 = graphics2.y = apg.g.input.activePointer.y - 8;
-                                curSelection = 0;
+                                x2 = graphics2.x = apg.g.input.activePointer.x;
+                                y2 = graphics2.y = apg.g.input.activePointer.y;
                             }
                             var xLeft = x1;
                             var xRight = x2;
@@ -569,17 +578,17 @@ var MetadataFullSys = (function () {
                                 xLeft = x2;
                                 xRight = x1;
                             }
-                            var xDif = (xRight - xLeft) / MetadataFullSys.binaryEncodingColumns;
+                            var xDif = (xRight - xLeft) / (MetadataFullSys.binaryEncodingColumns - 1);
                             var yTop = y1;
                             var yBottom = y2;
                             if (yTop > yBottom) {
                                 yTop = y2;
                                 yBottom = y1;
                             }
-                            var yDif = (yBottom - yTop) / MetadataFullSys.binaryEncodingRows;
-                            _this.binaryPixelLeft = xLeft + xDif / 2;
+                            var yDif = (yBottom - yTop) / (MetadataFullSys.binaryEncodingRows - 1);
+                            _this.binaryPixelLeft = xLeft;
                             _this.binaryPixelWidth = xDif;
-                            _this.binaryPixelTop = yTop + yDif / 2;
+                            _this.binaryPixelTop = yTop;
                             _this.binaryPixelHeight = yDif;
                             offsetLabel.text = "Center of Upper Left Binary Digit: (" + _this.binaryPixelLeft + ", " + _this.binaryPixelTop + ")  Digit Width:(" + _this.binaryPixelWidth + ", " + _this.binaryPixelHeight + ")";
                             for (var j = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
@@ -596,6 +605,11 @@ var MetadataFullSys = (function () {
                     }
                     tick++;
                     frameLabel.text = "Current video frame is " + _this.frameNumber;
+                    if (_this.frameNumber - lastFrame > 3)
+                        frameAdvanceErrorLabel.text = "Frame Advancing Incorrectly!  Try Re-calibrating...";
+                    else
+                        frameAdvanceErrorLabel.text = "";
+                    lastFrame = _this.frameNumber;
                     if (tick == 30) {
                         graphics1.visible = graphics2.visible = false;
                     }
@@ -609,11 +623,13 @@ var MetadataFullSys = (function () {
                 apg.w.x = 0;
                 videoPreviewClip.visible = false;
                 _this.settingsActive = false;
+                panel.remove(bkg);
                 panel.remove(label);
                 panel.remove(label2);
                 panel.remove(graphics1);
                 panel.remove(graphics2);
                 panel.remove(frameLabel);
+                panel.remove(frameAdvanceErrorLabel);
                 panel.remove(parsingStatusLabel);
                 panel.remove(videoStatus);
                 panel.remove(offsetLabel);
