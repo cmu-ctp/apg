@@ -496,7 +496,8 @@ var MetadataFullSys = (function () {
     MetadataFullSys.prototype.InitSettingsMenu = function (apg) {
         var _this = this;
         var key = apg.g.input.keyboard.addKey(Phaser.Keyboard.ESC);
-        var label, label2, frameLabel, frameAdvanceErrorLabel, parsingStatusLabel, videoStatus, offsetLabel, gridSquares = [], clears = [];
+        var label, label2, frameLabel, frameAdvanceErrorLabel, parsingStatusLabel, videoStatus, offsetLabel;
+        var gridSquares = [], clears = [];
         var bkg, graphics1, graphics2;
         var lastFrame = 0;
         var panel = new Phaser.Group(apg.g);

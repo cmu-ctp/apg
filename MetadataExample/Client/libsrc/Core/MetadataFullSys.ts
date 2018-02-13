@@ -28,20 +28,22 @@ class MetadataFullSys {
 	private examinedVideo: Phaser.BitmapData;
 
 	public InitSettingsMenu(apg: APGSys): void {
-		var key = apg.g.input.keyboard.addKey(Phaser.Keyboard.ESC);
-		var label, label2, frameLabel, frameAdvanceErrorLabel, parsingStatusLabel, videoStatus, offsetLabel, gridSquares = [], clears = [];
+		var key:Phaser.Key = apg.g.input.keyboard.addKey(Phaser.Keyboard.ESC);
+		var label: Phaser.Text, label2: Phaser.Text, frameLabel: Phaser.Text, frameAdvanceErrorLabel: Phaser.Text,
+			parsingStatusLabel: Phaser.Text, videoStatus: Phaser.Text, offsetLabel: Phaser.Text;
+		var gridSquares: any = [], clears: any = [];
 		var bkg: Phaser.Sprite, graphics1: Phaser.Sprite, graphics2: Phaser.Sprite;
 		var lastFrame: number = 0;
 
-		var panel = new Phaser.Group(apg.g);
+		var panel: Phaser.Group = new Phaser.Group(apg.g);
 		apg.g.world.add(panel);
 
-		var toggleButton = new Phaser.Sprite(apg.g, this.videoDestWidth - MetadataFullSys.settingButtonWidth, 0, 'assets/metadata/metadatasettings.png');
+		var toggleButton: Phaser.Sprite = new Phaser.Sprite(apg.g, this.videoDestWidth - MetadataFullSys.settingButtonWidth, 0, 'assets/metadata/metadatasettings.png');
 		panel.add(toggleButton);
 
 		this.examinedVideo = apg.g.make.bitmapData(this.pixelExamineWidth, this.pixelExamineHeight);
 		this.examinedVideo.copy('assets/metadata/blueorb.png');
-		var videoPreviewClip = apg.g.make.sprite(0, 0, this.examinedVideo);
+		var videoPreviewClip:Phaser.Sprite = apg.g.make.sprite(0, 0, this.examinedVideo);
 		panel.add(videoPreviewClip);
 		videoPreviewClip.visible = false;
 
@@ -91,10 +93,10 @@ class MetadataFullSys {
 				gridSquares = [];
 				clears = [];
 
-				for (var j = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
+				for (var j:number = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
 					gridSquares.push([]);
-					for (var k = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
-						var pic = new Phaser.Sprite(apg.g, this.binaryPixelLeft + this.binaryPixelWidth * j, this.binaryPixelTop + this.binaryPixelHeight * k, 'assets/metadata/blueorb.png');
+					for (var k:number = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
+						var pic:Phaser.Sprite = new Phaser.Sprite(apg.g, this.binaryPixelLeft + this.binaryPixelWidth * j, this.binaryPixelTop + this.binaryPixelHeight * k, 'assets/metadata/blueorb.png');
 						pic.tint = 0xff0000;
 						pic.scale.x = pic.scale.y = .05;
 						pic.anchor.set(.5);
@@ -104,13 +106,13 @@ class MetadataFullSys {
 					}
 				}
 
-				var tick = 0;
-				var pointerIsDown = false;
+				var tick:number = 0;
+				var pointerIsDown:boolean = false;
 				this.settingsUpdate = () => {
 					if (apg.g.input.activePointer.isDown && (apg.g.input.activePointer.x < this.videoDestWidth - MetadataFullSys.settingButtonWidth || apg.g.input.activePointer.y > MetadataFullSys.settingButtonHeight)) {
 						if (!pointerIsDown) {
-							var dif1 = Math.sqrt((x1 - apg.g.input.activePointer.x) * (x1 - apg.g.input.activePointer.x) + (y1 - apg.g.input.activePointer.y) * (y1 - apg.g.input.activePointer.y));
-							var dif2 = Math.sqrt((x2 - apg.g.input.activePointer.x) * (x2 - apg.g.input.activePointer.x) + (y2 - apg.g.input.activePointer.y) * (y2 - apg.g.input.activePointer.y));
+							var dif1:number = Math.sqrt((x1 - apg.g.input.activePointer.x) * (x1 - apg.g.input.activePointer.x) + (y1 - apg.g.input.activePointer.y) * (y1 - apg.g.input.activePointer.y));
+							var dif2: number = Math.sqrt((x2 - apg.g.input.activePointer.x) * (x2 - apg.g.input.activePointer.x) + (y2 - apg.g.input.activePointer.y) * (y2 - apg.g.input.activePointer.y));
 							if (dif1 < dif2 ) {
 								x1 = graphics1.x = apg.g.input.activePointer.x;
 								y1 = graphics1.y = apg.g.input.activePointer.y;
@@ -120,20 +122,20 @@ class MetadataFullSys {
 								y2 = graphics2.y = apg.g.input.activePointer.y;
 							}
 
-							var xLeft = x1;
-							var xRight = x2;
+							var xLeft: number = x1;
+							var xRight: number = x2;
 							if (xLeft > xRight) {
 								xLeft = x2;
 								xRight = x1;
 							}
-							var xDif = (xRight - xLeft) / (MetadataFullSys.binaryEncodingColumns - 1);
-							var yTop = y1;
-							var yBottom = y2;
+							var xDif: number = (xRight - xLeft) / (MetadataFullSys.binaryEncodingColumns - 1);
+							var yTop: number = y1;
+							var yBottom: number = y2;
 							if (yTop > yBottom) {
 								yTop = y2;
 								yBottom = y1;
 							}
-							var yDif = (yBottom - yTop) / (MetadataFullSys.binaryEncodingRows - 1);
+							var yDif: number = (yBottom - yTop) / (MetadataFullSys.binaryEncodingRows - 1);
 
 							this.binaryPixelLeft = xLeft;
 							this.binaryPixelWidth = xDif;
@@ -141,8 +143,8 @@ class MetadataFullSys {
 							this.binaryPixelHeight = yDif;
 
 							offsetLabel.text = "Center of Upper Left Binary Digit: (" + this.binaryPixelLeft + ", " + this.binaryPixelTop + ")  Digit Width:(" + this.binaryPixelWidth + ", " + this.binaryPixelHeight + ")";
-							for (var j = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
-								for (var k = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
+							for (var j: number = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
+								for (var k: number = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
 									gridSquares[j][k].x = this.binaryPixelLeft + this.binaryPixelWidth * j;
 									gridSquares[j][k].y = this.binaryPixelTop + this.binaryPixelHeight * k;
 								}
@@ -182,7 +184,7 @@ class MetadataFullSys {
 				panel.remove(parsingStatusLabel);
 				panel.remove(videoStatus);
 				panel.remove(offsetLabel);
-				for (var j = 0; j < clears.length; j++) panel.remove(clears[j]);
+				for (var j: number = 0; j < clears.length; j++) panel.remove(clears[j]);
 				clears = [];
 				gridSquares = [];
 				this.settingsUpdate = null;
@@ -202,7 +204,7 @@ class MetadataFullSys {
 	public Data<T>(msgName: string): T {
 		var j = this.frameStorage[this.frameNumber];
 		if (j != null) {
-			for (var k = 0; k < j.length; k++) {
+			for (var k: number = 0; k < j.length; k++) {
 				if (j[k][0] == msgName) {
 					return JSON.parse(j[k][1]);
 				}
@@ -240,7 +242,7 @@ class MetadataFullSys {
 			this.GetVideoPlugin(this.videoPlayer, this.SetVideoErrorMessage );
 		}
 
-		var frameNumber = this.GetFrameNumber();
+		var frameNumber: number = this.GetFrameNumber();
 
 		if (frameNumber != 0) {
 			this.RunFrameHandlers(frameNumber);
@@ -317,10 +319,10 @@ class MetadataFullSys {
 			onError("player-video");
 			return false;
 		}
-		for (var j = 0; j < elements.length; j++) {
+		for (var j: number = 0; j < elements.length; j++) {
 			var player = elements[j];
 			if (player != undefined && player.children != null && player.children.length > 0) {
-				for (var k = 0; k < player.children.length; k++) {
+				for (var k: number = 0; k < player.children.length; k++) {
 					var inner = player.children[k];
 					if (inner.className == "js-ima-ads-container ima-ads-container") continue;
 					if (inner.localName != "video") continue;
@@ -334,7 +336,7 @@ class MetadataFullSys {
 	}
 
 	private readTextFile(file) {
-		var rawFile = new XMLHttpRequest();
+		var rawFile: XMLHttpRequest = new XMLHttpRequest();
 		rawFile.open("GET", file, false);
 		rawFile.onreadystatechange = () => {
 			if (rawFile.readyState === 4) {
@@ -342,11 +344,11 @@ class MetadataFullSys {
 					//alert("fail!");
 				}
 				if (rawFile.status === 200 || rawFile.status == 0) {
-					var allText = rawFile.responseText;
-					var t = allText.split('\n');
+					var allText:string = rawFile.responseText;
+					var t:string[] = allText.split('\n');
 					for (let v of t) {
-						var s = v.split('~');
-						var frame = s[0];
+						var s:string[] = v.split('~');
+						var frame:string = s[0];
 						if (this.frameStorage[frame] == null) this.frameStorage[frame] = [];
 						this.frameStorage[frame].push([s[1], s[2]]);
 					}
@@ -364,13 +366,13 @@ class MetadataFullSys {
 		}
 	}
 	private GetFrameNumber(): number {
-		var frameNumber = 0;
+		var frameNumber:number = 0;
 		if (this.forceMetadataFrames) {
 			frameNumber = this.frameNumber + 1;
 		}
 		else if (this.vid != undefined) {
-			var videoToContainerScaleX = this.vid.videoWidth / this.videoDestWidth;
-			var videoToContainerScaleY = this.vid.videoHeight / this.videoDestHeight;
+			var videoToContainerScaleX:number = this.vid.videoWidth / this.videoDestWidth;
+			var videoToContainerScaleY: number = this.vid.videoHeight / this.videoDestHeight;
 
 			if (this.settingsActive) {
 				this.examinedVideo.copy('assets/metadata/blueorb.png', Math.random() * 10, Math.random() * 10);
@@ -378,11 +380,11 @@ class MetadataFullSys {
 				this.examinedVideo.update();
 			}
 
-			var ctx = this.canvas.getContext('2d');
+			var ctx:CanvasRenderingContext2D = this.canvas.getContext('2d');
 			ctx.drawImage(this.vid, 0, 0, this.canvas.width, this.canvas.height, 0, 0, this.pixelExamineWidth, this.pixelExamineHeight);
-			for (var j = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
-				for (var k = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
-					var pix = ctx.getImageData((this.binaryPixelLeft + this.binaryPixelWidth * j), (this.binaryPixelTop + this.binaryPixelHeight * k), 1, 1).data[0];
+			for (var j:number = 0; j < MetadataFullSys.binaryEncodingColumns; j++) {
+				for (var k: number = 0; k < MetadataFullSys.binaryEncodingRows; k++) {
+					var pix:number = ctx.getImageData((this.binaryPixelLeft + this.binaryPixelWidth * j), (this.binaryPixelTop + this.binaryPixelHeight * k), 1, 1).data[0];
 					if (pix > MetadataFullSys.pixelBinaryCutoff) frameNumber |= 1 << (j + k * MetadataFullSys.binaryEncodingColumns);
 				}
 			}
@@ -392,9 +394,9 @@ class MetadataFullSys {
 	private static pixelBinaryCutoff: number = 127;
 	private RunFrameHandlers(frameNumber: number): void {
 		if (frameNumber != this.frameNumber && this.frameStorage[frameNumber] != null && this.frameStorage[frameNumber] != undefined && this.getHandlers != null) {
-			var handlers = this.getHandlers();
+			var handlers:NetworkMessageHandler = this.getHandlers();
 			var r: any = this.frameStorage[frameNumber];
-			for (var k = 0; k < r.length; k++) {
+			for (var k:number = 0; k < r.length; k++) {
 				handlers.Run(NetworkMessageHandler.JoinNetworkMessage(r[k][0], r[k][1]));
 			}
 		}

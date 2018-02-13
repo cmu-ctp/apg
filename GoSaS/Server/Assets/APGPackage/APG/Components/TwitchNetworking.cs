@@ -239,19 +239,19 @@ public class TwitchNetworking:MonoBehaviour {
     public void WriteMetadata<T>(string msg, T parms){
         var parmsString = JsonUtility.ToJson(parms);
 
-        cachedMetaData.Append("" + time + "~" + msg + "~" + parmsString + "\r\n");
+        if (UseSingleMachineTestNetworking == true){
+            cachedMetaData.Append("" + time + "~" + msg + "~" + parmsString + "\r\n");
 
-        if ((time % 60) == 0){
-            if (UseSingleMachineTestNetworking){
-                System.IO.File.WriteAllText(SingleMachineTestNetworkingDirectory + Path.DirectorySeparatorChar + "test" + Mathf.Floor(time / 60) + ".txt", cachedMetaData.ToString());
+            if ((time % 60) == 0){
+                if (UseSingleMachineTestNetworking){
+                    System.IO.File.WriteAllText(SingleMachineTestNetworkingDirectory + Path.DirectorySeparatorChar + "test" + Mathf.Floor(time / 60) + ".txt", cachedMetaData.ToString());
+                }
+                cachedMetaData.Length = 0;
             }
-            cachedMetaData.Length = 0;
         }
-
-        // METADATA - Send the message along with parmsString to the metadata server
-
-        // make this cache a message
-        // then send the entire message in its FixedUpdate function
+        else { 
+            // METADATA - Send the message along with parmsString to the metadata server somehow.
+        }
     }
 
     public void WriteMessageToClient<T>(string msg, T parms) {
@@ -336,7 +336,9 @@ public class TwitchNetworking:MonoBehaviour {
 
         InitIRCChat();
         InitIRCLogicChannel();
-        // METADATA - Init connection to metadata server here
+        if (UseSingleMachineTestNetworking == false ){
+            // METADATA - Init connection to metadata server here
+        }
     }
 
     [Serializable]
