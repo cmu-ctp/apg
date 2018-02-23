@@ -495,6 +495,8 @@ var MetadataFullSys = (function () {
     }
     MetadataFullSys.prototype.InitSettingsMenu = function (apg) {
         var _this = this;
+        if (this.inUse == false)
+            return;
         var key = apg.g.input.keyboard.addKey(Phaser.Keyboard.ESC);
         var label, label2, frameLabel, frameAdvanceErrorLabel, parsingStatusLabel, videoStatus, offsetLabel;
         var gridSquares = [], clears = [];
@@ -661,6 +663,8 @@ var MetadataFullSys = (function () {
         return null;
     };
     MetadataFullSys.prototype.Update = function (activePointer) {
+        if (this.inUse == false)
+            return;
         if (activePointer.isDown) {
             if (this.mouseLatch == false && activePointer.x > this.videoDestWidth - MetadataFullSys.settingButtonWidth && activePointer.y < MetadataFullSys.settingButtonHeight) {
                 this.settingToggleFunction();

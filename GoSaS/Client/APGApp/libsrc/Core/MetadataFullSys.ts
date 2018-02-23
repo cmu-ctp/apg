@@ -23,6 +23,7 @@ class MetadataFullSys {
 	private examinedVideo: Phaser.BitmapData;
 
 	public InitSettingsMenu(apg: APGSys): void {
+		if (this.inUse == false) return;
 		var key:Phaser.Key = apg.g.input.keyboard.addKey(Phaser.Keyboard.ESC);
 		var label: Phaser.Text, label2: Phaser.Text, frameLabel: Phaser.Text, frameAdvanceErrorLabel: Phaser.Text,
 			parsingStatusLabel: Phaser.Text, videoStatus: Phaser.Text, offsetLabel: Phaser.Text;
@@ -214,6 +215,7 @@ class MetadataFullSys {
 	private static settingButtonHeight: number = 32;
 
 	public Update(activePointer: Phaser.Pointer ): void {
+		if (this.inUse == false) return;
 
 		if (activePointer.isDown) {
 			if (this.mouseLatch == false && activePointer.x > this.videoDestWidth - MetadataFullSys.settingButtonWidth && activePointer.y < MetadataFullSys.settingButtonHeight ) {

@@ -307,10 +307,10 @@ public class AudiencePlayerSys {
 			var delayGoalX = 0f; var delayGoalZ = 0f;
 			info.goalLayer = (k < 6 || (k > 9 && k < 16)) ? LayerID.Front : LayerID.Back;
 			info.actionId = AudienceAction.SmallAttack;
-            //var resources = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; 
-            //var items = new ItemId[] { ItemId.Unset, ItemId.Unset, ItemId.Unset };
-            var resources = new int[] { 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 };
-            var items = new ItemId[] { (ItemId)rd.i(0,6), (ItemId)rd.i(0, 6), (ItemId)rd.i(0, 6) };
+            var resources = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; 
+            var items = new ItemId[] { ItemId.Unset, ItemId.Unset, ItemId.Unset };
+            //var resources = new int[] { 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 };
+            //var items = new ItemId[] { (ItemId)rd.i(0,6), (ItemId)rd.i(0, 6), (ItemId)rd.i(0, 6) };
 			var nameFlash = 0f; var nameFlashColor = new Color(0, 0, 0, 0);
 			var buddyID = k; var tick = 0; var spd = 0f; var healthRatio = 1f; var goalHealthRatio = 1f; var offset = rd.f(0,10000f);
 			info.itemId = ItemId.Unset;
