@@ -2,8 +2,7 @@
     c.images('cartoongame/imgs', ['blueorb.png', 'buttontest.png', 'middle.png', 'activate.png', 'assist.png', 'bag1.png', 'bag2.png', 'bag3.png', 'build.png', 'defend.png', 'harvest.png', 'heal.png', 'leftarrow.png', 'moveback.png', 'movein.png', 'rightarrow.png', 'accept.png', 'redo.png', 'strikeback.png', 'slash.png', 'recklessability.png', 'hudselect.png']);
     c.images('cartoongame/imgs/items', ['ball.png', 'baseballbat.png', 'bomb.png', 'broom.png', 'clock.png', 'computer.png', 'hammer.png', 'helmet.png', 'mask.png', 'mask2.png', 'rocket.png', 'scissors.png', 'shield.png', 'teeth.png']);
     c.images('cartoongame/imgs/abilities', ['biplane.png', 'blimp.png', 'broccoli.png', 'cow.png', 'policecar.png', 'policecopter.png', 'fairyability.png', 'fish.png', 'flowers.png', 'meds.png', 'sun.png', 'turtles.png']);
-	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
-}
+	c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);}
 
 class ActionEntry {
 	label: string;
@@ -18,9 +17,7 @@ class ActionEntry {
         this.pic = pic;
         this.x = x;
         this.y = y;
-        this.specialID = specialID;
-	}
-}
+        this.specialID = specialID;}}
 
 class ButtonCollection {
 
@@ -39,8 +36,6 @@ class ButtonCollection {
     building1Active: boolean = true;
     building2Active: boolean = true;
 
-    
-
     setParms(building: number, item1: number, item2: number, item3: number, resources: number[], forceReset:boolean): void {
 
         var firstAbilityCosts = [[Resource.Goo, Resource.Beans], [Resource.Goo, Resource.Corn], [Resource.Goo, Resource.Fries], [Resource.FrothyDrink, Resource.Beans], [Resource.Bribe, Resource.Burger], [Resource.FrothyDrink, Resource.TBone]];
@@ -57,14 +52,10 @@ class ButtonCollection {
             this.building1Active = (resources[firstAbilityCosts[building][0]] == 0 || resources[firstAbilityCosts[building][1]] == 0) ? false : true;
             this.building2Active = (resources[secondAbilityCosts[building][0]] == 0 || resources[secondAbilityCosts[building][1]] == 0 || resources[secondAbilityCosts[building][2]] == 0) ? false : true;
             this.buttons[4].alpha = this.building1Active ? 1 : .2;
-            this.buttons[5].alpha = this.building2Active ? 1 : .2;
-        } 
-    }
+            this.buttons[5].alpha = this.building2Active ? 1 : .2;} }
 
 	constructor(isActions:number, w:Phaser.Group, apg:APGSys, size: number, setToolTip: (str: string) => void, setOption: (val: number) => void, buttonsInit: ActionEntry[]) {
 		let fx1 = 0, fx2 = 0, fy1 = 0, fy2 = 0, updateActive:boolean = false;
-
-		//var w = apg.g.world;
 
 		var big: ButtonCollection = this;
 		this.selected = -1;
@@ -80,7 +71,7 @@ class ButtonCollection {
         var that = this;
 
 		function addOption(id: number, str: string, x: number, y: number, toolTip: string, pic:string, specialID:number ): void {
-			let highlighted: boolean = false, highlightVertical: number = /*size * 3 / 4*/56, highlightHorizontal: number = size * 16 / 40, x1: number = x, x2: number = x + /*str.length * highlightHorizontal*/56, y1: number = y - highlightVertical/2+8, y2: number = y + highlightVertical/2+8/*+10*/,
+			let highlighted: boolean = false, highlightVertical: number = 56, highlightHorizontal: number = size * 16 / 40, x1: number = x, x2: number = x + 56, y1: number = y - highlightVertical/2+8, y2: number = y + highlightVertical/2+8,
 				mul: number = 1, spd: number = .07 + .26 * Math.random(), lastHighlight: boolean = false, inputUsed:boolean = false;
 
 			if (id == 0) {
@@ -163,22 +154,13 @@ class ButtonCollection {
 					if (updateActive) {
 						sysTick++;
 						if (apg.g.input.activePointer.isDown == false) {
-							if (mouseDown == true) {
-								lastMouseUpTime = sysTick;
-							}
-							mouseDown = false;
-						}
-						else {
-							mouseDown = true;
-						}
-					}
+							if (mouseDown == true) { lastMouseUpTime = sysTick;}
+							mouseDown = false;}
+						else { mouseDown = true; } }
 					else {
 						lastMouseUpTime = -1000;
-						mouseDown = false;
-					}
-					if (e.alpha < .01) {
-						if (e.visible) e.visible = false;
-					}
+						mouseDown = false; }
+					if (e.alpha < .01) { if (e.visible) e.visible = false; }
 					if (!e.visible ) e.visible = true;
 
                     highlightTime--;
@@ -186,10 +168,5 @@ class ButtonCollection {
 
 					if (mul < .05) return;
 					goalx = goalx * .6 + .4 * ((fx1+fx2)/2 - 16);
-					goaly = goaly * .6 + .4 * ((fy1 + fy2) / 2 - 12);
-				}
-			});
-		}
-		addSelector();
-	}
-}
+					goaly = goaly * .6 + .4 * ((fy1 + fy2) / 2 - 12);}});}
+		addSelector();}}

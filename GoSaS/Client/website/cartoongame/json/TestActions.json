@@ -1,8 +1,8 @@
 {"all":[
   {
     "name": "Move",
-    "x": 344,
-    "y": 128,
+    "x": 324,
+    "y": 338,
     "isActions": 0,
     "choices": [
 	  {"x": 0, "y": 0, "name": "Rustic Farm", "pic": "buildings/building1",     "tip": "farm"},
@@ -14,7 +14,7 @@
     ] },
   {
     "name": "Action", 
-    "x": 700,
+    "x": 1700,
     "y": 190,
     "isActions": 0,
       "choices":[
@@ -24,8 +24,8 @@
     ]},
   {
     "name": "Items",
-    "x": 40,
-    "y": 260,
+    "x": 330,
+    "y": 134,
     "isActions": 1,
     "choices": [
       {"x": 0, "y": 0, "name": "Do Slash",  "pic": "slash",                                "tip":"SLASH: Slash at your foe.  This move will interrupt Building abilities.  If your foe Retaliates, though, expect it to hurt!" },
@@ -41,8 +41,8 @@
   },
  {
     "name": "System",
-    "x": 702,
-    "y": 388,
+    "x": 730,
+    "y": 354,
     "choices": [
       {"x": 0, "y": 0, "name": "Confirm Actions","pic": "accept","tip": "Accept these choices"}
     ]

@@ -174,33 +174,60 @@ public class AudiencePhase {
 			ignorePause = true, text = message , parentTrans = transform, scale = .15f, pos = new v3(0, 3, 10), health = FullGame.ticksPerSecond * 2, textColor = roundColors[(roundNumber) % roundColors.Length], textAlpha = 0,
 			update = e2 => { onUpdate(); if (textFade(e2, .1f)) { onEnd(); e2.remove();}}};}
 
-	static void RoundEndMessage(Transform transform, int roundNumber, GameObject textName, Sprite actionBkg) {
+    static float roundEndMessageTime = 1;
+    static float leaderboardTime = roundEndMessageTime+1;
+    //static float roundStartMessageTime = leaderboardTime + 4;////1.5f;//2.5f;
+    static float roundStartMessageTime = roundEndMessageTime+2.5f;
+    static float oldRoundFadeOutTime = roundStartMessageTime+.5f;
+    static float audienceTurnMessageTime = oldRoundFadeOutTime+1.5f;
+    static float audienceActionsTime = audienceTurnMessageTime+2.5f;
+
+    static void RoundEndMessage(Transform transform, int roundNumber, GameObject textName, Sprite actionBkg) {
 		var tick = 0;
 		new ent(textName) {
 			ignorePause = true, text = "Round " + (roundNumber - 1) + " is over!", parentTrans = transform, scale = .1f, pos = new v3(0, 3, 10), health = FullGame.ticksPerSecond * 2, textColor = roundColors[(roundNumber - 1) % roundColors.Length], textAlpha = 0,
 			update = e2 => {
 				tick++;
-				if (tick < FullGame.ticksPerSecond * 1) return;
+				if (tick < FullGame.ticksPerSecond * roundEndMessageTime) return;
 				if (textFade(e2, .1f)) e2.remove();}};
 
 		new ent() {
 			ignorePause = true, parentTrans = transform, scale = 60f, pos = new v3(0, 0, 10), health = FullGame.ticksPerSecond * 2, sprite = actionBkg, color = new Color(1,1,1,0), name="fader", layer=Layers.Fade,
 			update = e2 => {
 				tick++;
-				if (tick < FullGame.ticksPerSecond * 4) return;
-				var rat = (tick - FullGame.ticksPerSecond * 4f)/210f;
+				if (tick < FullGame.ticksPerSecond * oldRoundFadeOutTime) return;
+				var rat = (tick - FullGame.ticksPerSecond * oldRoundFadeOutTime) /210f;
 				var alpha = (float)Math.Sin(rat * Math.PI) * 2f;
 				if (alpha > 1) alpha = 1;
 				e2.color = new Color(1, 1, 1, alpha);
 				if (tick > FullGame.ticksPerSecond *4 + 210) e2.remove();}};}
 
-	static void RoundStartMessage(GameObject textName, Transform transform, int roundNumber) {
+    static void Leaderboard(Transform transform, int roundNumber, GameObject textName, Sprite leaderboard) {
+		var tick = 0;
+		new ent() {
+			ignorePause = true, parentTrans = transform, scale = 1f, pos = new v3(0, 0, 10), health = FullGame.ticksPerSecond * 2, sprite = leaderboard, color = new Color(1,1,1,0), name="fader", layer=Layers.Fade,
+			update = e2 => {
+				tick++;
+				if (tick < FullGame.ticksPerSecond * leaderboardTime) return;
+				var rat = (tick - FullGame.ticksPerSecond * leaderboardTime) /210f;
+				var alpha = (float)Math.Sin(rat * Math.PI) * 2f;
+				if (alpha > 1) alpha = 1;
+				e2.color = new Color(1, 1, 1, alpha);
+				if (tick > FullGame.ticksPerSecond *4 + 210) e2.remove();}};
+		new ent(textName) {
+			ignorePause = true, text = "Leaderboard", parentTrans = transform, scale = .1f, pos = new v3(0, 3, 10), health = FullGame.ticksPerSecond * 2, textColor = roundColors[(roundNumber - 1) % roundColors.Length], textAlpha = 0,
+			update = e2 => {
+				tick++;
+				if (tick < FullGame.ticksPerSecond * leaderboardTime) return;
+				if (textFade(e2, .1f)) e2.remove();}};}
+
+    static void RoundStartMessage(GameObject textName, Transform transform, int roundNumber) {
 		var tick = 0;
 		new ent(textName) {
 			ignorePause = true, text = "Round " + (roundNumber), parentTrans = transform, scale = .15f, pos = new v3(0, 3, 10), health = FullGame.ticksPerSecond * 2, textColor = roundColors[(roundNumber ) % roundColors.Length], textAlpha = 0,
 			update = e2 => {
 				tick++;
-				if (tick < FullGame.ticksPerSecond * 7/2) return;
+				if (tick < FullGame.ticksPerSecond * roundStartMessageTime) return;
 				if (textFade(e2, .1f)) e2.remove();}};}
 
 	static void AudienceTurnMessage(GameObject textName, Transform transform, int roundNumber) {
@@ -209,7 +236,7 @@ public class AudiencePhase {
 			ignorePause = true, text = "Audience Turn", parentTrans = transform, scale = .15f, pos = new v3(0, 3, 10), health = FullGame.ticksPerSecond * 2, textColor = roundColors[(roundNumber ) % roundColors.Length], textAlpha=0,
 			update = e2 => {
 				tick++;
-				if (tick < FullGame.ticksPerSecond * 11/2) return;
+				if (tick < FullGame.ticksPerSecond * audienceTurnMessageTime) return;
 				if (textFade(e2, .1f)) e2.remove();}};}
 
 	static void DoWindDown(AudiencePhaseStatus aStatus, GameObject textName, Transform transform, int roundNumber, APlayerInfo[,] grid, Action audienceActionsEnded) {
@@ -218,12 +245,15 @@ public class AudiencePhase {
 			for (var k = 2; k > -1; k--) {
 				if ((grid[j, k] != null && grid[j, k].pl.health > 0)) { var ex = grid[j, k].pl; grid[j, k].bodyEnt.color=ex.color = new Color(ex.color.r, ex.color.g, ex.color.b, 1); grid[j, k].headEnt.color = new Color(1,1,1,1); }
 				if (grid[6 + j, k] != null && grid[6 + j, k].pl.health > 0) { var ex = grid[6+j, k].pl; grid[6 + j, k].bodyEnt.color=ex.color = new Color(ex.color.r, ex.color.g, ex.color.b, 1); grid[6+j, k].headEnt.color = new Color(1,1,1,1); }}}
+
 		// make a little running panting noise!
 		new ent(textName) {
 			ignorePause = true, text = "Movement Turn", parentTrans = transform, scale = .15f, pos = new v3(0, 3, 10), health = FullGame.ticksPerSecond * 2, textColor = roundColors[(roundNumber) % roundColors.Length], textAlpha = 0,
 			update = e2 => {
                 for (var k = 0; k < 12; k++) for (var j = 0; j < 3; j++) { if (grid[k, j] != null) grid[k, j].funcs.updateMove(grid[k, j].pl); }
-				if (textFade(e2, .1f)) { DoStreamerMessage( aStatus, textName, transform, roundNumber, audienceActionsEnded); e2.remove();}}};}
+				if (textFade(e2, .1f)) { DoStreamerMessage( aStatus, textName, transform, roundNumber, audienceActionsEnded); e2.remove();}}};
+
+    }
 
 	static void DoStreamerMessage( AudiencePhaseStatus aStatus, GameObject textName, Transform transform, int roundNumber, Action audienceActionsEnded) {
         MakeMessage(textName, transform, roundNumber, "Streamer Turn", () => { }, () => { aStatus.doingEnd = false; aStatus.midpointTimer = 0; audienceActionsEnded(); });}
@@ -367,10 +397,11 @@ public class AudiencePhase {
 				if (src.info.atRemove) e2.remove();
 				else { var v = e2.pos; nm.ease(ref v, aStatus.audiencePos, .3f); e2.pos = v;}}};}
 
-	public static void MakeRoundEnd(AudiencePhaseStatus aStatus, int roundNumber, APlayerInfo[,] grid, Action audienceActionsEnded, Transform theTransform, GameObject theTextName, Sprite thePlayerHighlight, Material theGlowMaterial, Sprite actionBkg, Players players, Backgrounds backgrounds) {
+	public static void MakeRoundEnd(AudiencePhaseStatus aStatus, int roundNumber, APlayerInfo[,] grid, Action audienceActionsEnded, Transform theTransform, GameObject theTextName, Sprite thePlayerHighlight, Material theGlowMaterial, Sprite actionBkg, Players players, Backgrounds backgrounds, Sprite leaderboard ) {
 		aStatus.doingEnd = true;
 		RoundEndMessage( theTransform, roundNumber, theTextName, actionBkg);
-		RoundStartMessage(theTextName, theTransform, roundNumber);
+        //Leaderboard(theTransform, roundNumber, theTextName, leaderboard);
+        RoundStartMessage(theTextName, theTransform, roundNumber);
 		AudienceTurnMessage(theTextName, theTransform, roundNumber);
 
 		var info = new AudiencePhaseInfo();
@@ -382,7 +413,7 @@ public class AudiencePhase {
 		new ent() { ignorePause = true,
 			update = e => {
 				info.tick++;
-				if (info.tick == FullGame.ticksPerSecond * 8) RunAudiencePhase(info, aStatus, grid, players, backgrounds, theTransform, theTextName, thePlayerHighlight, theGlowMaterial);
+				if (info.tick == FullGame.ticksPerSecond * audienceActionsTime) RunAudiencePhase(info, aStatus, grid, players, backgrounds, theTransform, theTextName, thePlayerHighlight, theGlowMaterial);
 				if (info.doingAction ==false) { aStatus.midpointTimer = 1; }
 				else if (!info.atRemove) { aStatus.midpointTimer = .5f;}
 				else {DoWindDown( aStatus, theTextName, theTransform, roundNumber, grid, audienceActionsEnded );e.remove();}}};}}

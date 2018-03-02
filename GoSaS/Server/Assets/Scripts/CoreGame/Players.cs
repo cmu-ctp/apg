@@ -7,7 +7,7 @@ public class Players:MonoBehaviour {
 	public GameObject textName;
 	public Sprite[] clouds, friends, heads, actions, anims, buildingActions, items, buildings;
 	public Sprite player, angel, shadow, player1, player2, angel1, angel2, player1flash, player2flash;
-	public Sprite owMsg, ughMsg, thudMsg, healthBar, healthBar2, healthBarCenter, actionBkg;
+	public Sprite owMsg, ughMsg, thudMsg, healthBar, healthBar2, healthBarCenter, actionBkg, leaderboard;
 	public AudioClip blowSound, bumpSound, hurtSound, dieSound;
 
 	public APG.APGBasicGameLogic basicGameLogic;}

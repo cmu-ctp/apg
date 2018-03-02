@@ -287,7 +287,8 @@ public class AudiencePlayerSys {
 		var secondAbilityCosts = new Resource[,] { { Resource.Bribe, Resource.Burger, Resource.Fries }, { Resource.Acid, Resource.Beans, Resource.TBone}, { Resource.Acid, Resource.Burger, Resource.Taco }, { Resource.Bribe, Resource.Corn, Resource.TBone }, 
 			{ Resource.FrothyDrink, Resource.Fries, Resource.Taco }, { Resource.Acid, Resource.Corn, Resource.Taco } };
 		var maxHealth = 10;
-		for ( var k2 = 0; k2 < 20; k2++ ) {
+		//for ( var k2 = 0; k2 < 20; k2++ ) {
+        for ( var k2 = 0; k2 < 10; k2++ ) {
 			var info = new APlayerInfo();
 			var k = Mathf.Floor( k2 / 2 ) + (k2%2 == 1 ? 10:0);
 			bool inUse = false;
@@ -305,7 +306,7 @@ public class AudiencePlayerSys {
 			info.pl = null;
 			info.buildingGoal = (int)((k < 10) ? (k % 6) : (k - 10) % 6);
 			var delayGoalX = 0f; var delayGoalZ = 0f;
-			info.goalLayer = (k < 6 || (k > 9 && k < 16)) ? LayerID.Front : LayerID.Back;
+            info.goalLayer = LayerID.Front;// (k < 6 || (k > 9 && k < 16)) ? LayerID.Front : LayerID.Back;
 			info.actionId = AudienceAction.SmallAttack;
             var resources = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; 
             var items = new ItemId[] { ItemId.Unset, ItemId.Unset, ItemId.Unset };
@@ -366,7 +367,7 @@ public class AudiencePlayerSys {
 				doHarvest = () => AudienceActions.DoHarvest(info.curBuilding, resources, items, info.pl, treats.theTreats.resources, treats.theTreats.items),
 				onInput = inputs => { bufferedParms = inputs; },
 				setBuilding = building => { info.buildingGoal = building; delayGoalX = (-9.5f + 8.5f * ((building % 6) / 6f)) * ((building < 6) ? 1 : -1); },
-				setGoalLayer = layer => { info.goalLayer = layer;  delayGoalZ = -.4f + .4f * (int)layer; },
+				setGoalLayer = layer => { info.goalLayer = LayerID.Front/*layer*/;  delayGoalZ = -.4f + .4f * (int)layer; },
 				doMove = () => { goalx = delayGoalX; goalz = delayGoalZ; info.curBuilding = info.buildingGoal; curLayer = info.goalLayer; },
 				updateMove = e => {
                     var moving = true;
@@ -392,7 +393,7 @@ public class AudiencePlayerSys {
 					parms[1] = nm.Between(0, parms[1], 2);
 					parms[2] = nm.Between(0, parms[2], 8);
 					info.buildingGoal =  parms[0];
-					info.goalLayer = (LayerID)parms[1];
+                    info.goalLayer = LayerID.Front;// (LayerID)parms[1];
 					info.actionId = (AudienceAction)parms[2];
                     info.itemId = ItemId.Unset;
                     info.buildingActionId = BuildingActionID.Unset;

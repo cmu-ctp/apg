@@ -13,7 +13,8 @@ public class GameBuilder : MonoBehaviour {
 	public GameObject textName;
 
 	public Sprite introPlaque;
-	public Sprite playerHighlight;
+    public Sprite leaderboard;
+    public Sprite playerHighlight;
 
 	public IncomingWaveHUD incomingWaveHUD;
 	public Backgrounds backgrounds;
@@ -34,7 +35,7 @@ public class GameBuilder : MonoBehaviour {
 	FullGame fullGame;
 
 	public void MakeRoundEnd(int roundNumber, APlayerInfo[,]  grid, Action audienceActionsEnded) {
-        AudiencePhase.MakeRoundEnd( fullGame.aStatus, roundNumber, grid, audienceActionsEnded, transform, textName,playerHighlight, glowMaterial, players.actionBkg, players, backgrounds);
+        AudiencePhase.MakeRoundEnd( fullGame.aStatus, roundNumber, grid, audienceActionsEnded, transform, textName,playerHighlight, glowMaterial, players.actionBkg, players, backgrounds, leaderboard );
     }
 	void Start() { Application.runInBackground = true; fullGame = new FullGame(this, transform);}
 	void FixedUpdate() {fullGame.RunUpdate();}}

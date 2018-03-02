@@ -17,7 +17,11 @@ if (typeof Object.assign != 'function') {
 	})();
 }
 
-class ent extends Phaser.Sprite {
+interface entUser {
+	use: (m: entUser) => void;
+}
+
+class ent extends Phaser.Sprite implements entUser {
     static entList: ent[] = [];
     static clearAll(): void {
         for (var k = 0; k < ent.entList.length; k++) { if (ent.entList[k] != null ) ent.entList[k].eliminate(); }
@@ -25,6 +29,8 @@ class ent extends Phaser.Sprite {
 
 	upd: (m: ent) => void = null;
 	update() { if (this.upd != null) this.upd(this); }
+
+	use: (m: ent) => void = null;
 
     eliminate() { ent.entList[this.id] = null; this.destroy(true); this.id = -1; }
 
@@ -49,10 +55,11 @@ class ent extends Phaser.Sprite {
     id: number;
 
 	constructor(t: Phaser.Group, x: number, y: number, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture,
-        fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, color?: number, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, upd?: (m: ent) => void }) {
+		fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, color?: number, scalex?: number, scaley?: number, visible?: boolean, anchorx?: number, anchory?: number, use?: (m: ent) => void, upd?: (m: ent) => void }) {
 		super(t.game, x, y, key);
+		this.visible = true; 
 		if (fields) Object.assign(this, fields);
-		this.exists = true; this.visible = true; this.alive = true; this.z = t.children.length;
+		this.exists = true; this.alive = true; this.z = t.children.length;
 		t.addChild(this);
 		if (t.enableBody) { t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug); }
         if (t.cursor === null) { t.cursor = this; }
@@ -61,7 +68,7 @@ class ent extends Phaser.Sprite {
 	}
 }
 
-class enttx extends Phaser.Text {
+class enttx extends Phaser.Text implements entUser {
     static entList: enttx[] = [];
 
     static clearAll(): void {
@@ -70,6 +77,8 @@ class enttx extends Phaser.Text {
 
 	upd: (m: enttx) => void = null;
     update() { if (this.upd != null) this.upd(this); }
+
+	use: (m: enttx) => void = null;
 
     eliminate() { enttx.entList[this.id] = null; this.destroy(true); this.id = -1; }
 
@@ -94,10 +103,11 @@ class enttx extends Phaser.Text {
     id: number;
 
 	constructor(t: Phaser.Group, x: number, y: number, text: string, style?: Phaser.PhaserTextStyle,
-        fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, verticalSpacing?: number, upd?: (m: enttx) => void }) {
+		fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, scalex?: number, scaley?: number, anchorx?: number, anchory?: number, visible?: boolean, verticalSpacing?: number, use?: (m: enttx) => void, upd?: (m: enttx) => void }) {
 		super(t.game, x, y, text, style);
+		this.visible = true; 
 		if (fields) Object.assign(this, fields);
-		this.exists = true; this.visible = true; this.alive = true; this.z = t.children.length;
+		this.exists = true; this.alive = true; this.z = t.children.length;
 		t.addChild(this);
 		if (t.enableBody) { t.game.physics.enable(this, t.physicsBodyType, t.enableBodyDebug); }
         if (t.cursor === null) { t.cursor = this; }

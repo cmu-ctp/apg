@@ -25,12 +25,6 @@ function WaitingToJoin(apg: APGSys, previousMessage: string = ""): void {
 
 	new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
 		upd: e => {
-
-			/*var metadata = apg.Metadata<PlayerMetadata>("frame");
-			if (metadata != undefined) {
-				console.log("? " + metadata.x);
-			}*/
-
             if (tryEnd(e, -30)) return;
             if (apg.g.input.activePointer.isDown && !inputUsed) {
 				inputUsed = true;
@@ -46,9 +40,4 @@ function WaitingToJoin(apg: APGSys, previousMessage: string = ""): void {
 	new enttx(apg.g.world, 140, 380, "Tap or click to Connect to the Streamer's Game!", textColor, {
         upd: e => { if (tryEnd(e, -50)) return; tc++; e.visible = (tc % 120 < 60) ? false: true;}});
 	if (apg.networkTestSequence) WaitingToJoinTestSequence(apg);
-
-	new enttx(apg.g.world, 140, 380, "A", textColor, {
-		upd: e => { e.x = vx; e.y = vy; }
-	});
-
 }

@@ -25,14 +25,14 @@ body {
     width : 800px;
     height : 450px;
     position: absolute;
-    transform: translate(750px, 0px);
+    transform: translate(480px, 0px);
 }
 
 .video {
     background:#0;
     color:white;
-    width : 1024px;
-    height : 768px;
+    width : 800px;
+    height : 600px;
     position: absolute;
     transform: translate(0px, 0px);
 }
@@ -41,9 +41,9 @@ body {
     background: #0;
     color: white;
     width: 400px;
-    height: 720px;
+    height: 400px;
     position: absolute;
-    transform: translate(1024px, 0px);
+    transform: translate(800px, 0px);
 }
 
 .debug {

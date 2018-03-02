@@ -7,14 +7,14 @@ interface EmptyParms {}
 declare var ticksPerSecond: any;
 function WaitingForJoinAcknowledgeTestSequence(apg: APGSys): void {
     apg.ClearLocalMessages();
-    apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 1 });
-    //apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 2 });
+    //apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 1 });
+    apg.WriteLocalAsServer<ClientJoinParms>(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 2 });
 }
 function WaitingForJoinAcknowledement(apg: APGSys): void {
 	var endOfRoundSound: Phaser.Sound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
     var endSubgame: boolean = false, timeOut: number = 0, retry: number = 0; var playerID = -1, team = -1, connected = false;
 
-	var gameLaunchFunc = MainPlayerInput;//PlayerActionNew;//PlayerAction;//PlayerMovement;//
+	var gameLaunchFunc = MainPlayerInput;
 
     apg.ResetServerMessageRegistry()
         .SetKeepAliveStatus(true)

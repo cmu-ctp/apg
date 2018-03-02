@@ -176,8 +176,7 @@ var ButtonCollection = (function () {
                         return;
                     goalx = goalx * .6 + .4 * ((fx1 + fx2) / 2 - 16);
                     goaly = goaly * .6 + .4 * ((fy1 + fy2) / 2 - 12);
-                }
-            });
+                } });
         }
         addSelector();
     }
@@ -254,10 +253,11 @@ var ent = (function (_super) {
     function ent(t, x, y, key, fields) {
         var _this = _super.call(this, t.game, x, y, key) || this;
         _this.upd = null;
+        _this.use = null;
+        _this.visible = true;
         if (fields)
             Object.assign(_this, fields);
         _this.exists = true;
-        _this.visible = true;
         _this.alive = true;
         _this.z = t.children.length;
         t.addChild(_this);
@@ -330,10 +330,11 @@ var enttx = (function (_super) {
     function enttx(t, x, y, text, style, fields) {
         var _this = _super.call(this, t.game, x, y, text, style) || this;
         _this.upd = null;
+        _this.use = null;
+        _this.visible = true;
         if (fields)
             Object.assign(_this, fields);
         _this.exists = true;
-        _this.visible = true;
         _this.alive = true;
         _this.z = t.children.length;
         t.addChild(_this);
@@ -403,7 +404,7 @@ var enttx = (function (_super) {
     return enttx;
 }(Phaser.Text));
 function CartoonAssetCache(c) {
-    c.images('cartoongame/imgs', ['blueorb.png', 'flag1small.png', 'flag2small.png', 'littleperson.png', 'littleperson2.png', 'bodyleft.png', 'bodyright.png', 'bkg_guide4.png', 'ClientUI9.png', 'tooltip2.png', 'test.png', 'whiteblock.png', 'arrowcap.png', 'arrowmid.png', 'arrowhead.png', 'hudselect.png']);
+    c.images('cartoongame/imgs', ['blueorb.png', 'flag1small.png', 'flag2small.png', 'littleperson.png', 'littleperson2.png', 'bodyleft.png', 'bodyright.png', 'bkg_guide4.png', 'ClientUI11.png', 'tooltip2.png', 'test.png', 'whiteblock.png', 'arrowcap.png', 'arrowmid.png', 'arrowhead.png', 'hudselect.png']);
     c.images('cartoongame/imgs/buildings', ['building1.png', 'building2.png', 'building3.png', 'building4.png', 'building5.png', 'building6.png']);
     c.images('cartoongame/imgs/heads', ['headbig1.png', 'headbig2.png', 'headbig3.png', 'headbig4.png', 'headbig5.png', 'headbig6.png', 'headbig7.png', 'headbig8.png', 'headbig9.png', 'headbig10.png', 'headbig11.png', 'headbig12.png', 'headbig13.png', 'headbig14.png', 'headbig15.png', 'headbig16.png', 'headbig17.png', 'headbig18.png', 'headbig19.png', 'headbig20.png']);
     c.images('cartoongame/imgs/sheads', ['shead1.png', 'shead2.png', 'shead3.png', 'shead4.png', 'shead5.png', 'shead6.png', 'shead7.png', 'shead8.png', 'shead9.png', 'shead10.png', 'shead11.png', 'shead12.png', 'shead13.png', 'shead14.png', 'shead15.png', 'shead16.png', 'shead17.png', 'shead18.png', 'shead19.png', 'shead20.png']);
@@ -419,7 +420,7 @@ function CartoonAssetCache(c) {
 function MainInputTestSequence(apg) {
     var names = ["npc1", "npc2", "npc3", "npc4", "npc5", "npc6", "npc7", "npc8", "npc9", "npcr1", "npcr2", "npcr3", "npcr4", "npcr5", "npcr6", "npcr7", "npcr8", "npcr9"];
     apg.ClearLocalMessages();
-    var roundLength = 15;
+    var roundLength = 7;
     function mr() { if (Math.random() < .6)
         return 0; return Math.floor(Math.random() * 3) + 1; }
     for (var j = 1; j <= 10; j++) {
@@ -470,1841 +471,432 @@ var ItemIds;
     ItemIds[ItemIds["Rocket"] = 4] = "Rocket";
     ItemIds[ItemIds["Shield"] = 5] = "Shield";
 })(ItemIds || (ItemIds = {}));
+var Player = (function () {
+    function Player(name, headNum) {
+        this.healthStat = 10;
+        this.items = [-1, -1, -1];
+        this.resources = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this.name = name;
+        this.headPic = 'cartoongame/imgs/heads/headbig' + headNum + '.png';
+        this.smallHeadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
+    }
+    ;
+    return Player;
+}());
+var StatPanel = (function () {
+    function StatPanel() {
+    }
+    return StatPanel;
+}());
+var ToolTip = (function () {
+    function ToolTip() {
+        this.toolTip = "";
+        this.toolTime = 0;
+    }
+    return ToolTip;
+}());
+function addActions(apg, w, team, srcChoices, setToolTip) {
+    var curCollection = 0;
+    function add(isActions, choiceSet) {
+        var id = curCollection;
+        curCollection++;
+        return new ButtonCollection(isActions, w, apg, 22, setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
+    }
+    var o = [];
+    var actions = apg.JSONAssets['cartoongame/json/TestActions.json'];
+    for (var j = 0; j < actions.length; j++) {
+        var p = [];
+        for (var k2 = 0; k2 < actions[j].choices.length; k2++) {
+            var k = k2;
+            var r = actions[j].choices[k];
+            var xv = r.x;
+            if (j == 0 && team == 2)
+                xv = 320 - xv;
+            p.push(new ActionEntry(r.name, r.tip, r.pic, actions[j].x + xv, actions[j].y + r.y, r.specialID));
+        }
+        o.push(add(actions[j].isActions, p));
+    }
+    return o;
+}
+function MakeToolTip(apg, w, player, fontName, tip, getBuilding) {
+    var extractResources = [[Resource.TBone, Resource.Corn], [Resource.Acid, Resource.Goo], [Resource.Corn, Resource.Beans], [Resource.FrothyDrink, Resource.Burger], [Resource.FrothyDrink, Resource.Bribe], [Resource.Fries, Resource.Taco]];
+    var extractItems = [ItemIds.Hammer, ItemIds.ScaryMask, ItemIds.Bomb, ItemIds.TennisBall, ItemIds.Rocket, ItemIds.Shield];
+    var resourceIcons = ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png'];
+    var firstAbilityCosts = [[Resource.Goo, Resource.Beans], [Resource.Goo, Resource.Corn], [Resource.Goo, Resource.Fries], [Resource.FrothyDrink, Resource.Beans], [Resource.Bribe, Resource.Burger], [Resource.FrothyDrink, Resource.TBone]];
+    var secondAbilityCosts = [[Resource.Bribe, Resource.Burger, Resource.Fries], [Resource.Acid, Resource.Beans, Resource.TBone], [Resource.Acid, Resource.Burger, Resource.Taco], [Resource.Bribe, Resource.Corn, Resource.TBone],
+        [Resource.FrothyDrink, Resource.Fries, Resource.Taco], [Resource.Acid, Resource.Corn, Resource.Taco]];
+    var itemHints = [
+        "This button will use and use up an item... eventually.  But you need an item to use first!",
+        "TENNIS BALL - Collect a handful of tennis balls and send them hurtling towards the enemy streamer in low, fast arcs.",
+        "BOMB - Toss a bomb lazily at the enemy streamer.  It's tricky to hit with, but it will do a ton of damage.",
+        "HAMMER - Take a handful of hammers and lob them in slow, high arcs up into the sky, possibly landing annoyingly on the head of the enemy streamer.",
+        "SCARY MASK - Incomplete",
+        "BOTTLE ROCKET - Grab a bunch of small rockets and throw them up at the enemy streamer.  They'll track the streamer for a while.",
+        "SHIELD - Use the shield, and you can absorb one Retaliate without taking any damage.  Incomplete"
+    ];
+    var buildingAction1Hints = [
+        "RUDE COWS - These nonplussed cows idly munch grass all day, the lazy things, and one thing leads to another.  Use this ability to steer their revolting emisions at the enemy streamer to gag and damage them.",
+        "FLYING FISH - Use this, and cheerful fish will hop and glide out of the pond and sail through the skies.  A lucky streamer who grabs a fish whlie in mid flight will be healed a bit.",
+        "FLOWER CANOPY - Collect the fertile haul of the greenhouse and loft it into the sky at the enemy streamer, damaging them.",
+        "TIPSY BIPLANES - Call in a squadron of extremely irresponsible and entirely unpraiseworthy tipsy biplane pilots, and send them hurtling at the enemy streamer.",
+        "POLICE HELICOPTERS - Call in a helpful troop of police helicopters to guard the local skies, blocking airborne attacks against your friends for a while.",
+        "ANTIBIOTIC OVERPRESCRIPTION PARTY - Get the hospital to throw its doors open, recklessly overprescribing their antibiotics and tempting the rise of resistant superbugs.  But hey, it will heal up your friends in the process."
+    ];
+    var buildingAction2Hints = [
+        "BROCCOLI HARVEST - Collect the bounteous harvest of the verdant farm lands and shower your friends in broccoli.  ",
+        "TURTLE PARADE - Incomplete",
+        "SHIMMERING SUN - Incomplete",
+        "BLIMP - Let loose a mighty blimp.  It is hardy but full of useful items.  If the streamer blasts it several times, it will pop, raining down some handy tools.",
+        "POLICE CARS - Incomplete",
+        "DR. FAIRY, MD - Call in the doctor!  A friendly fairy will drift up into the sky, pulsing with healing energy, which will soothe your friendly streamer if they stay close to the pulses."
+    ];
+    var buildingHints = [
+        "FARM - A rustic farm, soothing with pastoral delights.  These produce the finest in organic free-range broccoli and cage free cows.  Family owned for millenia, they're certified organic by the ATF.",
+        "POND - A simple fishing hole of no note.  Local rumors say deep in the bowels of this very shallow pond drift massive tentacles, and burbling from the murk rises the odd sound Ph'nglui mglw'nafh....",
+        "GREENHOUSE - A state of the art plant nurturing facility.  Contrary to claims spread by the valued team members of local fast food shops, this greenhouse only grows licit, nonmedical plants, man.",
+        "AIRPORT - A cozy commuter airport with 3 gates.  A cinnamon bun shops sells icing blobs with bits of bun, security takes all of 3 minutes, and all flights require 3 connecting flights to get anywhere.",
+        "POLICE STATION - The local constabulary.  They keep the peace, but owing to increasing civil forfeiture laws, the piece they keep is getting to be rather large.",
+        "HOSPITAL - A local clinic."
+    ];
+    var itemIcons2 = ['ball', 'bomb', 'hammer', 'mask', 'rocket', 'shield'];
+    var ability1Pics = ['cow', 'fish', 'flowers', 'biplane', 'policecopter', 'meds'];
+    var ability2Pics = ['broccoli', 'turtles', 'sun', 'blimp', 'policecar', 'fairyability'];
+    var k;
+    var tooltipSet = new Phaser.Group(apg.g);
+    tooltipSet.x = 10;
+    tooltipSet.y = 100;
+    w.add(tooltipSet);
+    var lastTip = "";
+    var onTipTime = 0;
+    new ent(tooltipSet, -320, -200, 'cartoongame/imgs/tooltip2.png', {
+        upd: function (e) {
+            tip.toolTime--;
+            if (tip.toolTime == 0)
+                tip.toolTip = "";
+            if (tip.toolTip == lastTip && tip.toolTip != "") {
+                onTipTime++;
+            }
+            else {
+                onTipTime = 0;
+                lastTip = tip.toolTip;
+            }
+            if (tip.toolTip == "" || onTipTime < 45)
+                tooltipSet.alpha = tooltipSet.alpha * .7;
+            else
+                tooltipSet.alpha = tooltipSet.alpha * .85 + .15 * 1.;
+        }
+    });
+    new enttx(tooltipSet, 0, 4, "Tip", { font: '18px ' + fontName, fill: '#433' }, { upd: function (e) { e.visible = (tip.toolTip == "") ? false : true; } });
+    var requiresLabel = new enttx(tooltipSet, 0, 150, "Cost", { font: '18px ' + fontName, fill: '#433' }, { visible: false });
+    var resources = [];
+    for (k = 0; k < 3; k++)
+        resources.push(new ent(tooltipSet, 32 * k, 170, 'cartoongame/imgs/resources/beer.png', { visible: false }));
+    var extractSet = new Phaser.Group(apg.g);
+    tooltipSet.add(extractSet);
+    extractSet.x = 64;
+    extractSet.y = 136;
+    var extractLabel = new enttx(extractSet, -64, 12, "Extract", { font: '18px ' + fontName, fill: '#433' }, { visible: false });
+    var extracts = [];
+    for (k = 0; k < 3; k++)
+        extracts.push(new ent(extractSet, 32 * k, 0, 'cartoongame/imgs/resources/beer.png', { visible: false }));
+    extracts[2].scalex = extracts[2].scaley = .5;
+    var aby = 174;
+    var abilitiesLabel = new enttx(tooltipSet, 0, aby + 8, "Abilities", { font: '18px ' + fontName, fill: '#433' }, { visible: false });
+    var skill1Set = new Phaser.Group(apg.g);
+    tooltipSet.add(skill1Set);
+    skill1Set.x = 64;
+    var skillIcon1 = new ent(skill1Set, 0, aby, 'cartoongame/imgs/abilities/biplane.png', { scalex: .5, scaley: .5, visible: false });
+    var skillIcons1 = [];
+    for (k = 0; k < 2; k++)
+        skillIcons1.push(new ent(skill1Set, k * 16, aby + 34, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5, visible: false }));
+    var ab2x = 0;
+    var skill2Set = new Phaser.Group(apg.g);
+    tooltipSet.add(skill2Set);
+    skill2Set.x = 114;
+    var skillIcon2 = new ent(skill2Set, 0, aby, 'cartoongame/imgs/abilities/blimp.png', { scalex: .5, scaley: .5, visible: false });
+    skillIcon2.visible = false;
+    var skillIcons2 = [];
+    for (k = 0; k < 3; k++)
+        skillIcons2.push(new ent(skill2Set, k * 16, aby + 34, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5, visible: false }));
+    var lastToolTip = '';
+    function doBuildingTip(e, id) {
+        var k;
+        var res = 'cartoongame/imgs/resources/';
+        e.text = buildingHints[id];
+        abilitiesLabel.visible = extractLabel.visible = skillIcons1[0].visible = skillIcons1[1].visible = skillIcon1.visible = skillIcons2[0].visible = skillIcons2[1].visible = skillIcons2[2].visible = skillIcon2.visible = extracts[0].visible = extracts[1].visible = extracts[2].visible = true;
+        for (k = 0; k < 2; k++)
+            extracts[k].tex = res + resourceIcons[extractResources[id][k]];
+        extracts[2].tex = 'cartoongame/imgs/items/' + itemIcons2[extractItems[id]] + '.png';
+        var alpha1 = (player.resources[firstAbilityCosts[id][0]] > 0 && player.resources[firstAbilityCosts[id][1]] > 0) ? 1 : .5;
+        skillIcon1.tex = 'cartoongame/imgs/abilities/' + ability1Pics[id] + '.png';
+        skillIcon1.alpha = alpha1;
+        for (k = 0; k < 2; k++) {
+            skillIcons1[k].tex = res + resourceIcons[firstAbilityCosts[id][k]];
+            skillIcons1[k].alpha = alpha1;
+        }
+        var alpha2 = (player.resources[secondAbilityCosts[id][0]] > 0 && player.resources[secondAbilityCosts[id][1]] > 0 && player.resources[secondAbilityCosts[id][2]] > 0) ? 1 : .5;
+        skillIcon2.tex = 'cartoongame/imgs/abilities/' + ability2Pics[id] + '.png';
+        skillIcon2.alpha = alpha2;
+        for (k = 0; k < 3; k++) {
+            skillIcons2[k].tex = res + resourceIcons[secondAbilityCosts[id][k]];
+            skillIcons2[k].alpha = alpha2;
+        }
+    }
+    new enttx(tooltipSet, 10, 30, "", { font: '17px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 346 }, {
+        upd: function (e) {
+            tooltipSet.x = tooltipSet.x * .93 + .07 * (apg.g.input.activePointer.x < 420 ? 20 : apg.g.input.activePointer.x - 400);
+            tooltipSet.y = tooltipSet.y * .93 + .07 * (apg.g.input.activePointer.y < 240 ? 0 : apg.g.input.activePointer.y - 240);
+            if (tip.toolTip != lastToolTip) {
+                var buildingID = getBuilding();
+                e.text = tip.toolTip;
+                lastToolTip = tip.toolTip;
+                extracts[0].visible = extracts[1].visible = extracts[2].visible = skillIcons2[0].visible = skillIcons2[1].visible = skillIcons2[2].visible = skillIcon2.visible = skillIcons1[0].visible = skillIcons1[1].visible = skillIcon1.visible = extractLabel.visible = abilitiesLabel.visible = requiresLabel.visible = resources[0].visible = resources[1].visible = resources[2].visible = false;
+                if (tip.toolTip == 'building1') {
+                    e.text = buildingAction1Hints[buildingID];
+                    requiresLabel.visible = true;
+                    resources[0].visible = true;
+                    resources[1].visible = true;
+                    resources[0].tex = 'cartoongame/imgs/resources/' + resourceIcons[firstAbilityCosts[buildingID][0]];
+                    resources[1].tex = 'cartoongame/imgs/resources/' + resourceIcons[firstAbilityCosts[buildingID][1]];
+                }
+                if (tip.toolTip == 'building2') {
+                    e.text = buildingAction2Hints[buildingID];
+                    requiresLabel.visible = true;
+                    resources[0].visible = true;
+                    resources[1].visible = true;
+                    resources[2].visible = true;
+                    resources[0].tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[buildingID][0]];
+                    resources[1].tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[buildingID][1]];
+                    resources[2].tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[buildingID][2]];
+                }
+                if (tip.toolTip == 'extract') {
+                    e.text = "EXTRACT: Randomly extract a resource or item from the building you're at.  This won't work if the building is already in use this turn.  What you get depends on the quirk of the building.  You might dodge airbourne attacks sometmies when you're doing this.";
+                    extractLabel.visible = extracts[0].visible = extracts[1].visible = extracts[2].visible = true;
+                    extracts[0].tex = 'cartoongame/imgs/resources/' + resourceIcons[extractResources[buildingID][0]];
+                    extracts[1].tex = 'cartoongame/imgs/resources/' + resourceIcons[extractResources[buildingID][1]];
+                    extracts[2].tex = 'cartoongame/imgs/items/' + itemIcons2[extractItems[buildingID]] + '.png';
+                }
+                if (tip.toolTip == 'item1') {
+                    e.text = itemHints[player.items[0] + 1];
+                }
+                if (tip.toolTip == 'item2') {
+                    e.text = itemHints[player.items[1] + 1];
+                }
+                if (tip.toolTip == 'item3') {
+                    e.text = itemHints[player.items[2] + 1];
+                }
+                if (tip.toolTip == 'farm')
+                    doBuildingTip(e, 0);
+                if (tip.toolTip == 'pond')
+                    doBuildingTip(e, 1);
+                if (tip.toolTip == 'greenhouse')
+                    doBuildingTip(e, 2);
+                if (tip.toolTip == 'airport')
+                    doBuildingTip(e, 3);
+                if (tip.toolTip == 'police')
+                    doBuildingTip(e, 4);
+                if (tip.toolTip == 'hospital')
+                    doBuildingTip(e, 5);
+            }
+        }
+    });
+}
+function MakeStats(apg, player, foe, fontName, team, w, buildingPicName, actionLabelTextProps, getCurBuilding, getFoeActive) {
+    var itemIcons = ['stennisball', 'sbomb', 'shammer2', 'sscarymask', 'srocket2', 'sshield'];
+    var nameHeight = 138;
+    var actionLabel = new enttx(w, 334, 92, "1. Action Here", actionLabelTextProps, {});
+    var statsSet = new Phaser.Group(apg.g);
+    w.add(statsSet);
+    statsSet.x = 540;
+    statsSet.y = 50;
+    var building = new ent(statsSet, 90, 86, buildingPicName, { color: 0xa0a0a0 });
+    var vsLabel = new enttx(statsSet, 110, -72 + nameHeight, 'VS', { font: '24px ' + fontName });
+    function MakePanel(panel, teamTest, basex, headx, headoffset, namex, healthlabx, healthx, itemx, resx, rexlabx, resnumx) {
+        function inCategory(src, x, y, add, labels, bump1) {
+            if (bump1 === void 0) { bump1 = false; }
+            var labelEnts = [];
+            var curx = x;
+            var cury = y;
+            for (var k = 0; k < labels.length; k++) {
+                labelEnts.push(new enttx(src, curx, cury, labels[k], { font: '14px ' + fontName, fill: '#211' }));
+                if (bump1 && k == 0)
+                    cury += 28;
+                cury += add;
+                if (k == 2 || k == 5) {
+                    curx += 28;
+                    cury = y;
+                }
+                if (k == 5)
+                    cury -= add;
+            }
+            return labelEnts;
+        }
+        function picCategory(src, x, y, add, labels) {
+            var labelEnts = [];
+            var curx = x;
+            var cury = y;
+            for (var k = 0; k < labels.length; k++) {
+                labelEnts.push(new ent(src, curx, cury, 'cartoongame/imgs/resources/' + labels[k], { scalex: .5, scaley: .5 }));
+                cury += add;
+                if (k == 2 || k == 5) {
+                    curx += 28;
+                    cury = y;
+                }
+                if (k == 5)
+                    cury -= add;
+            }
+            return labelEnts;
+        }
+        var coreSet = panel.panelGroup = new Phaser.Group(apg.g);
+        statsSet.add(coreSet);
+        coreSet.x = basex;
+        coreSet.y = 0;
+        panel.headEnt = new ent(coreSet, headx + (team == teamTest ? headoffset : 0), ((team == teamTest) ? 50 : 80), (team == teamTest) ? player.headPic : foe.headPic, { scalex: (team == teamTest) ? .75 : .5, scaley: (team == teamTest) ? .75 : .5, color: (team == teamTest) ? 0xffffff : 0xa0a0a0 });
+        panel.name = new enttx(coreSet, namex, nameHeight, (team == teamTest) ? player.name : foe.name, { font: '12px ' + fontName, fill: (team == teamTest) ? player.nameColor : foe.nameColor });
+        var healthHeight = 158;
+        new enttx(coreSet, healthlabx, healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' });
+        new ent(coreSet, healthx, healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 });
+        panel.health = new ent(coreSet, healthx + 1, healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 });
+        var itemSet = new Phaser.Group(apg.g);
+        coreSet.add(itemSet);
+        itemSet.x = itemx;
+        itemSet.y = 170;
+        panel.itemLabel = new enttx(itemSet, 0, -14, 'Items', { font: '10px ' + fontName, fill: '#555' });
+        panel.itemPics = [new ent(itemSet, 0, 0, 'cartoongame/imgs/sitems/srocket2.png'),
+            new ent(itemSet, 0, 16, 'cartoongame/imgs/sitems/srocket2.png'),
+            new ent(itemSet, 0, 32, 'cartoongame/imgs/sitems/srocket2.png')];
+        var resSet = new Phaser.Group(apg.g);
+        coreSet.add(resSet);
+        resSet.x = resx;
+        resSet.y = 184;
+        new enttx(resSet, rexlabx, -16, 'Resources', { font: '12px ' + fontName, fill: '#222' });
+        panel.statPics = picCategory(resSet, resnumx, 0, 13, ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png']);
+        panel.statNums = inCategory(resSet, resnumx + 16, 0, 13, ["5", "0", "0", "0", "0", "10", "0", "0", "0", "0"]);
+    }
+    var left = new StatPanel, right = new StatPanel();
+    MakePanel(left, 1, 0, 0, 0, 0, 2, -4, 86, -10, 6, 4);
+    MakePanel(right, 2, 150, 30, -40, 10, 80, 50, -8, 20, 0, -6);
+    var foeActiveOld = true;
+    return function () {
+        var buildingNames = ['farm', 'pond', 'greenhouse', 'airport', 'police station', 'hospital'];
+        var curBuilding = getCurBuilding();
+        building.tex = 'cartoongame/imgs/buildings/building' + (curBuilding + 1) + '.png';
+        actionLabel.text = "1. Action at " + buildingNames[curBuilding];
+        var me, other;
+        var panelx, panelsidex;
+        var foeActive = getFoeActive();
+        if (team == 1) {
+            me = left;
+            other = right;
+            panelx = 0;
+            panelsidex = 32;
+        }
+        else {
+            me = right;
+            other = left;
+            panelx = 150;
+            panelsidex = -32;
+        }
+        if (foeActive && !foeActiveOld) {
+            me.panelGroup.x = panelx;
+            other.panelGroup.visible = true;
+        }
+        if (!foeActive && foeActiveOld) {
+            me.panelGroup.x = panelx + panelsidex;
+            other.panelGroup.visible = false;
+        }
+        foeActiveOld = foeActive;
+        me.itemLabel.alpha = (player.items[0] != -1) ? 1 : .3;
+        for (var k = 0; k < 3; k++) {
+            if (player.items[k] == -1)
+                me.itemPics[k].visible = false;
+            else {
+                me.itemPics[k].visible = true;
+                me.itemPics[k].tex = 'cartoongame/imgs/sitems/' + itemIcons[player.items[k]] + '.png';
+            }
+        }
+        for (var k = 0; k < 10; k++) {
+            me.statNums[k].tx = "" + player.resources[k];
+            me.statPics[k].alpha = me.statNums[k].alpha = (player.resources[k] == 0) ? .5 : 1;
+        }
+        me.health.scalex = .67 * (player.healthStat / 10);
+        if (foeActive) {
+            other.name.text = foe.name;
+            other.headEnt.tex = foe.headPic;
+            other.itemLabel.alpha = (foe.items[0] != -1) ? 1 : .3;
+            for (var k = 0; k < 3; k++) {
+                if (foe.items[k] == -1)
+                    other.itemPics[k].visible = false;
+                else {
+                    other.itemPics[k].visible = true;
+                    other.itemPics[k].tex = 'cartoongame/imgs/sitems/' + itemIcons[foe.items[k]] + '.png';
+                }
+            }
+            for (var k = 0; k < 10; k++) {
+                other.statNums[k].tx = "" + foe.resources[k];
+                other.statPics[k].alpha = other.statNums[k].alpha = (foe.resources[k] == 0) ? .5 : 1;
+            }
+            other.health.scalex = .67 * (foe.healthStat / 10);
+        }
+    };
+}
+;
+function MakeLocation(apg, w, id, team, fontName, actionLabelTextProps, bodyPic, player, getBuilding) {
+    var cols2 = [0x306090, 0x609030, 0x903060, 0x906030, 0x603090, 0x309060, 0x808080, 0x903030, 0x309030, 0x303090];
+    var bodyColor = cols2[id % 10];
+    var buildingSet = new Phaser.Group(apg.g);
+    w.add(buildingSet);
+    buildingSet.x = 344;
+    buildingSet.y = 300;
+    new enttx(buildingSet, 85, 94, "2. Then, Move Here", actionLabelTextProps);
+    new ent(buildingSet, -44, 15, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png');
+    new ent(buildingSet, 340, 15, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png');
+    var building = getBuilding();
+    var locBody = new ent(buildingSet, 64 * building, 51, bodyPic, { scalex: 1, scaley: 1, color: bodyColor });
+    var locHead = new ent(buildingSet, 64 * building, 37, player.smallHeadPic);
+    var playerLabel = new enttx(buildingSet, 64 * building, 80, player.name, { font: '12px ' + fontName, fill: player.nameColor });
+    return function () {
+        var curBuilding = getBuilding();
+        locBody.x = 16 + 64 * (team == 1 ? curBuilding : 5 - curBuilding);
+        locHead.x = 6 + 64 * (team == 1 ? curBuilding : 5 - curBuilding);
+        playerLabel.x = 6 + 64 * (team == 1 ? curBuilding : 5 - curBuilding);
+    };
+}
+function MakeRoundPlaque(apg, player, foe, fontName, isShowPlaque, endShow) {
+    var w = new Phaser.Group(apg.g);
+    apg.g.world.add(w);
+    new ent(w, 0, 0, 'cartoongame/imgs/tooltip2.png', {
+        upd: function (e) {
+            w.y = w.y * .8 + .2 * (isShowPlaque() ? 0 : -500);
+            if (!isShowPlaque())
+                return;
+            if (apg.g.input.activePointer.isDown)
+                endShow();
+        }
+    });
+    new enttx(w, 8, 8, "Choices for ", { font: '45px ' + fontName, fill: '#444' });
+}
 function MainPlayerInput(apg, id, team) {
     var w = new Phaser.Group(apg.g);
     apg.g.world.add(w);
     var fontName = "Caveat Brush";
-    var actions = apg.JSONAssets['cartoongame/json/TestActions.json'];
     var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
     var warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
-    var itemIcons = ['stennisball', 'sbomb', 'shammer2', 'sscarymask', 'srocket2', 'sshield'];
-    var itemIcons2 = ['ball', 'bomb', 'hammer', 'mask', 'rocket', 'shield'];
     var cols = ['#369', '#693', '#936', '#963', '#639', '#396', '#888', '#933', '#393', '#339'];
-    var cols2 = [0x306090, 0x609030, 0x903060, 0x906030, 0x603090, 0x309060, 0x808080, 0x903030, 0x309030, 0x303090];
-    var resources = [], foeResources = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    var extractResources = [[Resource.TBone, Resource.Corn], [Resource.Acid, Resource.Goo], [Resource.Corn, Resource.Beans], [Resource.FrothyDrink, Resource.Burger], [Resource.FrothyDrink, Resource.Bribe], [Resource.Fries, Resource.Taco]];
-    var extractItems = [ItemIds.Hammer, ItemIds.ScaryMask, ItemIds.Bomb, ItemIds.TennisBall, ItemIds.Rocket, ItemIds.Shield];
-    var resourceIcons = ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png'];
-    var firstAbilityCosts = [[Resource.Goo, Resource.Beans], [Resource.Goo, Resource.Corn], [Resource.Goo, Resource.Fries], [Resource.FrothyDrink, Resource.Beans], [Resource.Bribe, Resource.Burger], [Resource.FrothyDrink, Resource.TBone]];
-    var secondAbilityCosts = [[Resource.Bribe, Resource.Burger, Resource.Fries], [Resource.Acid, Resource.Beans, Resource.TBone], [Resource.Acid, Resource.Burger, Resource.Taco], [Resource.Bribe, Resource.Corn, Resource.TBone],
-        [Resource.FrothyDrink, Resource.Fries, Resource.Taco], [Resource.Acid, Resource.Corn, Resource.Taco]];
-    var ability1Pics = ['cow', 'fish', 'flowers', 'biplane', 'policecopter', 'meds'];
-    var ability2Pics = ['broccoli', 'turtles', 'sun', 'blimp', 'policecar', 'fairyability'];
-    var buildingNames = ['farm', 'pond', 'greenhouse', 'airport', 'police station', 'hospital'];
-    var itemHints = [
-        "This button will use and use up an item... eventually.  But you need an item to use first!",
-        "TENNIS BALL - Collect a handful of tennis balls and send them hurtling towards the enemy streamer in low, fast arcs.",
-        "BOMB - Toss a bomb lazily at the enemy streamer.  It's tricky to hit with, but it will do a ton of damage.",
-        "HAMMER - Take a handful of hammers and lob them in slow, high arcs up into the sky, possibly landing annoyingly on the head of the enemy streamer.",
-        "SCARY MASK - Incomplete",
-        "BOTTLE ROCKET - Grab a bunch of small rockets and throw them up at the enemy streamer.  They'll track the streamer for a while.",
-        "SHIELD - Use the shield, and you can absorb one Retaliate without taking any damage.  Incomplete"
-    ];
-    var buildingAction1Hints = [
-        "RUDE COWS - These nonplussed cows idly munch grass all day, the lazy things, and one thing leads to another.  Use this ability to steer their revolting emisions at the enemy streamer to gag and damage them.",
-        "FLYING FISH - Use this, and cheerful fish will hop and glide out of the pond and sail through the skies.  A lucky streamer who grabs a fish whlie in mid flight will be healed a bit.",
-        "FLOWER CANOPY - Collect the fertile haul of the greenhouse and loft it into the sky at the enemy streamer, damaging them.",
-        "TIPSY BIPLANES - Call in a squadron of extremely irresponsible and entirely unpraiseworthy tipsy biplane pilots, and send them hurtling at the enemy streamer.",
-        "POLICE HELICOPTERS - Call in a helpful troop of police helicopters to guard the local skies, blocking airborne attacks against your friends for a while.",
-        "ANTIBIOTIC OVERPRESCRIPTION PARTY - Get the hospital to throw its doors open, recklessly overprescribing their antibiotics and tempting the rise of resistant superbugs.  But hey, it will heal up your friends in the process."
-    ];
-    var buildingAction2Hints = [
-        "BROCCOLI HARVEST - Collect the bounteous harvest of the verdant farm lands and shower your friends in broccoli.  ",
-        "TURTLE PARADE - Incomplete",
-        "SHIMMERING SUN - Incomplete",
-        "BLIMP - Let loose a mighty blimp.  It is hardy but full of useful items.  If the streamer blasts it several times, it will pop, raining down some handy tools.",
-        "POLICE CARS - Incomplete",
-        "DR. FAIRY, MD - Call in the doctor!  A friendly fairy will drift up into the sky, pulsing with healing energy, which will soothe your friendly streamer if they stay close to the pulses."
-    ];
-    var buildingHints = [
-        "FARM - A rustic farm, soothing with pastoral delights.  These produce the finest in organic free-range broccoli and cage free cows.  Family owned for millenia, they're certified organic by the ATF.",
-        "POND - A simple fishing hole of no note.  Local rumors say deep in the bowels of this very shallow pond drift massive tentacles, and burbling from the murk rises the odd sound Ph'nglui mglw'nafh....",
-        "GREENHOUSE - A state of the art plant nurturing facility.  Contrary to claims spread by the valued team members of local fast food shops, this greenhouse only grows licit, nonmedical plants, man.",
-        "AIRPORT - A cozy commuter airport with 3 gates.  A cinnamon bun shops sells icing blobs with bits of bun, security takes all of 3 minutes, and all flights require 3 connecting flights to get anywhere.",
-        "POLICE STATION - The local constabulary.  They keep the peace, but owing to increasing civil forfeiture laws, the piece they keep is getting to be rather large.",
-        "HOSPITAL - A local clinic."
-    ];
-    var headNum = id + 1 + ((team == 2) ? 10 : 0);
-    var nameColor = cols[id % 10];
-    var foenameColor = cols[7];
-    var bodyColor = cols2[id % 10];
-    var playerStats = {};
     var timer = 0;
-    var buildingPic;
-    var headEntLeft, headEntRight;
-    var roundNumber = 2;
-    var nameLeft, nameRight;
-    var healthLeft, foeHealthBk, healthRight;
-    var actionLabel;
     var choices = [1, 1, 1, 1, 1, 1];
-    var myStats = {
-        nm: "",
-        st: [10,
-            10,
-            0,
-            0,
-            -1, -1, -1],
-        rs: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    };
-    resources = myStats.rs;
-    var toolTip = "";
-    var choiceButtons, statPicsLeft, statNumsLeft, statPicsRight, statNumsRight;
-    var stanceBody, stanceHead, locBody, locHead;
-    var item1 = myStats.st[4], item2 = myStats.st[5], item3 = myStats.st[6];
-    var playerLabel;
-    var lastRoundUpdate = 0;
-    var vsLabel;
-    var itemLabelLeft;
-    var itemLabel2;
-    var itemPicsLeft;
-    var itemPicsRight, itemLabelRight;
-    var healthStat = 10;
-    var curBuilding = (team == 2) ? (5 - id % 6) : id % 6;
-    var curRow = id < 6 ? 1 : 0;
-    var buildingPicName = 'cartoongame/imgs/buildings/building1.png';
-    var headPic = 'cartoongame/imgs/heads/headbig' + headNum + '.png';
-    var sheadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
-    var bodyPic = 'cartoongame/imgs/body' + (team == 1 ? 'right' : 'left') + '.png';
-    var foeHeadPic = 'cartoongame/imgs/heads/headbig20.png';
-    var sfoeheadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
-    var accepted = false;
-    var curFoe = null;
-    var foeHealthStat = 10, foeitem1 = -1, foeitem2 = -1, foeitem3 = -1;
-    var roundColors = ['#468', '#846', '#684'];
-    var roundx = 80;
-    var tipx = 70;
-    var tipy = 90;
-    var mapRowx = 0;
-    var mapRowy = 60;
-    var mapBuildingx = 44;
-    var mapBuildingy = -160;
-    var allStx = -30;
-    var allSty = -50;
-    var statx = -110 + allStx;
-    var staty = -176 + allSty;
-    var foestatx = -60 + allStx;
-    var foestaty = -176 + allSty;
-    var foeAdd = 130;
-    var foeActive = false, foeActiveOld = true;
-    var forceReset = true;
-    var foeNameString = 'xxxFirestormxxx', foeID = 0;
-    function addActions(srcChoices, setToolTip) {
-        var curCollection = 0;
-        function add(isActions, choiceSet) {
-            var id = curCollection;
-            curCollection++;
-            return new ButtonCollection(isActions, w, apg, 22, setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
-        }
-        var o = [];
-        for (var j = 0; j < actions.length; j++) {
-            var p = [];
-            for (var k2 = 0; k2 < actions[j].choices.length; k2++) {
-                var k = k2;
-                var r = actions[j].choices[k];
-                var xv = r.x;
-                if (j == 0 && team == 2)
-                    xv = 320 - xv;
-                p.push(new ActionEntry(r.name, r.tip, r.pic, actions[j].x + xv, actions[j].y + r.y, r.specialID));
-            }
-            o.push(add(actions[j].isActions, p));
-        }
-        return o;
-    }
-    function reset() {
-        choiceButtons[0].selected = curBuilding;
-        choiceButtons[1].selected = curRow;
-        choiceButtons[2].selected = 0;
-        choiceButtons[3].selected = -1;
-        choices[0] = curBuilding;
-        choices[1] = curRow;
-        choices[2] = 0;
-        buildingPic.tex = 'cartoongame/imgs/buildings/building' + (curBuilding + 1) + '.png';
-        actionLabel.text = "1. Action at " + buildingNames[curBuilding];
-        if (team == 1) {
-            if (foeActive && !foeActiveOld) {
-                for (var r in playerLeft)
-                    playerLeft[r].x -= 32;
-                for (var r in playerRight)
-                    playerRight[r].visible = true;
-            }
-            if (!foeActive && foeActiveOld) {
-                for (var r in playerLeft)
-                    playerLeft[r].x += 32;
-                for (var r in playerRight)
-                    playerRight[r].visible = false;
-            }
-            foeActiveOld = foeActive;
-            for (var k = 0; k < 3; k++) {
-                itemLabelLeft.alpha = (item1 != -1) ? 1 : .3;
-                if (item1 == -1)
-                    itemPicsLeft[0].visible = false;
-                else {
-                    itemPicsLeft[0].visible = true;
-                    itemPicsLeft[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[item1] + '.png';
-                }
-                if (item2 == -1)
-                    itemPicsLeft[1].visible = false;
-                else {
-                    itemPicsLeft[1].visible = true;
-                    itemPicsLeft[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[item2] + '.png';
-                }
-                if (item3 == -1)
-                    itemPicsLeft[2].visible = false;
-                else {
-                    itemPicsLeft[2].visible = true;
-                    itemPicsLeft[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[item3] + '.png';
-                }
-            }
-            for (var k = 0; k < 10; k++) {
-                statNumsLeft[k].tx = "" + resources[k];
-                statPicsLeft[k].alpha = statNumsLeft[k].alpha = (resources[k] == 0) ? .5 : 1;
-            }
-            healthLeft.scalex = .67 * (healthStat / 10);
-            if (foeActive) {
-                nameRight.text = foeNameString;
-                headEntRight.tex = foeHeadPic;
-                for (var k = 0; k < 3; k++) {
-                    itemLabelRight.alpha = (foeitem1 != -1) ? 1 : .3;
-                    if (foeitem1 == -1)
-                        itemPicsRight[0].visible = false;
-                    else {
-                        itemPicsRight[0].visible = true;
-                        itemPicsRight[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem1] + '.png';
-                    }
-                    if (foeitem2 == -1)
-                        itemPicsRight[1].visible = false;
-                    else {
-                        itemPicsRight[1].visible = true;
-                        itemPicsRight[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem2] + '.png';
-                    }
-                    if (foeitem3 == -1)
-                        itemPicsRight[2].visible = false;
-                    else {
-                        itemPicsRight[2].visible = true;
-                        itemPicsRight[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem3] + '.png';
-                    }
-                }
-                for (var k = 0; k < 10; k++) {
-                    statNumsRight[k].tx = "" + foeResources[k];
-                    statPicsRight[k].alpha = statNumsRight[k].alpha = (foeResources[k] == 0) ? .5 : 1;
-                }
-                healthRight.scalex = .67 * (foeHealthStat / 10);
-            }
-        }
-        else {
-            if (foeActive && !foeActiveOld) {
-                for (var r in playerRight)
-                    playerRight[r].x += 32;
-                for (var r in playerLeft)
-                    playerLeft[r].visible = true;
-            }
-            if (!foeActive && foeActiveOld) {
-                for (var r in playerRight)
-                    playerRight[r].x -= 32;
-                for (var r in playerLeft)
-                    playerLeft[r].visible = false;
-            }
-            foeActiveOld = foeActive;
-            for (var k = 0; k < 3; k++) {
-                itemLabelRight.alpha = (item1 != -1) ? 1 : .3;
-                if (item1 == -1)
-                    itemPicsRight[0].visible = false;
-                else {
-                    itemPicsRight[0].visible = true;
-                    itemPicsRight[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[item1] + '.png';
-                }
-                if (item2 == -1)
-                    itemPicsRight[1].visible = false;
-                else {
-                    itemPicsRight[1].visible = true;
-                    itemPicsRight[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[item2] + '.png';
-                }
-                if (item3 == -1)
-                    itemPicsRight[2].visible = false;
-                else {
-                    itemPicsRight[2].visible = true;
-                    itemPicsRight[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[item3] + '.png';
-                }
-            }
-            for (var k = 0; k < 10; k++) {
-                statNumsRight[k].tx = "" + resources[k];
-                statPicsRight[k].alpha = statNumsRight[k].alpha = (resources[k] == 0) ? .5 : 1;
-            }
-            healthRight.scalex = .67 * (healthStat / 10);
-            if (foeActive) {
-                nameLeft.text = foeNameString;
-                headEntLeft.tex = foeHeadPic;
-                for (var k = 0; k < 3; k++) {
-                    itemLabelLeft.alpha = (foeitem1 != -1) ? 1 : .3;
-                    if (foeitem1 == -1)
-                        itemPicsLeft[0].visible = false;
-                    else {
-                        itemPicsLeft[0].visible = true;
-                        itemPicsLeft[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem1] + '.png';
-                    }
-                    if (foeitem2 == -1)
-                        itemPicsLeft[1].visible = false;
-                    else {
-                        itemPicsLeft[1].visible = true;
-                        itemPicsLeft[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem2] + '.png';
-                    }
-                    if (foeitem3 == -1)
-                        itemPicsLeft[2].visible = false;
-                    else {
-                        itemPicsLeft[2].visible = true;
-                        itemPicsLeft[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem3] + '.png';
-                    }
-                }
-                for (var k = 0; k < 10; k++) {
-                    statNumsLeft[k].tx = "" + foeResources[k];
-                    statPicsLeft[k].alpha = statNumsLeft[k].alpha = (foeResources[k] == 0) ? .5 : 1;
-                }
-                healthLeft.scalex = .67 * (foeHealthStat / 10);
-            }
-        }
-        stanceBody.y = 30 + 160 + curRow * 64;
-        stanceHead.y = 30 + 146 + curRow * 64;
-        locBody.x = 30 + 330 + 64 * (team == 1 ? curBuilding : 5 - curBuilding);
-        locHead.x = 30 + 320 + 64 * (team == 1 ? curBuilding : 5 - curBuilding);
-        playerLabel.x = 30 + 320 + 64 * (team == 1 ? curBuilding : 5 - curBuilding);
-    }
-    apg.ResetServerMessageRegistry()
-        .SetKeepAliveStatus(true)
-        .RegisterDisconnect(function () {
-        ent.clearAll();
-        enttx.clearAll();
-        WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game, then connect again!");
-    })
-        .Register("startround", function (p) {
-        accepted = false;
-        endOfRoundSound.play();
-        curFoe = null;
-        for (var k in playerStats) {
-            var f = playerStats[k];
-            if (f.nm == apg.playerName)
-                continue;
-            if (f.st[0] > 0 && (f.st[2] % 6) == curBuilding && f.st[3] == curRow) {
-                curFoe = f;
-                break;
-            }
-        }
-        if (curFoe == null) {
-            foeActive = false;
-        }
-        else {
-            foeActive = true;
-            foeID = curFoe.st[1];
-            foeNameString = curFoe.nm;
-            foenameColor = cols[foeID % 10];
-            foeHeadPic = 'cartoongame/imgs/heads/headbig' + (foeID + 1 + ((team == 2) ? 0 : 10)) + '.png';
-            foeHealthStat = curFoe.st[0];
-            foeitem1 = curFoe.st[4];
-            foeitem2 = curFoe.st[5];
-            foeitem3 = curFoe.st[6];
-            foeResources = curFoe.rs;
-        }
-        reset();
-    })
-        .Register("time", function (p) {
-        timer = p.time;
-        console.log("time " + timer);
-        roundNumber = p.round;
-        if (timer < 6 && !accepted) {
-            warningSound.play('', 0, 1 - (timer * 15) / 100);
-        }
-    })
-        .Register("pl", function (p) {
-        playerStats[p.nm] = p;
-        if (p.nm != apg.playerName)
-            return;
-        myStats = p;
-        healthStat = p.st[0];
-        if (p.st[3] != -1)
-            curRow = p.st[3];
-        if (p.st[2] != -1)
-            curBuilding = p.st[2] % 6;
-        item1 = p.st[4];
-        item2 = p.st[5];
-        item3 = p.st[6];
-        resources = p.rs;
-        forceReset = true;
-    })
-        .Register("submit", function (p) {
-        if (accepted == false) {
-            accepted = true;
-            endOfRoundSound.play();
-        }
-        curBuilding = choices[0];
-        curRow = choices[1];
-        playerStats = {};
-        apg.WriteToServer("upd", { choices: choices });
-    });
-    var toolTime = 0;
-    function setToolTip(str) {
-        toolTip = str;
-        toolTime = 3;
-    }
-    var tick = 0;
-    new ent(w, 0, 0, 'cartoongame/imgs/ClientUI9.png', {
-        upd: function (e) {
-            tick++;
-            if (accepted) {
-                w.y = w.y * .9 + .1 * -500;
-            }
-            else {
-                w.y = w.y * .9 + .1 * 0;
-            }
-            choiceButtons[2].setParms(curBuilding, item1, item2, item3, resources, forceReset);
-            forceReset = false;
-            if (choiceButtons[3].selected == 0) {
-                endOfRoundSound.play();
-                accepted = true;
-                choiceButtons[3].selected = -1;
-            }
-            choiceButtons[0].update(true);
-            choiceButtons[1].update(true);
-            choiceButtons[2].update(true);
-            choiceButtons[3].update(true);
-        }
-    });
-    new ent(w, 0, 0, 'cartoongame/imgs/tooltip2.png', { upd: function (e) { toolTime--; if (toolTime == 0)
-            toolTip = ""; e.visible = (toolTip == "") ? false : true; } });
-    choiceButtons = addActions(choices, setToolTip);
-    new enttx(w, roundx + 260, 16, "Choices for ", { font: '45px ' + fontName, fill: '#444' });
-    new enttx(w, roundx + 440, 16, "Round ", { font: '45px ' + fontName, fill: roundColors[1] }, {
-        upd: function (e) {
-            if (roundNumber != lastRoundUpdate) {
-                e.text = "Round " + (roundNumber);
-                e.fill = roundColors[(roundNumber - 1) % roundColors.length];
-                lastRoundUpdate = roundNumber;
-            }
-        }
-    });
-    var nameHeight = 138;
-    var healthHeight = 158;
-    var playerLeft = [];
-    var playerRight = [];
-    function a1(e) { console.log(e); playerLeft.push(e); }
-    function a2(e) { playerRight.push(e); }
-    function a1l(l) { for (var e in l)
-        playerLeft.push(l[e]); }
-    function a2l(l) { for (var e in l)
-        playerRight.push(l[e]); }
-    actionLabel = new enttx(w, 60, 210, "1. Action Here", { font: '20px ' + fontName, fill: '#A00' });
-    buildingPic = new ent(w, allStx + 140, allSty + 86, buildingPicName, { color: 0xa0a0a0 });
-    vsLabel = new enttx(w, allStx + 160, allSty + -90 + 18 + nameHeight, 'VS', { font: '24px ' + fontName });
-    headEntLeft = new ent(w, allStx + 50, allSty + ((team == 1) ? 50 : 80), (team == 1) ? headPic : foeHeadPic, { scalex: (team == 1) ? .75 : .5, scaley: (team == 1) ? .75 : .5, color: (team == 1) ? 0xffffff : 0xa0a0a0 });
-    a1(headEntLeft);
-    nameLeft = new enttx(w, allStx + 50, allSty + nameHeight, (team == 1) ? apg.playerName : foeNameString, { font: '12px ' + fontName, fill: (team == 1) ? nameColor : foenameColor });
-    a1(nameLeft);
-    a1(new ent(w, allStx + 46, allSty + healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }));
-    healthLeft = new ent(w, allStx + 47, allSty + healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 });
-    a1(healthLeft);
-    var itemLeft = allStx + 136;
-    var itemRight = allStx + 192;
-    var itemVert = allSty + 170;
-    itemLabelLeft = new enttx(w, itemLeft, itemVert - 14, 'Items', { font: '10px ' + fontName, fill: '#555' });
-    a1(itemLabelLeft);
-    itemPicsLeft = [new ent(w, itemLeft, itemVert, 'cartoongame/imgs/sitems/srocket2.png'),
-        new ent(w, itemLeft, itemVert + 16, 'cartoongame/imgs/sitems/srocket2.png'),
-        new ent(w, itemLeft, itemVert + 32, 'cartoongame/imgs/sitems/srocket2.png')];
-    a1l(itemPicsLeft);
-    a1(new enttx(w, allStx + 52, allSty + healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }));
-    function category(msg, x, y) { return new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' }); }
-    function inCategory(x, y, add, labels, bump1) {
-        if (bump1 === void 0) { bump1 = false; }
-        var labelEnts = [];
-        var curx = x;
-        var cury = y;
-        for (var k = 0; k < labels.length; k++) {
-            labelEnts.push(new enttx(w, curx, cury, labels[k], { font: '14px ' + fontName, fill: '#211' }));
-            if (bump1 && k == 0)
-                cury += 28;
-            cury += add;
-            if (k == 2 || k == 5) {
-                curx += 28;
-                cury = y;
-            }
-            if (k == 5)
-                cury -= add;
-        }
-        return labelEnts;
-    }
-    function picCategory(x, y, add, labels) {
-        var labelEnts = [];
-        var curx = x;
-        var cury = y;
-        for (var k = 0; k < labels.length; k++) {
-            labelEnts.push(new ent(w, curx, cury, 'cartoongame/imgs/resources/' + labels[k], { scalex: .5, scaley: .5 }));
-            cury += add;
-            if (k == 2 || k == 5) {
-                curx += 28;
-                cury = y;
-            }
-            if (k == 5)
-                cury -= add;
-        }
-        return labelEnts;
-    }
-    a1(new enttx(w, statx + 110 - 30 + 76, staty + 186 + 158, 'Resources', { font: '12px ' + fontName, fill: '#222' }));
-    statPicsLeft = picCategory(10 + statx + 194 - 50, staty + 360, 13, ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png']);
-    a1l(statPicsLeft);
-    statNumsLeft = inCategory(6 + statx + 214 - 50, staty + 360, 13, ["5", "0", "0", "0", "0", "10", "0", "0", "0", "0"]);
-    a1l(statNumsLeft);
-    itemLabelRight = new enttx(w, itemRight, itemVert - 14, 'Items', { font: '10px ' + fontName, fill: '#555' });
-    a2(itemLabelRight);
-    itemPicsRight = [new ent(w, itemRight, itemVert, 'cartoongame/imgs/sitems/sbomb.png'),
-        new ent(w, itemRight, itemVert + 16, 'cartoongame/imgs/sitems/sbomb.png'),
-        new ent(w, itemRight, itemVert + 32, 'cartoongame/imgs/sitems/sbomb.png')];
-    a2l(itemPicsRight);
-    headEntRight = new ent(w, allStx + 230 + (team == 1 ? 0 : -40), allSty + ((team == 1) ? 80 : 50), (team == 1) ? foeHeadPic : headPic, { scalex: (team == 1) ? .5 : .75, scaley: (team == 1) ? .5 : .75, color: (team == 1) ? 0xa0a0a0 : 0xffffff });
-    a2(headEntRight);
-    nameRight = new enttx(w, allStx + 210, allSty + nameHeight, (team == 1) ? foeNameString : apg.playerName, { font: '12px ' + fontName, fill: (team == 1) ? foenameColor : nameColor });
-    a2(nameRight);
-    a2(new ent(w, allStx + 250, allSty + healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }));
-    healthRight = new ent(w, allStx + 251, allSty + healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 });
-    a2(healthRight);
-    a2(new enttx(w, allStx + 280, allSty + healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }));
-    a2(new enttx(w, foestatx + 60 + -20 + 240, foestaty + 186 + 158, 'Resources', { font: '12px ' + fontName, fill: '#222' }));
-    statPicsRight = picCategory(foestatx + foeAdd + 194 - 50, foestaty + 360, 13, ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png']);
-    a2l(statPicsRight);
-    statNumsRight = inCategory(-4 + foestatx + foeAdd + 214 - 50, foestaty + 360, 13, ["5", "0", "0", "0", "0", "10", "0", "0", "0", "0"]);
-    a2l(statNumsRight);
-    new enttx(w, 80 + mapBuildingx + 325, 104 + mapBuildingy + 240, "2. Then, Move Here", { font: '20px ' + fontName, fill: '#A00' });
-    new ent(w, mapBuildingx + 270, mapBuildingy + 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png');
-    new ent(w, mapBuildingx + 680, mapBuildingy + 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png');
-    locBody = new ent(w, mapBuildingx + 330 + 64 * curBuilding, mapBuildingy + 16 + 285, bodyPic, { scalex: 1, scaley: 1, color: bodyColor });
-    locHead = new ent(w, mapBuildingx + 320 + 64 * curBuilding, mapBuildingy + 16 + 271, sheadPic);
-    playerLabel = new enttx(w, mapBuildingx + 320 + 64 * curBuilding, mapBuildingy + 16 + 320 - 6, apg.playerName, { font: '12px ' + fontName, fill: nameColor });
-    var moveArrow = [];
-    for (var k = 0; k < 6; k++) {
-        var art = 'mid';
-        if (k == 0)
-            art = 'cap';
-        if (k == 5)
-            art = 'head';
-        moveArrow.push(new ent(w, 310 + mapBuildingx + 64 * k, 280 + mapBuildingy, 'cartoongame/imgs/arrow' + art + '.png', { alpha: .5, upd: function (e) { e.alpha = .2 + .2 * Math.cos(tick * .03); } }));
-        moveArrow[k].visible = false;
-    }
-    new enttx(w, mapRowx + 700, mapRowy + 110, "", { font: '24px ' + fontName, fill: '#A00' });
-    stanceBody = new ent(w, mapRowx + 740, mapRowy + 160 + curRow * 64, bodyPic, { scalex: 1, scaley: 1, color: bodyColor });
-    stanceHead = new ent(w, mapRowx + 731, mapRowy + 146 + curRow * 64, sheadPic);
-    new enttx(w, tipx + 250, tipy + 110, "Tip", { font: '18px ' + fontName, fill: '#433' }, { upd: function (e) { e.visible = (toolTip == "") ? false : true; } });
-    var requiresLabel = new enttx(w, tipx + 250, tipy + 260, "Cost", { font: '18px ' + fontName, fill: '#433' });
-    requiresLabel.visible = false;
-    var resource1 = new ent(w, tipx + 250, tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource1.visible = false;
-    var resource2 = new ent(w, 32 + tipx + 250, tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource2.visible = false;
-    var resource3 = new ent(w, 64 + tipx + 250, tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource3.visible = false;
-    var extractx = 48;
-    var extracty = 36;
-    var extractLabel = new enttx(w, -48 + extractx + tipx + 250, 32 + extracty + tipy + 190, "Extract", { font: '18px ' + fontName, fill: '#433' });
-    extractLabel.visible = false;
-    var extractIcon1 = new ent(w, extractx + tipx + 266, extracty + tipy + 210, 'cartoongame/imgs/resources/beer.png');
-    extractIcon1.visible = false;
-    var extractIcon2 = new ent(w, extractx + tipx + 266 + 32, extracty + tipy + 210, 'cartoongame/imgs/resources/beer.png');
-    extractIcon2.visible = false;
-    var extractIcon3 = new ent(w, extractx + tipx + 266 + 64, extracty + tipy + 210, 'cartoongame/imgs/items/ball.png', { scalex: .5, scaley: .5 });
-    extractIcon3.visible = false;
-    var ab1x = 16 + 48;
-    var ab2x = 26 + 48;
-    var aby = 8;
-    var abilitiesLabel = new enttx(w, tipx + 250, 32 + aby + 12 + tipy + 240, "Abilities", { font: '18px ' + fontName, fill: '#433' });
-    abilitiesLabel.visible = false;
-    var skillIcon1 = new ent(w, ab1x + tipx + 250, aby + tipy + 276, 'cartoongame/imgs/abilities/biplane.png', { scalex: .5, scaley: .5 });
-    skillIcon1.visible = false;
-    var skillIcon1r1 = new ent(w, ab1x + tipx + 250, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon1r1.visible = false;
-    var skillIcon1r2 = new ent(w, ab1x + tipx + 250 + 16, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon1r2.visible = false;
-    var skillIcon2 = new ent(w, 40 + ab2x + tipx + 250, aby + tipy + 276, 'cartoongame/imgs/abilities/blimp.png', { scalex: .5, scaley: .5 });
-    skillIcon2.visible = false;
-    var skillIcon2r1 = new ent(w, 40 + ab2x + tipx + 250, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon2r1.visible = false;
-    var skillIcon2r2 = new ent(w, 40 + ab2x + tipx + 250 + 16, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon2r2.visible = false;
-    var skillIcon2r3 = new ent(w, 40 + ab2x + tipx + 250 + 32, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon2r3.visible = false;
-    var lastToolTip = '';
-    function doBuildingTip(e, id) {
-        var res = 'cartoongame/imgs/resources/';
-        e.text = buildingHints[id];
-        abilitiesLabel.visible = extractLabel.visible = skillIcon1r1.visible = skillIcon1r2.visible = skillIcon1.visible = skillIcon2r1.visible = skillIcon2r2.visible = skillIcon2r3.visible = skillIcon2.visible = extractIcon1.visible = extractIcon2.visible = extractIcon3.visible = true;
-        extractIcon1.tex = res + resourceIcons[extractResources[id][0]];
-        extractIcon2.tex = res + resourceIcons[extractResources[id][1]];
-        extractIcon3.tex = 'cartoongame/imgs/items/' + itemIcons2[extractItems[id]] + '.png';
-        var alpha1 = (resources[firstAbilityCosts[id][0]] > 0 && resources[firstAbilityCosts[id][1]] > 0) ? 1 : .5;
-        skillIcon1.tex = 'cartoongame/imgs/abilities/' + ability1Pics[id] + '.png';
-        skillIcon1.alpha = alpha1;
-        skillIcon1r1.tex = res + resourceIcons[firstAbilityCosts[id][0]];
-        skillIcon1r1.alpha = alpha1;
-        skillIcon1r2.tex = res + resourceIcons[firstAbilityCosts[id][1]];
-        skillIcon1r2.alpha = alpha1;
-        var alpha2 = (resources[secondAbilityCosts[id][0]] > 0 && resources[secondAbilityCosts[id][1]] > 0 && resources[secondAbilityCosts[id][2]] > 0) ? 1 : .5;
-        skillIcon2.tex = 'cartoongame/imgs/abilities/' + ability2Pics[id] + '.png';
-        skillIcon2.alpha = alpha2;
-        skillIcon2r1.tex = res + resourceIcons[secondAbilityCosts[id][0]];
-        skillIcon2r1.alpha = alpha2;
-        skillIcon2r2.tex = res + resourceIcons[secondAbilityCosts[id][1]];
-        skillIcon2r2.alpha = alpha2;
-        skillIcon2r3.tex = res + resourceIcons[secondAbilityCosts[id][2]];
-        skillIcon2r3.alpha = alpha2;
-    }
-    new enttx(w, tipx + 260, tipy + 140, "", { font: '17px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 346 }, {
-        upd: function (e) {
-            if (toolTip != lastToolTip) {
-                e.text = toolTip;
-                lastToolTip = toolTip;
-                extractIcon1.visible = extractIcon2.visible = extractIcon3.visible = skillIcon2r1.visible = skillIcon2r2.visible = skillIcon2r3.visible = skillIcon2.visible = skillIcon1r1.visible = skillIcon1r2.visible = skillIcon1.visible = extractLabel.visible = abilitiesLabel.visible = requiresLabel.visible = resource1.visible = resource2.visible = resource3.visible = false;
-                if (toolTip == 'building1') {
-                    e.text = buildingAction1Hints[curBuilding];
-                    requiresLabel.visible = true;
-                    resource1.visible = true;
-                    resource2.visible = true;
-                    resource1.tex = 'cartoongame/imgs/resources/' + resourceIcons[firstAbilityCosts[curBuilding][0]];
-                    resource2.tex = 'cartoongame/imgs/resources/' + resourceIcons[firstAbilityCosts[curBuilding][1]];
-                }
-                if (toolTip == 'building2') {
-                    e.text = buildingAction2Hints[curBuilding];
-                    requiresLabel.visible = true;
-                    resource1.visible = true;
-                    resource2.visible = true;
-                    resource3.visible = true;
-                    resource1.tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[curBuilding][0]];
-                    resource2.tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[curBuilding][1]];
-                    resource3.tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[curBuilding][2]];
-                }
-                if (toolTip == 'extract') {
-                    e.text = "EXTRACT: Randomly extract a resource or item from the building you're at.  This won't work if the building is already in use this turn.  What you get depends on the quirk of the building.  You might dodge airbourne attacks sometmies when you're doing this.";
-                    extractLabel.visible = extractIcon1.visible = extractIcon2.visible = extractIcon3.visible = true;
-                    extractIcon1.tex = 'cartoongame/imgs/resources/' + resourceIcons[extractResources[curBuilding][0]];
-                    extractIcon2.tex = 'cartoongame/imgs/resources/' + resourceIcons[extractResources[curBuilding][1]];
-                    extractIcon3.tex = 'cartoongame/imgs/items/' + itemIcons2[extractItems[curBuilding]] + '.png';
-                }
-                if (toolTip == 'item1') {
-                    e.text = itemHints[item1 + 1];
-                }
-                if (toolTip == 'item2') {
-                    e.text = itemHints[item2 + 1];
-                }
-                if (toolTip == 'item3') {
-                    e.text = itemHints[item3 + 1];
-                }
-                if (toolTip == 'farm')
-                    doBuildingTip(e, 0);
-                if (toolTip == 'pond')
-                    doBuildingTip(e, 1);
-                if (toolTip == 'greenhouse')
-                    doBuildingTip(e, 2);
-                if (toolTip == 'airport')
-                    doBuildingTip(e, 3);
-                if (toolTip == 'police')
-                    doBuildingTip(e, 4);
-                if (toolTip == 'hospital')
-                    doBuildingTip(e, 5);
-            }
-        }
-    });
-    category("Time", -130 + 650 + 200, -360 + 48 + 336);
-    new enttx(w, -130 + 650 + 200, -360 + 48 + 354, "", { font: '40px ' + fontName, fill: '#688' }, { upd: function (e) { e.text = "" + timer; e.fill = roundColors[(roundNumber - 1) % roundColors.length]; } });
-    if (apg.allowFullScreen) {
-        new enttx(w, 100, 700, "Your actions were submitted just fine!  Now just relax until the next round.", { font: '18px ' + fontName, fill: '#433' });
-    }
-    reset();
-    if (apg.networkTestSequence)
-        MainInputTestSequence(apg);
-}
-function PlayerAction(apg, id, team) {
-    var w = new Phaser.Group(apg.g);
-    apg.g.world.add(w);
-    var fontName = "Caveat Brush";
-    var actions = apg.JSONAssets['cartoongame/json/PlayActions.json'];
-    var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
-    var warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
-    var itemIcons = ['stennisball', 'sbomb', 'shammer2', 'sscarymask', 'srocket2', 'sshield'];
-    var itemIcons2 = ['ball', 'bomb', 'hammer', 'mask', 'rocket', 'shield'];
-    var cols = ['#369', '#693', '#936', '#963', '#639', '#396', '#888', '#933', '#393', '#339'];
-    var cols2 = [0x306090, 0x609030, 0x903060, 0x906030, 0x603090, 0x309060, 0x808080, 0x903030, 0x309030, 0x303090];
-    var resources = [], foeResources = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    var extractResources = [[Resource.TBone, Resource.Corn], [Resource.Acid, Resource.Goo], [Resource.Corn, Resource.Beans], [Resource.FrothyDrink, Resource.Burger], [Resource.FrothyDrink, Resource.Bribe], [Resource.Fries, Resource.Taco]];
-    var extractItems = [ItemIds.Hammer, ItemIds.ScaryMask, ItemIds.Bomb, ItemIds.TennisBall, ItemIds.Rocket, ItemIds.Shield];
-    var resourceIcons = ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png'];
-    var firstAbilityCosts = [[Resource.Goo, Resource.Beans], [Resource.Goo, Resource.Corn], [Resource.Goo, Resource.Fries], [Resource.FrothyDrink, Resource.Beans], [Resource.Bribe, Resource.Burger], [Resource.FrothyDrink, Resource.TBone]];
-    var secondAbilityCosts = [[Resource.Bribe, Resource.Burger, Resource.Fries], [Resource.Acid, Resource.Beans, Resource.TBone], [Resource.Acid, Resource.Burger, Resource.Taco], [Resource.Bribe, Resource.Corn, Resource.TBone],
-        [Resource.FrothyDrink, Resource.Fries, Resource.Taco], [Resource.Acid, Resource.Corn, Resource.Taco]];
-    var ability1Pics = ['cow', 'fish', 'flowers', 'biplane', 'policecopter', 'meds'];
-    var ability2Pics = ['broccoli', 'turtles', 'sun', 'blimp', 'policecar', 'fairyability'];
-    var itemHints = [
-        "This button will use and use up an item... eventually.  But you need an item to use first!",
-        "TENNIS BALL - Collect a handful of tennis balls and send them hurtling towards the enemy streamer in low, fast arcs.",
-        "BOMB - Toss a bomb lazily at the enemy streamer.  It's tricky to hit with, but it will do a ton of damage.",
-        "HAMMER - Take a handful of hammers and lob them in slow, high arcs up into the sky, possibly landing annoyingly on the head of the enemy streamer.",
-        "SCARY MASK - Incomplete",
-        "BOTTLE ROCKET - Grab a bunch of small rockets and throw them up at the enemy streamer.  They'll track the streamer for a while.",
-        "SHIELD - Use the shield, and you can absorb one Retaliate without taking any damage.  Incomplete"
-    ];
-    var buildingAction1Hints = [
-        "RUDE COWS - These nonplussed cows idly munch grass all day, the lazy things, and one thing leads to another.  Use this ability to steer their revolting emisions at the enemy streamer to gag and damage them.",
-        "FLYING FISH - Use this, and cheerful fish will hop and glide out of the pond and sail through the skies.  A lucky streamer who grabs a fish whlie in mid flight will be healed a bit.",
-        "FLOWER CANOPY - Collect the fertile haul of the greenhouse and loft it into the sky at the enemy streamer, damaging them.",
-        "TIPSY BIPLANES - Call in a squadron of extremely irresponsible and entirely unpraiseworthy tipsy biplane pilots, and send them hurtling at the enemy streamer.",
-        "POLICE HELICOPTERS - Call in a helpful troop of police helicopters to guard the local skies, blocking airborne attacks against your friends for a while.",
-        "ANTIBIOTIC OVERPRESCRIPTION PARTY - Get the hospital to throw its doors open, recklessly overprescribing their antibiotics and tempting the rise of resistant superbugs.  But hey, it will heal up your friends in the process."
-    ];
-    var buildingAction2Hints = [
-        "BROCCOLI HARVEST - Collect the bounteous harvest of the verdant farm lands and shower your friends in broccoli.  ",
-        "TURTLE PARADE - Incomplete",
-        "SHIMMERING SUN - Incomplete",
-        "BLIMP - Let loose a mighty blimp.  It is hardy but full of useful items.  If the streamer blasts it several times, it will pop, raining down some handy tools.",
-        "POLICE CARS - Incomplete",
-        "DR. FAIRY, MD - Call in the doctor!  A friendly fairy will drift up into the sky, pulsing with healing energy, which will soothe your friendly streamer if they stay close to the pulses."
-    ];
-    var headNum = id + 1 + ((team == 2) ? 10 : 0);
-    var nameColor = cols[id % 10];
-    var foenameColor = cols[7];
-    var bodyColor = cols2[id % 10];
-    var playerStats = {};
-    var timer = 0;
-    var buildingPic;
-    var headEntLeft, headEntRight;
-    var roundNumber = 2;
-    var nameLeft, nameRight;
-    var healthLeft, foeHealthBk, healthRight;
-    var choices = [1, 1, 1, 1, 1, 1];
-    var myStats = {
-        nm: "",
-        st: [10,
-            10,
-            0,
-            0,
-            -1, -1, -1],
-        rs: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    };
-    resources = myStats.rs;
-    var toolTip = "";
-    var choiceButtons, statPicsLeft, statNumsLeft, statPicsRight, statNumsRight;
-    var item1 = myStats.st[4], item2 = myStats.st[5], item3 = myStats.st[6];
-    var lastRoundUpdate = 0;
-    var vsLabel;
-    var itemLabelLeft;
-    var itemLabel2;
-    var itemPicsLeft;
-    var itemPicsRight, itemLabelRight;
-    var healthStat = 10;
-    var curBuilding = (team == 2) ? (5 - id % 6) : id % 6;
-    var curRow = id < 6 ? 1 : 0;
-    var buildingPicName = 'cartoongame/imgs/buildings/building1.png';
-    var headPic = 'cartoongame/imgs/heads/headbig' + headNum + '.png';
-    var sheadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
-    var bodyPic = 'cartoongame/imgs/body' + (team == 1 ? 'right' : 'left') + '.png';
-    var foeHeadPic = 'cartoongame/imgs/heads/headbig20.png';
-    var sfoeheadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
-    var accepted = false;
-    var curFoe = null;
-    var foeHealthStat = 10, foeitem1 = -1, foeitem2 = -1, foeitem3 = -1;
-    var roundColors = ['#468', '#846', '#684'];
-    var roundx = 160;
-    var tipx = -170;
-    var tipy = -60;
-    var infox = 480;
-    var infoy = 30;
-    var statx = -110 + infox;
-    var staty = -176 + infoy;
-    var foestatx = -60 + infox;
-    var foestaty = -176 + infoy;
-    var foeAdd = 130;
-    var foeActive = false, foeActiveOld = true;
-    var forceReset = true;
-    var foeNameString = 'xxxFirestormxxx', foeID = 0;
-    function addActions(srcChoices, setToolTip) {
-        var curCollection = 0;
-        function add(isActions, choiceSet) {
-            var id = curCollection;
-            curCollection++;
-            return new ButtonCollection(isActions, w, apg, 22, setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
-        }
-        var o = [];
-        for (var j = 0; j < actions.length; j++) {
-            var p = [];
-            for (var k2 = 0; k2 < actions[j].choices.length; k2++) {
-                var k = k2;
-                var r = actions[j].choices[k];
-                var xv = r.x;
-                if (j == 0 && team == 2)
-                    xv = 320 - xv;
-                p.push(new ActionEntry(r.name, r.tip, r.pic, actions[j].x + xv, actions[j].y + r.y, r.specialID));
-            }
-            o.push(add(actions[j].isActions, p));
-        }
-        return o;
-    }
-    function reset() {
-        choiceButtons[0].selected = curBuilding;
-        choiceButtons[1].selected = curRow;
-        choiceButtons[2].selected = 0;
-        choiceButtons[3].selected = -1;
-        choices[0] = curBuilding;
-        choices[1] = curRow;
-        choices[2] = 0;
-        buildingPic.tex = 'cartoongame/imgs/buildings/building' + (curBuilding + 1) + '.png';
-        if (team == 1) {
-            if (foeActive && !foeActiveOld) {
-                for (var r in playerLeft)
-                    playerLeft[r].x -= 32;
-                for (var r in playerRight)
-                    playerRight[r].visible = true;
-            }
-            if (!foeActive && foeActiveOld) {
-                for (var r in playerLeft)
-                    playerLeft[r].x += 32;
-                for (var r in playerRight)
-                    playerRight[r].visible = false;
-            }
-            foeActiveOld = foeActive;
-            for (var k = 0; k < 3; k++) {
-                itemLabelLeft.alpha = (item1 != -1) ? 1 : .3;
-                if (item1 == -1)
-                    itemPicsLeft[0].visible = false;
-                else {
-                    itemPicsLeft[0].visible = true;
-                    itemPicsLeft[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[item1] + '.png';
-                }
-                if (item2 == -1)
-                    itemPicsLeft[1].visible = false;
-                else {
-                    itemPicsLeft[1].visible = true;
-                    itemPicsLeft[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[item2] + '.png';
-                }
-                if (item3 == -1)
-                    itemPicsLeft[2].visible = false;
-                else {
-                    itemPicsLeft[2].visible = true;
-                    itemPicsLeft[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[item3] + '.png';
-                }
-            }
-            for (var k = 0; k < 10; k++) {
-                statNumsLeft[k].tx = "" + resources[k];
-                statPicsLeft[k].alpha = statNumsLeft[k].alpha = (resources[k] == 0) ? .5 : 1;
-            }
-            healthLeft.scalex = .67 * (healthStat / 10);
-            if (foeActive) {
-                nameRight.text = foeNameString;
-                headEntRight.tex = foeHeadPic;
-                for (var k = 0; k < 3; k++) {
-                    itemLabelRight.alpha = (foeitem1 != -1) ? 1 : .3;
-                    if (foeitem1 == -1)
-                        itemPicsRight[0].visible = false;
-                    else {
-                        itemPicsRight[0].visible = true;
-                        itemPicsRight[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem1] + '.png';
-                    }
-                    if (foeitem2 == -1)
-                        itemPicsRight[1].visible = false;
-                    else {
-                        itemPicsRight[1].visible = true;
-                        itemPicsRight[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem2] + '.png';
-                    }
-                    if (foeitem3 == -1)
-                        itemPicsRight[2].visible = false;
-                    else {
-                        itemPicsRight[2].visible = true;
-                        itemPicsRight[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem3] + '.png';
-                    }
-                }
-                for (var k = 0; k < 10; k++) {
-                    statNumsRight[k].tx = "" + foeResources[k];
-                    statPicsRight[k].alpha = statNumsRight[k].alpha = (foeResources[k] == 0) ? .5 : 1;
-                }
-                healthRight.scalex = .67 * (foeHealthStat / 10);
-            }
-        }
-        else {
-            if (foeActive && !foeActiveOld) {
-                for (var r in playerRight)
-                    playerRight[r].x += 32;
-                for (var r in playerLeft)
-                    playerLeft[r].visible = true;
-            }
-            if (!foeActive && foeActiveOld) {
-                for (var r in playerRight)
-                    playerRight[r].x -= 32;
-                for (var r in playerLeft)
-                    playerLeft[r].visible = false;
-            }
-            foeActiveOld = foeActive;
-            for (var k = 0; k < 3; k++) {
-                itemLabelRight.alpha = (item1 != -1) ? 1 : .3;
-                if (item1 == -1)
-                    itemPicsRight[0].visible = false;
-                else {
-                    itemPicsRight[0].visible = true;
-                    itemPicsRight[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[item1] + '.png';
-                }
-                if (item2 == -1)
-                    itemPicsRight[1].visible = false;
-                else {
-                    itemPicsRight[1].visible = true;
-                    itemPicsRight[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[item2] + '.png';
-                }
-                if (item3 == -1)
-                    itemPicsRight[2].visible = false;
-                else {
-                    itemPicsRight[2].visible = true;
-                    itemPicsRight[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[item3] + '.png';
-                }
-            }
-            for (var k = 0; k < 10; k++) {
-                statNumsRight[k].tx = "" + resources[k];
-                statPicsRight[k].alpha = statNumsRight[k].alpha = (resources[k] == 0) ? .5 : 1;
-            }
-            healthRight.scalex = .67 * (healthStat / 10);
-            if (foeActive) {
-                nameLeft.text = foeNameString;
-                headEntLeft.tex = foeHeadPic;
-                for (var k = 0; k < 3; k++) {
-                    itemLabelLeft.alpha = (foeitem1 != -1) ? 1 : .3;
-                    if (foeitem1 == -1)
-                        itemPicsLeft[0].visible = false;
-                    else {
-                        itemPicsLeft[0].visible = true;
-                        itemPicsLeft[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem1] + '.png';
-                    }
-                    if (foeitem2 == -1)
-                        itemPicsLeft[1].visible = false;
-                    else {
-                        itemPicsLeft[1].visible = true;
-                        itemPicsLeft[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem2] + '.png';
-                    }
-                    if (foeitem3 == -1)
-                        itemPicsLeft[2].visible = false;
-                    else {
-                        itemPicsLeft[2].visible = true;
-                        itemPicsLeft[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem3] + '.png';
-                    }
-                }
-                for (var k = 0; k < 10; k++) {
-                    statNumsLeft[k].tx = "" + foeResources[k];
-                    statPicsLeft[k].alpha = statNumsLeft[k].alpha = (foeResources[k] == 0) ? .5 : 1;
-                }
-                healthLeft.scalex = .67 * (foeHealthStat / 10);
-            }
-        }
-    }
-    apg.ResetServerMessageRegistry()
-        .SetKeepAliveStatus(true)
-        .RegisterDisconnect(function () {
-        ent.clearAll();
-        enttx.clearAll();
-        WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game, then connect again!");
-    })
-        .Register("startround", function (p) {
-        accepted = false;
-        endOfRoundSound.play();
-        curFoe = null;
-        for (var k in playerStats) {
-            var f = playerStats[k];
-            if (f.nm == apg.playerName)
-                continue;
-            if (f.st[0] > 0 && (f.st[2] % 6) == curBuilding && f.st[3] == curRow) {
-                curFoe = f;
-                break;
-            }
-        }
-        if (curFoe == null) {
-            foeActive = false;
-        }
-        else {
-            foeActive = true;
-            foeID = curFoe.st[1];
-            foeNameString = curFoe.nm;
-            foenameColor = cols[foeID % 10];
-            foeHeadPic = 'cartoongame/imgs/heads/headbig' + (foeID + 1 + ((team == 2) ? 0 : 10)) + '.png';
-            foeHealthStat = curFoe.st[0];
-            foeitem1 = curFoe.st[4];
-            foeitem2 = curFoe.st[5];
-            foeitem3 = curFoe.st[6];
-            foeResources = curFoe.rs;
-        }
-        reset();
-    })
-        .Register("time", function (p) {
-        timer = p.time;
-        roundNumber = p.round;
-        if (timer < 6 && !accepted) {
-            warningSound.play('', 0, 1 - (timer * 15) / 100);
-        }
-    })
-        .Register("pl", function (p) {
-        playerStats[p.nm] = p;
-        if (p.nm != apg.playerName)
-            return;
-        myStats = p;
-        healthStat = p.st[0];
-        if (p.st[3] != -1)
-            curRow = p.st[3];
-        if (p.st[2] != -1)
-            curBuilding = p.st[2] % 6;
-        item1 = p.st[4];
-        item2 = p.st[5];
-        item3 = p.st[6];
-        resources = p.rs;
-        forceReset = true;
-    })
-        .Register("submit", function (p) {
-        if (accepted == false) {
-            accepted = true;
-            endOfRoundSound.play();
-        }
-        curBuilding = choices[0];
-        curRow = choices[1];
-        playerStats = {};
-        apg.WriteToServer("upd", { choices: choices });
-    });
-    function setToolTip(str) { toolTip = str; }
-    var tick = 0;
-    new ent(w, 0, 0, 'cartoongame/imgs/bkg_guide4.png', {
-        upd: function (e) {
-            tick++;
-            if (accepted) {
-                w.y = w.y * .9 + .1 * -500;
-            }
-            else {
-                w.y = w.y * .9 + .1 * 0;
-            }
-            choiceButtons[2].setParms(curBuilding, item1, item2, item3, resources, forceReset);
-            forceReset = false;
-            if (choiceButtons[3].selected == 0) {
-                endOfRoundSound.play();
-                accepted = true;
-                choiceButtons[3].selected = -1;
-            }
-            choiceButtons[0].update(true);
-            choiceButtons[1].update(true);
-            choiceButtons[2].update(true);
-            choiceButtons[3].update(true);
-        }
-    });
-    choiceButtons = addActions(choices, setToolTip);
-    new enttx(w, roundx + 260, 35, "Action for ", { font: '36px ' + fontName, fill: '#444' });
-    new enttx(w, roundx + 400, 35, "Round ", { font: '36px ' + fontName, fill: roundColors[1] }, {
-        upd: function (e) {
-            if (roundNumber != lastRoundUpdate) {
-                e.text = "Round " + (roundNumber);
-                e.fill = roundColors[(roundNumber - 1) % roundColors.length];
-                lastRoundUpdate = roundNumber;
-            }
-        }
-    });
-    var nameHeight = 138;
-    var healthHeight = 158;
-    var playerLeft = [];
-    var playerRight = [];
-    function a1(e) { console.log(e); playerLeft.push(e); }
-    function a2(e) { playerRight.push(e); }
-    function a1l(l) { for (var e in l)
-        playerLeft.push(l[e]); }
-    function a2l(l) { for (var e in l)
-        playerRight.push(l[e]); }
-    buildingPic = new ent(w, infox + 140, infoy + 86, buildingPicName, { color: 0xa0a0a0 });
-    vsLabel = new enttx(w, infox + 160, infoy + -90 + 18 + nameHeight, 'VS', { font: '24px ' + fontName });
-    headEntLeft = new ent(w, infox + 50, infoy + ((team == 1) ? 50 : 80), (team == 1) ? headPic : foeHeadPic, { scalex: (team == 1) ? .75 : .5, scaley: (team == 1) ? .75 : .5, color: (team == 1) ? 0xffffff : 0xa0a0a0 });
-    a1(headEntLeft);
-    nameLeft = new enttx(w, infox + 50, infoy + nameHeight, (team == 1) ? apg.playerName : foeNameString, { font: '12px ' + fontName, fill: (team == 1) ? nameColor : foenameColor });
-    a1(nameLeft);
-    a1(new ent(w, infox + 46, infoy + healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }));
-    healthLeft = new ent(w, infox + 47, infoy + healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 });
-    a1(healthLeft);
-    var itemLeft = 136 + infox;
-    var itemRight = 192 + infoy;
-    var itemVert = 170;
-    itemLabelLeft = new enttx(w, infox + itemLeft, infoy + itemVert - 14, 'Items', { font: '10px ' + fontName, fill: '#555' });
-    a1(itemLabelLeft);
-    itemPicsLeft = [new ent(w, itemLeft, itemVert, 'cartoongame/imgs/sitems/srocket2.png'),
-        new ent(w, itemLeft, itemVert + 16, 'cartoongame/imgs/sitems/srocket2.png'),
-        new ent(w, itemLeft, itemVert + 32, 'cartoongame/imgs/sitems/srocket2.png')];
-    a1l(itemPicsLeft);
-    a1(new enttx(w, infox + 52, infoy + healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }));
-    function category(msg, x, y) { return new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' }); }
-    function inCategory(x, y, add, labels, bump1) {
-        if (bump1 === void 0) { bump1 = false; }
-        var labelEnts = [];
-        var curx = x;
-        var cury = y;
-        for (var k = 0; k < labels.length; k++) {
-            labelEnts.push(new enttx(w, curx, cury, labels[k], { font: '14px ' + fontName, fill: '#211' }));
-            if (bump1 && k == 0)
-                cury += 28;
-            cury += add;
-            if (k == 2 || k == 5) {
-                curx += 28;
-                cury = y;
-            }
-            if (k == 5)
-                cury -= add;
-        }
-        return labelEnts;
-    }
-    function picCategory(x, y, add, labels) {
-        var labelEnts = [];
-        var curx = x;
-        var cury = y;
-        for (var k = 0; k < labels.length; k++) {
-            labelEnts.push(new ent(w, curx, cury, 'cartoongame/imgs/resources/' + labels[k], { scalex: .5, scaley: .5 }));
-            cury += add;
-            if (k == 2 || k == 5) {
-                curx += 28;
-                cury = y;
-            }
-            if (k == 5)
-                cury -= add;
-        }
-        return labelEnts;
-    }
-    a1(new enttx(w, statx + 110 - 30 + 76, staty + 186 + 158, 'Resources', { font: '12px ' + fontName, fill: '#222' }));
-    statPicsLeft = picCategory(10 + statx + 194 - 50, staty + 360, 13, ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png']);
-    a1l(statPicsLeft);
-    statNumsLeft = inCategory(6 + statx + 214 - 50, staty + 360, 13, ["5", "0", "0", "0", "0", "10", "0", "0", "0", "0"]);
-    a1l(statNumsLeft);
-    itemLabelRight = new enttx(w, infox + itemRight, infoy + itemVert - 14, 'Items', { font: '10px ' + fontName, fill: '#555' });
-    a2(itemLabelRight);
-    itemPicsRight = [new ent(w, itemRight, itemVert, 'cartoongame/imgs/sitems/sbomb.png'),
-        new ent(w, itemRight, itemVert + 16, 'cartoongame/imgs/sitems/sbomb.png'),
-        new ent(w, itemRight, itemVert + 32, 'cartoongame/imgs/sitems/sbomb.png')];
-    a2l(itemPicsRight);
-    headEntRight = new ent(w, infox + 230 + (team == 1 ? 0 : -40), infoy + ((team == 1) ? 80 : 50), (team == 1) ? foeHeadPic : headPic, { scalex: (team == 1) ? .5 : .75, scaley: (team == 1) ? .5 : .75, color: (team == 1) ? 0xa0a0a0 : 0xffffff });
-    a2(headEntRight);
-    nameRight = new enttx(w, infox + 210, infoy + nameHeight, (team == 1) ? foeNameString : apg.playerName, { font: '12px ' + fontName, fill: (team == 1) ? foenameColor : nameColor });
-    a2(nameRight);
-    a2(new ent(w, infox + 250, infoy + healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }));
-    healthRight = new ent(w, infox + 251, infoy + healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 });
-    a2(healthRight);
-    a2(new enttx(w, infox + 280, infoy + healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }));
-    a2(new enttx(w, foestatx + 60 + -20 + 240, foestaty + 186 + 158, 'Resources', { font: '12px ' + fontName, fill: '#222' }));
-    statPicsRight = picCategory(foestatx + foeAdd + 194 - 50, foestaty + 360, 13, ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png']);
-    a2l(statPicsRight);
-    statNumsRight = inCategory(-4 + foestatx + foeAdd + 214 - 50, foestaty + 360, 13, ["5", "0", "0", "0", "0", "10", "0", "0", "0", "0"]);
-    a2l(statNumsRight);
-    var tipIconsy = 80;
-    new enttx(w, tipx + 250, tipy + 110, "Tip", { font: '18px ' + fontName, fill: '#433' }, { upd: function (e) { e.visible = (toolTip == "") ? false : true; } });
-    var requiresLabel = new enttx(w, tipx + 250, tipIconsy + tipy + 260, "Cost", { font: '18px ' + fontName, fill: '#433' });
-    requiresLabel.visible = false;
-    var resource1 = new ent(w, tipx + 250, tipIconsy + tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource1.visible = false;
-    var resource2 = new ent(w, 32 + tipx + 250, tipIconsy + tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource2.visible = false;
-    var resource3 = new ent(w, 64 + tipx + 250, tipIconsy + tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource3.visible = false;
-    var extractx = 48;
-    var extracty = 36;
-    var extractLabel = new enttx(w, -48 + extractx + tipx + 250, tipIconsy + 32 + extracty + tipy + 190, "Extract", { font: '18px ' + fontName, fill: '#433' });
-    extractLabel.visible = false;
-    var extractIcon1 = new ent(w, extractx + tipx + 266, tipIconsy + extracty + tipy + 210, 'cartoongame/imgs/resources/beer.png');
-    extractIcon1.visible = false;
-    var extractIcon2 = new ent(w, extractx + tipx + 266 + 32, tipIconsy + extracty + tipy + 210, 'cartoongame/imgs/resources/beer.png');
-    extractIcon2.visible = false;
-    var extractIcon3 = new ent(w, extractx + tipx + 266 + 64, tipIconsy + extracty + tipy + 210, 'cartoongame/imgs/items/ball.png', { scalex: .5, scaley: .5 });
-    extractIcon3.visible = false;
-    var ab1x = 16 + 48;
-    var ab2x = 26 + 48;
-    var aby = 8;
-    var abilitiesLabel = new enttx(w, tipx + 250, tipIconsy + 32 + aby + 12 + tipy + 240, "Abilities", { font: '18px ' + fontName, fill: '#433' });
-    abilitiesLabel.visible = false;
-    var lastToolTip = '';
-    new enttx(w, tipx + 260, tipy + 140, "", { font: '17px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 250 }, {
-        upd: function (e) {
-            if (toolTip != lastToolTip) {
-                e.text = toolTip;
-                lastToolTip = toolTip;
-                extractIcon1.visible = extractIcon2.visible = extractIcon3.visible = extractLabel.visible = abilitiesLabel.visible = requiresLabel.visible = resource1.visible = resource2.visible = resource3.visible = false;
-                if (toolTip == 'building1') {
-                    e.text = buildingAction1Hints[curBuilding];
-                    requiresLabel.visible = true;
-                    resource1.visible = true;
-                    resource2.visible = true;
-                    resource1.tex = 'cartoongame/imgs/resources/' + resourceIcons[firstAbilityCosts[curBuilding][0]];
-                    resource2.tex = 'cartoongame/imgs/resources/' + resourceIcons[firstAbilityCosts[curBuilding][1]];
-                }
-                if (toolTip == 'building2') {
-                    e.text = buildingAction2Hints[curBuilding];
-                    requiresLabel.visible = true;
-                    resource1.visible = true;
-                    resource2.visible = true;
-                    resource3.visible = true;
-                    resource1.tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[curBuilding][0]];
-                    resource2.tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[curBuilding][1]];
-                    resource3.tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[curBuilding][2]];
-                }
-                if (toolTip == 'extract') {
-                    e.text = "EXTRACT: Randomly extract a resource or item from the building you're at.  This won't work if the building is already in use this turn.  What you get depends on the quirk of the building.  You might dodge airbourne attacks sometmies when you're doing this.";
-                    extractLabel.visible = extractIcon1.visible = extractIcon2.visible = extractIcon3.visible = true;
-                    extractIcon1.tex = 'cartoongame/imgs/resources/' + resourceIcons[extractResources[curBuilding][0]];
-                    extractIcon2.tex = 'cartoongame/imgs/resources/' + resourceIcons[extractResources[curBuilding][1]];
-                    extractIcon3.tex = 'cartoongame/imgs/items/' + itemIcons2[extractItems[curBuilding]] + '.png';
-                }
-                if (toolTip == 'item1') {
-                    e.text = itemHints[item1 + 1];
-                }
-                if (toolTip == 'item2') {
-                    e.text = itemHints[item2 + 1];
-                }
-                if (toolTip == 'item3') {
-                    e.text = itemHints[item3 + 1];
-                }
-            }
-        }
-    });
-    var timex = 70;
-    var timey = -100;
-    category("Time", -110 + 650 + timex, 30 + 336 + timey);
-    new enttx(w, -110 + 650 + timex, 30 + 354 + timey, "", { font: '40px ' + fontName, fill: '#688' }, { upd: function (e) { e.text = "" + timer; e.fill = roundColors[(roundNumber - 1) % roundColors.length]; } });
-    if (apg.allowFullScreen) {
-        new enttx(w, 100, 700, "Your actions were submitted just fine!  Now just relax until the next round.", { font: '18px ' + fontName, fill: '#433' });
-    }
-    reset();
-    if (apg.networkTestSequence)
-        MainInputTestSequence(apg);
-}
-function PlayerActionNew(apg, id, team) {
-    var w = new Phaser.Group(apg.g);
-    apg.g.world.add(w);
-    var fontName = "Caveat Brush";
-    var actions = apg.JSONAssets['cartoongame/json/PlayActions.json'];
-    var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
-    var warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
-    var itemIcons = ['stennisball', 'sbomb', 'shammer2', 'sscarymask', 'srocket2', 'sshield'];
-    var itemIcons2 = ['ball', 'bomb', 'hammer', 'mask', 'rocket', 'shield'];
-    var cols = ['#369', '#693', '#936', '#963', '#639', '#396', '#888', '#933', '#393', '#339'];
-    var cols2 = [0x306090, 0x609030, 0x903060, 0x906030, 0x603090, 0x309060, 0x808080, 0x903030, 0x309030, 0x303090];
-    var resources = [], foeResources = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    var extractResources = [[Resource.TBone, Resource.Corn], [Resource.Acid, Resource.Goo], [Resource.Corn, Resource.Beans], [Resource.FrothyDrink, Resource.Burger], [Resource.FrothyDrink, Resource.Bribe], [Resource.Fries, Resource.Taco]];
-    var extractItems = [ItemIds.Hammer, ItemIds.ScaryMask, ItemIds.Bomb, ItemIds.TennisBall, ItemIds.Rocket, ItemIds.Shield];
-    var resourceIcons = ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png'];
-    var firstAbilityCosts = [[Resource.Goo, Resource.Beans], [Resource.Goo, Resource.Corn], [Resource.Goo, Resource.Fries], [Resource.FrothyDrink, Resource.Beans], [Resource.Bribe, Resource.Burger], [Resource.FrothyDrink, Resource.TBone]];
-    var secondAbilityCosts = [[Resource.Bribe, Resource.Burger, Resource.Fries], [Resource.Acid, Resource.Beans, Resource.TBone], [Resource.Acid, Resource.Burger, Resource.Taco], [Resource.Bribe, Resource.Corn, Resource.TBone],
-        [Resource.FrothyDrink, Resource.Fries, Resource.Taco], [Resource.Acid, Resource.Corn, Resource.Taco]];
-    var ability1Pics = ['cow', 'fish', 'flowers', 'biplane', 'policecopter', 'meds'];
-    var ability2Pics = ['broccoli', 'turtles', 'sun', 'blimp', 'policecar', 'fairyability'];
-    var itemHints = [
-        "This button will use and use up an item... eventually.  But you need an item to use first!",
-        "TENNIS BALL - Collect a handful of tennis balls and send them hurtling towards the enemy streamer in low, fast arcs.",
-        "BOMB - Toss a bomb lazily at the enemy streamer.  It's tricky to hit with, but it will do a ton of damage.",
-        "HAMMER - Take a handful of hammers and lob them in slow, high arcs up into the sky, possibly landing annoyingly on the head of the enemy streamer.",
-        "SCARY MASK - Incomplete",
-        "BOTTLE ROCKET - Grab a bunch of small rockets and throw them up at the enemy streamer.  They'll track the streamer for a while.",
-        "SHIELD - Use the shield, and you can absorb one Retaliate without taking any damage.  Incomplete"
-    ];
-    var buildingAction1Hints = [
-        "RUDE COWS - These nonplussed cows idly munch grass all day, the lazy things, and one thing leads to another.  Use this ability to steer their revolting emisions at the enemy streamer to gag and damage them.",
-        "FLYING FISH - Use this, and cheerful fish will hop and glide out of the pond and sail through the skies.  A lucky streamer who grabs a fish whlie in mid flight will be healed a bit.",
-        "FLOWER CANOPY - Collect the fertile haul of the greenhouse and loft it into the sky at the enemy streamer, damaging them.",
-        "TIPSY BIPLANES - Call in a squadron of extremely irresponsible and entirely unpraiseworthy tipsy biplane pilots, and send them hurtling at the enemy streamer.",
-        "POLICE HELICOPTERS - Call in a helpful troop of police helicopters to guard the local skies, blocking airborne attacks against your friends for a while.",
-        "ANTIBIOTIC OVERPRESCRIPTION PARTY - Get the hospital to throw its doors open, recklessly overprescribing their antibiotics and tempting the rise of resistant superbugs.  But hey, it will heal up your friends in the process."
-    ];
-    var buildingAction2Hints = [
-        "BROCCOLI HARVEST - Collect the bounteous harvest of the verdant farm lands and shower your friends in broccoli.  ",
-        "TURTLE PARADE - Incomplete",
-        "SHIMMERING SUN - Incomplete",
-        "BLIMP - Let loose a mighty blimp.  It is hardy but full of useful items.  If the streamer blasts it several times, it will pop, raining down some handy tools.",
-        "POLICE CARS - Incomplete",
-        "DR. FAIRY, MD - Call in the doctor!  A friendly fairy will drift up into the sky, pulsing with healing energy, which will soothe your friendly streamer if they stay close to the pulses."
-    ];
-    var headNum = id + 1 + ((team == 2) ? 10 : 0);
-    var nameColor = cols[id % 10];
-    var foenameColor = cols[7];
-    var bodyColor = cols2[id % 10];
-    var playerStats = {};
-    var timer = 0;
-    var buildingPic;
-    var headEntLeft, headEntRight;
-    var roundNumber = 2;
-    var nameLeft, nameRight;
-    var healthLeft, foeHealthBk, healthRight;
-    var choices = [1, 1, 1, 1, 1, 1];
-    var myStats = {
-        nm: "",
-        st: [10,
-            10,
-            0,
-            0,
-            -1, -1, -1],
-        rs: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    };
-    resources = myStats.rs;
-    var toolTip = "";
-    var choiceButtons, statPicsLeft, statNumsLeft, statPicsRight, statNumsRight;
-    var item1 = myStats.st[4], item2 = myStats.st[5], item3 = myStats.st[6];
-    var lastRoundUpdate = 0;
-    var vsLabel;
-    var itemLabelLeft;
-    var itemLabel2;
-    var itemPicsLeft;
-    var itemPicsRight, itemLabelRight;
-    var healthStat = 10;
-    var curBuilding = (team == 2) ? (5 - id % 6) : id % 6;
-    var curRow = id < 6 ? 1 : 0;
-    var buildingPicName = 'cartoongame/imgs/buildings/building1.png';
-    var headPic = 'cartoongame/imgs/heads/headbig' + headNum + '.png';
-    var sheadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
-    var bodyPic = 'cartoongame/imgs/body' + (team == 1 ? 'right' : 'left') + '.png';
-    var foeHeadPic = 'cartoongame/imgs/heads/headbig20.png';
-    var sfoeheadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
-    var accepted = false;
-    var curFoe = null;
-    var foeHealthStat = 10, foeitem1 = -1, foeitem2 = -1, foeitem3 = -1;
-    var roundColors = ['#468', '#846', '#684'];
-    var roundx = 160;
-    var tipx = -170;
-    var tipy = -60;
-    var infox = 480;
-    var infoy = 30;
-    var statx = -110 + infox;
-    var staty = -176 + infoy;
-    var foestatx = -60 + infox;
-    var foestaty = -176 + infoy;
-    var foeAdd = 130;
-    var foeActive = false, foeActiveOld = true;
-    var forceReset = true;
-    var foeNameString = 'xxxFirestormxxx', foeID = 0;
-    function addActions(srcChoices, setToolTip) {
-        var curCollection = 0;
-        function add(isActions, choiceSet) {
-            var id = curCollection;
-            curCollection++;
-            return new ButtonCollection(isActions, w, apg, 22, setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
-        }
-        var o = [];
-        for (var j = 0; j < actions.length; j++) {
-            var p = [];
-            for (var k2 = 0; k2 < actions[j].choices.length; k2++) {
-                var k = k2;
-                var r = actions[j].choices[k];
-                var xv = r.x;
-                if (j == 0 && team == 2)
-                    xv = 320 - xv;
-                p.push(new ActionEntry(r.name, r.tip, r.pic, actions[j].x + xv, actions[j].y + r.y, r.specialID));
-            }
-            o.push(add(actions[j].isActions, p));
-        }
-        return o;
-    }
-    function reset() {
-        choiceButtons[0].selected = curBuilding;
-        choiceButtons[1].selected = curRow;
-        choiceButtons[2].selected = 0;
-        choiceButtons[3].selected = -1;
-        choices[0] = curBuilding;
-        choices[1] = curRow;
-        choices[2] = 0;
-        buildingPic.tex = 'cartoongame/imgs/buildings/building' + (curBuilding + 1) + '.png';
-        if (team == 1) {
-            if (foeActive && !foeActiveOld) {
-                for (var r in playerLeft)
-                    playerLeft[r].x -= 32;
-                for (var r in playerRight)
-                    playerRight[r].visible = true;
-            }
-            if (!foeActive && foeActiveOld) {
-                for (var r in playerLeft)
-                    playerLeft[r].x += 32;
-                for (var r in playerRight)
-                    playerRight[r].visible = false;
-            }
-            foeActiveOld = foeActive;
-            for (var k = 0; k < 3; k++) {
-                itemLabelLeft.alpha = (item1 != -1) ? 1 : .3;
-                if (item1 == -1)
-                    itemPicsLeft[0].visible = false;
-                else {
-                    itemPicsLeft[0].visible = true;
-                    itemPicsLeft[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[item1] + '.png';
-                }
-                if (item2 == -1)
-                    itemPicsLeft[1].visible = false;
-                else {
-                    itemPicsLeft[1].visible = true;
-                    itemPicsLeft[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[item2] + '.png';
-                }
-                if (item3 == -1)
-                    itemPicsLeft[2].visible = false;
-                else {
-                    itemPicsLeft[2].visible = true;
-                    itemPicsLeft[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[item3] + '.png';
-                }
-            }
-            for (var k = 0; k < 10; k++) {
-                statNumsLeft[k].tx = "" + resources[k];
-                statPicsLeft[k].alpha = statNumsLeft[k].alpha = (resources[k] == 0) ? .5 : 1;
-            }
-            healthLeft.scalex = .67 * (healthStat / 10);
-            if (foeActive) {
-                nameRight.text = foeNameString;
-                headEntRight.tex = foeHeadPic;
-                for (var k = 0; k < 3; k++) {
-                    itemLabelRight.alpha = (foeitem1 != -1) ? 1 : .3;
-                    if (foeitem1 == -1)
-                        itemPicsRight[0].visible = false;
-                    else {
-                        itemPicsRight[0].visible = true;
-                        itemPicsRight[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem1] + '.png';
-                    }
-                    if (foeitem2 == -1)
-                        itemPicsRight[1].visible = false;
-                    else {
-                        itemPicsRight[1].visible = true;
-                        itemPicsRight[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem2] + '.png';
-                    }
-                    if (foeitem3 == -1)
-                        itemPicsRight[2].visible = false;
-                    else {
-                        itemPicsRight[2].visible = true;
-                        itemPicsRight[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem3] + '.png';
-                    }
-                }
-                for (var k = 0; k < 10; k++) {
-                    statNumsRight[k].tx = "" + foeResources[k];
-                    statPicsRight[k].alpha = statNumsRight[k].alpha = (foeResources[k] == 0) ? .5 : 1;
-                }
-                healthRight.scalex = .67 * (foeHealthStat / 10);
-            }
-        }
-        else {
-            if (foeActive && !foeActiveOld) {
-                for (var r in playerRight)
-                    playerRight[r].x += 32;
-                for (var r in playerLeft)
-                    playerLeft[r].visible = true;
-            }
-            if (!foeActive && foeActiveOld) {
-                for (var r in playerRight)
-                    playerRight[r].x -= 32;
-                for (var r in playerLeft)
-                    playerLeft[r].visible = false;
-            }
-            foeActiveOld = foeActive;
-            for (var k = 0; k < 3; k++) {
-                itemLabelRight.alpha = (item1 != -1) ? 1 : .3;
-                if (item1 == -1)
-                    itemPicsRight[0].visible = false;
-                else {
-                    itemPicsRight[0].visible = true;
-                    itemPicsRight[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[item1] + '.png';
-                }
-                if (item2 == -1)
-                    itemPicsRight[1].visible = false;
-                else {
-                    itemPicsRight[1].visible = true;
-                    itemPicsRight[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[item2] + '.png';
-                }
-                if (item3 == -1)
-                    itemPicsRight[2].visible = false;
-                else {
-                    itemPicsRight[2].visible = true;
-                    itemPicsRight[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[item3] + '.png';
-                }
-            }
-            for (var k = 0; k < 10; k++) {
-                statNumsRight[k].tx = "" + resources[k];
-                statPicsRight[k].alpha = statNumsRight[k].alpha = (resources[k] == 0) ? .5 : 1;
-            }
-            healthRight.scalex = .67 * (healthStat / 10);
-            if (foeActive) {
-                nameLeft.text = foeNameString;
-                headEntLeft.tex = foeHeadPic;
-                for (var k = 0; k < 3; k++) {
-                    itemLabelLeft.alpha = (foeitem1 != -1) ? 1 : .3;
-                    if (foeitem1 == -1)
-                        itemPicsLeft[0].visible = false;
-                    else {
-                        itemPicsLeft[0].visible = true;
-                        itemPicsLeft[0].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem1] + '.png';
-                    }
-                    if (foeitem2 == -1)
-                        itemPicsLeft[1].visible = false;
-                    else {
-                        itemPicsLeft[1].visible = true;
-                        itemPicsLeft[1].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem2] + '.png';
-                    }
-                    if (foeitem3 == -1)
-                        itemPicsLeft[2].visible = false;
-                    else {
-                        itemPicsLeft[2].visible = true;
-                        itemPicsLeft[2].tex = 'cartoongame/imgs/sitems/' + itemIcons[foeitem3] + '.png';
-                    }
-                }
-                for (var k = 0; k < 10; k++) {
-                    statNumsLeft[k].tx = "" + foeResources[k];
-                    statPicsLeft[k].alpha = statNumsLeft[k].alpha = (foeResources[k] == 0) ? .5 : 1;
-                }
-                healthLeft.scalex = .67 * (foeHealthStat / 10);
-            }
-        }
-    }
-    apg.ResetServerMessageRegistry()
-        .SetKeepAliveStatus(true)
-        .RegisterDisconnect(function () {
-        ent.clearAll();
-        enttx.clearAll();
-        WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game, then connect again!");
-    })
-        .Register("startround", function (p) {
-        accepted = false;
-        endOfRoundSound.play();
-        curFoe = null;
-        for (var k in playerStats) {
-            var f = playerStats[k];
-            if (f.nm == apg.playerName)
-                continue;
-            if (f.st[0] > 0 && (f.st[2] % 6) == curBuilding && f.st[3] == curRow) {
-                curFoe = f;
-                break;
-            }
-        }
-        if (curFoe == null) {
-            foeActive = false;
-        }
-        else {
-            foeActive = true;
-            foeID = curFoe.st[1];
-            foeNameString = curFoe.nm;
-            foenameColor = cols[foeID % 10];
-            foeHeadPic = 'cartoongame/imgs/heads/headbig' + (foeID + 1 + ((team == 2) ? 0 : 10)) + '.png';
-            foeHealthStat = curFoe.st[0];
-            foeitem1 = curFoe.st[4];
-            foeitem2 = curFoe.st[5];
-            foeitem3 = curFoe.st[6];
-            foeResources = curFoe.rs;
-        }
-        reset();
-    })
-        .Register("time", function (p) {
-        timer = p.time;
-        roundNumber = p.round;
-        if (timer < 6 && !accepted) {
-            warningSound.play('', 0, 1 - (timer * 15) / 100);
-        }
-    })
-        .Register("pl", function (p) {
-        playerStats[p.nm] = p;
-        if (p.nm != apg.playerName)
-            return;
-        myStats = p;
-        healthStat = p.st[0];
-        if (p.st[3] != -1)
-            curRow = p.st[3];
-        if (p.st[2] != -1)
-            curBuilding = p.st[2] % 6;
-        item1 = p.st[4];
-        item2 = p.st[5];
-        item3 = p.st[6];
-        resources = p.rs;
-        forceReset = true;
-    })
-        .Register("submit", function (p) {
-        if (accepted == false) {
-            accepted = true;
-            endOfRoundSound.play();
-        }
-        curBuilding = choices[0];
-        curRow = choices[1];
-        playerStats = {};
-        apg.WriteToServer("upd", { choices: choices });
-    });
-    function setToolTip(str) { toolTip = str; }
-    var tick = 0;
-    new ent(w, 0, 0, 'cartoongame/imgs/bkg_guide4.png', {
-        upd: function (e) {
-            tick++;
-            if (accepted) {
-                w.y = w.y * .9 + .1 * -500;
-            }
-            else {
-                w.y = w.y * .9 + .1 * 0;
-            }
-            choiceButtons[2].setParms(curBuilding, item1, item2, item3, resources, forceReset);
-            forceReset = false;
-            if (choiceButtons[3].selected == 0) {
-                endOfRoundSound.play();
-                accepted = true;
-                choiceButtons[3].selected = -1;
-            }
-            choiceButtons[0].update(true);
-            choiceButtons[1].update(true);
-            choiceButtons[2].update(true);
-            choiceButtons[3].update(true);
-        }
-    });
-    choiceButtons = addActions(choices, setToolTip);
-    new enttx(w, roundx + 260, 35, "Action for ", { font: '36px ' + fontName, fill: '#444' });
-    new enttx(w, roundx + 400, 35, "Round ", { font: '36px ' + fontName, fill: roundColors[1] }, {
-        upd: function (e) {
-            if (roundNumber != lastRoundUpdate) {
-                e.text = "Round " + (roundNumber);
-                e.fill = roundColors[(roundNumber - 1) % roundColors.length];
-                lastRoundUpdate = roundNumber;
-            }
-        }
-    });
-    var nameHeight = 138;
-    var healthHeight = 158;
-    var playerLeft = [];
-    var playerRight = [];
-    function a1(e) { console.log(e); playerLeft.push(e); }
-    function a2(e) { playerRight.push(e); }
-    function a1l(l) { for (var e in l)
-        playerLeft.push(l[e]); }
-    function a2l(l) { for (var e in l)
-        playerRight.push(l[e]); }
-    buildingPic = new ent(w, infox + 140, infoy + 86, buildingPicName, { color: 0xa0a0a0 });
-    vsLabel = new enttx(w, infox + 160, infoy + -90 + 18 + nameHeight, 'VS', { font: '24px ' + fontName });
-    headEntLeft = new ent(w, infox + 50, infoy + ((team == 1) ? 50 : 80), (team == 1) ? headPic : foeHeadPic, { scalex: (team == 1) ? .75 : .5, scaley: (team == 1) ? .75 : .5, color: (team == 1) ? 0xffffff : 0xa0a0a0 });
-    a1(headEntLeft);
-    nameLeft = new enttx(w, infox + 50, infoy + nameHeight, (team == 1) ? apg.playerName : foeNameString, { font: '12px ' + fontName, fill: (team == 1) ? nameColor : foenameColor });
-    a1(nameLeft);
-    a1(new ent(w, infox + 46, infoy + healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }));
-    healthLeft = new ent(w, infox + 47, infoy + healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 });
-    a1(healthLeft);
-    var itemLeft = 136 + infox;
-    var itemRight = 192 + infoy;
-    var itemVert = 170;
-    itemLabelLeft = new enttx(w, infox + itemLeft, infoy + itemVert - 14, 'Items', { font: '10px ' + fontName, fill: '#555' });
-    a1(itemLabelLeft);
-    itemPicsLeft = [new ent(w, itemLeft, itemVert, 'cartoongame/imgs/sitems/srocket2.png'),
-        new ent(w, itemLeft, itemVert + 16, 'cartoongame/imgs/sitems/srocket2.png'),
-        new ent(w, itemLeft, itemVert + 32, 'cartoongame/imgs/sitems/srocket2.png')];
-    a1l(itemPicsLeft);
-    a1(new enttx(w, infox + 52, infoy + healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }));
-    function category(msg, x, y) { return new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' }); }
-    function inCategory(x, y, add, labels, bump1) {
-        if (bump1 === void 0) { bump1 = false; }
-        var labelEnts = [];
-        var curx = x;
-        var cury = y;
-        for (var k = 0; k < labels.length; k++) {
-            labelEnts.push(new enttx(w, curx, cury, labels[k], { font: '14px ' + fontName, fill: '#211' }));
-            if (bump1 && k == 0)
-                cury += 28;
-            cury += add;
-            if (k == 2 || k == 5) {
-                curx += 28;
-                cury = y;
-            }
-            if (k == 5)
-                cury -= add;
-        }
-        return labelEnts;
-    }
-    function picCategory(x, y, add, labels) {
-        var labelEnts = [];
-        var curx = x;
-        var cury = y;
-        for (var k = 0; k < labels.length; k++) {
-            labelEnts.push(new ent(w, curx, cury, 'cartoongame/imgs/resources/' + labels[k], { scalex: .5, scaley: .5 }));
-            cury += add;
-            if (k == 2 || k == 5) {
-                curx += 28;
-                cury = y;
-            }
-            if (k == 5)
-                cury -= add;
-        }
-        return labelEnts;
-    }
-    a1(new enttx(w, statx + 110 - 30 + 76, staty + 186 + 158, 'Resources', { font: '12px ' + fontName, fill: '#222' }));
-    statPicsLeft = picCategory(10 + statx + 194 - 50, staty + 360, 13, ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png']);
-    a1l(statPicsLeft);
-    statNumsLeft = inCategory(6 + statx + 214 - 50, staty + 360, 13, ["5", "0", "0", "0", "0", "10", "0", "0", "0", "0"]);
-    a1l(statNumsLeft);
-    itemLabelRight = new enttx(w, infox + itemRight, infoy + itemVert - 14, 'Items', { font: '10px ' + fontName, fill: '#555' });
-    a2(itemLabelRight);
-    itemPicsRight = [new ent(w, itemRight, itemVert, 'cartoongame/imgs/sitems/sbomb.png'),
-        new ent(w, itemRight, itemVert + 16, 'cartoongame/imgs/sitems/sbomb.png'),
-        new ent(w, itemRight, itemVert + 32, 'cartoongame/imgs/sitems/sbomb.png')];
-    a2l(itemPicsRight);
-    headEntRight = new ent(w, infox + 230 + (team == 1 ? 0 : -40), infoy + ((team == 1) ? 80 : 50), (team == 1) ? foeHeadPic : headPic, { scalex: (team == 1) ? .5 : .75, scaley: (team == 1) ? .5 : .75, color: (team == 1) ? 0xa0a0a0 : 0xffffff });
-    a2(headEntRight);
-    nameRight = new enttx(w, infox + 210, infoy + nameHeight, (team == 1) ? foeNameString : apg.playerName, { font: '12px ' + fontName, fill: (team == 1) ? foenameColor : nameColor });
-    a2(nameRight);
-    a2(new ent(w, infox + 250, infoy + healthHeight, 'cartoongame/imgs/whiteblock.png', { color: 0, scaley: .5, scalex: .7 }));
-    healthRight = new ent(w, infox + 251, infoy + healthHeight + 1, 'cartoongame/imgs/whiteblock.png', { color: 0xff0000, scaley: .4, scalex: .67 });
-    a2(healthRight);
-    a2(new enttx(w, infox + 280, infoy + healthHeight - 3, 'Life', { font: '10px ' + fontName, fill: '#222' }));
-    a2(new enttx(w, foestatx + 60 + -20 + 240, foestaty + 186 + 158, 'Resources', { font: '12px ' + fontName, fill: '#222' }));
-    statPicsRight = picCategory(foestatx + foeAdd + 194 - 50, foestaty + 360, 13, ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png']);
-    a2l(statPicsRight);
-    statNumsRight = inCategory(-4 + foestatx + foeAdd + 214 - 50, foestaty + 360, 13, ["5", "0", "0", "0", "0", "10", "0", "0", "0", "0"]);
-    a2l(statNumsRight);
-    var tipIconsy = 80;
-    new enttx(w, tipx + 250, tipy + 110, "Tip", { font: '18px ' + fontName, fill: '#433' }, { upd: function (e) { e.visible = (toolTip == "") ? false : true; } });
-    var requiresLabel = new enttx(w, tipx + 250, tipIconsy + tipy + 260, "Cost", { font: '18px ' + fontName, fill: '#433' });
-    requiresLabel.visible = false;
-    var resource1 = new ent(w, tipx + 250, tipIconsy + tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource1.visible = false;
-    var resource2 = new ent(w, 32 + tipx + 250, tipIconsy + tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource2.visible = false;
-    var resource3 = new ent(w, 64 + tipx + 250, tipIconsy + tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource3.visible = false;
-    var extractx = 48;
-    var extracty = 36;
-    var extractLabel = new enttx(w, -48 + extractx + tipx + 250, tipIconsy + 32 + extracty + tipy + 190, "Extract", { font: '18px ' + fontName, fill: '#433' });
-    extractLabel.visible = false;
-    var extractIcon1 = new ent(w, extractx + tipx + 266, tipIconsy + extracty + tipy + 210, 'cartoongame/imgs/resources/beer.png');
-    extractIcon1.visible = false;
-    var extractIcon2 = new ent(w, extractx + tipx + 266 + 32, tipIconsy + extracty + tipy + 210, 'cartoongame/imgs/resources/beer.png');
-    extractIcon2.visible = false;
-    var extractIcon3 = new ent(w, extractx + tipx + 266 + 64, tipIconsy + extracty + tipy + 210, 'cartoongame/imgs/items/ball.png', { scalex: .5, scaley: .5 });
-    extractIcon3.visible = false;
-    var ab1x = 16 + 48;
-    var ab2x = 26 + 48;
-    var aby = 8;
-    var abilitiesLabel = new enttx(w, tipx + 250, tipIconsy + 32 + aby + 12 + tipy + 240, "Abilities", { font: '18px ' + fontName, fill: '#433' });
-    abilitiesLabel.visible = false;
-    var lastToolTip = '';
-    new enttx(w, tipx + 260, tipy + 140, "", { font: '17px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 250 }, {
-        upd: function (e) {
-            if (toolTip != lastToolTip) {
-                e.text = toolTip;
-                lastToolTip = toolTip;
-                extractIcon1.visible = extractIcon2.visible = extractIcon3.visible = extractLabel.visible = abilitiesLabel.visible = requiresLabel.visible = resource1.visible = resource2.visible = resource3.visible = false;
-                if (toolTip == 'building1') {
-                    e.text = buildingAction1Hints[curBuilding];
-                    requiresLabel.visible = true;
-                    resource1.visible = true;
-                    resource2.visible = true;
-                    resource1.tex = 'cartoongame/imgs/resources/' + resourceIcons[firstAbilityCosts[curBuilding][0]];
-                    resource2.tex = 'cartoongame/imgs/resources/' + resourceIcons[firstAbilityCosts[curBuilding][1]];
-                }
-                if (toolTip == 'building2') {
-                    e.text = buildingAction2Hints[curBuilding];
-                    requiresLabel.visible = true;
-                    resource1.visible = true;
-                    resource2.visible = true;
-                    resource3.visible = true;
-                    resource1.tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[curBuilding][0]];
-                    resource2.tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[curBuilding][1]];
-                    resource3.tex = 'cartoongame/imgs/resources/' + resourceIcons[secondAbilityCosts[curBuilding][2]];
-                }
-                if (toolTip == 'extract') {
-                    e.text = "EXTRACT: Randomly extract a resource or item from the building you're at.  This won't work if the building is already in use this turn.  What you get depends on the quirk of the building.  You might dodge airbourne attacks sometmies when you're doing this.";
-                    extractLabel.visible = extractIcon1.visible = extractIcon2.visible = extractIcon3.visible = true;
-                    extractIcon1.tex = 'cartoongame/imgs/resources/' + resourceIcons[extractResources[curBuilding][0]];
-                    extractIcon2.tex = 'cartoongame/imgs/resources/' + resourceIcons[extractResources[curBuilding][1]];
-                    extractIcon3.tex = 'cartoongame/imgs/items/' + itemIcons2[extractItems[curBuilding]] + '.png';
-                }
-                if (toolTip == 'item1') {
-                    e.text = itemHints[item1 + 1];
-                }
-                if (toolTip == 'item2') {
-                    e.text = itemHints[item2 + 1];
-                }
-                if (toolTip == 'item3') {
-                    e.text = itemHints[item3 + 1];
-                }
-            }
-        }
-    });
-    var timex = 70;
-    var timey = -100;
-    category("Time", -110 + 650 + timex, 30 + 336 + timey);
-    new enttx(w, -110 + 650 + timex, 30 + 354 + timey, "", { font: '40px ' + fontName, fill: '#688' }, { upd: function (e) { e.text = "" + timer; e.fill = roundColors[(roundNumber - 1) % roundColors.length]; } });
-    if (apg.allowFullScreen) {
-        new enttx(w, 100, 700, "Your actions were submitted just fine!  Now just relax until the next round.", { font: '18px ' + fontName, fill: '#433' });
-    }
-    reset();
-    if (apg.networkTestSequence)
-        MainInputTestSequence(apg);
-}
-function PlayerMovement(apg, id, team) {
-    var w = new Phaser.Group(apg.g);
-    apg.g.world.add(w);
-    var fontName = "Caveat Brush";
-    var actions = apg.JSONAssets['cartoongame/json/MoveActions.json'];
-    var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
-    var warningSound = apg.g.add.audio('cartoongame/snds/fx/strokeup.mp3', 1, false);
-    var itemIcons = ['stennisball', 'sbomb', 'shammer2', 'sscarymask', 'srocket2', 'sshield'];
-    var itemIcons2 = ['ball', 'bomb', 'hammer', 'mask', 'rocket', 'shield'];
-    var cols = ['#369', '#693', '#936', '#963', '#639', '#396', '#888', '#933', '#393', '#339'];
-    var cols2 = [0x306090, 0x609030, 0x903060, 0x906030, 0x603090, 0x309060, 0x808080, 0x903030, 0x309030, 0x303090];
-    var resources = [], foeResources = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    var extractResources = [[Resource.TBone, Resource.Corn], [Resource.Acid, Resource.Goo], [Resource.Corn, Resource.Beans], [Resource.FrothyDrink, Resource.Burger], [Resource.FrothyDrink, Resource.Bribe], [Resource.Fries, Resource.Taco]];
-    var extractItems = [ItemIds.Hammer, ItemIds.ScaryMask, ItemIds.Bomb, ItemIds.TennisBall, ItemIds.Rocket, ItemIds.Shield];
-    var resourceIcons = ['beer.png', 'burger.png', 'canofbeans.png', 'chemicals.png', 'chemicals2.png', 'corn.png', 'dollar2.png', 'fries.png', 'taco1.png', 'tbone_steak.png'];
-    var firstAbilityCosts = [[Resource.Goo, Resource.Beans], [Resource.Goo, Resource.Corn], [Resource.Goo, Resource.Fries], [Resource.FrothyDrink, Resource.Beans], [Resource.Bribe, Resource.Burger], [Resource.FrothyDrink, Resource.TBone]];
-    var secondAbilityCosts = [[Resource.Bribe, Resource.Burger, Resource.Fries], [Resource.Acid, Resource.Beans, Resource.TBone], [Resource.Acid, Resource.Burger, Resource.Taco], [Resource.Bribe, Resource.Corn, Resource.TBone],
-        [Resource.FrothyDrink, Resource.Fries, Resource.Taco], [Resource.Acid, Resource.Corn, Resource.Taco]];
-    var ability1Pics = ['cow', 'fish', 'flowers', 'biplane', 'policecopter', 'meds'];
-    var ability2Pics = ['broccoli', 'turtles', 'sun', 'blimp', 'policecar', 'fairyability'];
-    var buildingHints = [
-        "FARM - A rustic farm, soothing with pastoral delights.  These produce the finest in organic free-range broccoli and cage free cows.  Family owned for millenia, they're certified organic by the ATF.",
-        "POND - A simple fishing hole of no note.  Local rumors say deep in the bowels of this very shallow pond drift massive tentacles, and burbling from the murk rises the odd sound Ph'nglui mglw'nafh....",
-        "GREENHOUSE - A state of the art plant nurturing facility.  Contrary to claims spread by the valued team members of local fast food shops, this greenhouse only grows licit, nonmedical plants, man.",
-        "AIRPORT - A cozy commuter airport with 3 gates.  A cinnamon bun shops sells icing blobs with bits of bun, security takes all of 3 minutes, and all flights require 3 connecting flights to get anywhere.",
-        "POLICE STATION - The local constabulary.  They keep the peace, but owing to increasing civil forfeiture laws, the piece they keep is getting to be rather large.",
-        "HOSPITAL - A local clinic."
-    ];
-    var headNum = id + 1 + ((team == 2) ? 10 : 0);
-    var nameColor = cols[id % 10];
-    var foenameColor = cols[7];
-    var bodyColor = cols2[id % 10];
-    var playerStats = {};
-    var timer = 0;
-    var roundNumber = 2;
-    var foeHealthBk;
-    var choices = [1, 1, 1, 1, 1, 1];
-    var myStats = {
-        nm: "",
-        st: [10,
-            10,
-            0,
-            0,
-            -1, -1, -1],
-        rs: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    };
-    resources = myStats.rs;
-    var toolTip = "";
     var choiceButtons;
-    var stanceBody, stanceHead, locBody, locHead;
-    var playerLabel;
-    var lastRoundUpdate = 0;
     var curBuilding = (team == 2) ? (5 - id % 6) : id % 6;
     var curRow = id < 6 ? 1 : 0;
-    var headPic = 'cartoongame/imgs/heads/headbig' + headNum + '.png';
-    var sheadPic = 'cartoongame/imgs/sheads/shead' + headNum + '.png';
-    var bodyPic = 'cartoongame/imgs/body' + (team == 1 ? 'right' : 'left') + '.png';
+    var player = new Player(apg.playerName, id + 1 + ((team == 2) ? 10 : 0));
+    player.nameColor = cols[id % 10];
+    var foe = new Player('xxxFirestormxxx', 20);
+    foe.nameColor = cols[7];
     var accepted = false;
-    var roundColors = ['#468', '#846', '#684'];
-    var roundx = 100;
-    var tipx = -170;
-    var tipy = -60;
-    var mapRowx = -150;
-    var mapRowy = 60 - 32 - 16;
-    var mapBuildingx = 44;
-    var mapBuildingy = -160 - 32;
+    var showRoundPlaque = false;
+    var roundNumber = 2;
+    var foeActive = false;
     var forceReset = true;
-    function addActions(srcChoices, setToolTip) {
-        var curCollection = 0;
-        function add(isActions, choiceSet) {
-            var id = curCollection;
-            curCollection++;
-            return new ButtonCollection(isActions, w, apg, 22, setToolTip, function (v) { return srcChoices[id] = v; }, choiceSet);
-        }
-        var o = [];
-        for (var j = 0; j < actions.length; j++) {
-            var p = [];
-            for (var k2 = 0; k2 < actions[j].choices.length; k2++) {
-                var k = k2;
-                var r = actions[j].choices[k];
-                var xv = r.x;
-                if (j == 0 && team == 2)
-                    xv = 320 - xv;
-                p.push(new ActionEntry(r.name, r.tip, r.pic, actions[j].x + xv, actions[j].y + r.y, r.specialID));
-            }
-            o.push(add(actions[j].isActions, p));
-        }
-        return o;
-    }
     function reset() {
         choiceButtons[0].selected = curBuilding;
         choiceButtons[1].selected = curRow;
@@ -2313,14 +905,10 @@ function PlayerMovement(apg, id, team) {
         choices[0] = curBuilding;
         choices[1] = curRow;
         choices[2] = 0;
-        stanceBody.x = mapRowx + 740 + (curRow - 1) * 40;
-        stanceHead.x = mapRowx + 731 + (curRow - 1) * 40;
-        stanceBody.y = 30 + 160 + curRow * 40;
-        stanceHead.y = 30 + 146 + curRow * 40;
-        locBody.x = 30 + 330 + 64 * (team == 1 ? curBuilding : 5 - curBuilding);
-        locHead.x = 30 + 320 + 64 * (team == 1 ? curBuilding : 5 - curBuilding);
-        playerLabel.x = 30 + 320 + 64 * (team == 1 ? curBuilding : 5 - curBuilding);
+        updateStats();
+        updateLocation();
     }
+    var playerStats = {};
     apg.ResetServerMessageRegistry()
         .SetKeepAliveStatus(true)
         .RegisterDisconnect(function () {
@@ -2329,8 +917,33 @@ function PlayerMovement(apg, id, team) {
         WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game, then connect again!");
     })
         .Register("startround", function (p) {
-        accepted = false;
+        showRoundPlaque = true;
         endOfRoundSound.play();
+        var curFoe = null;
+        for (var k in playerStats) {
+            var f = playerStats[k];
+            if (f.nm == apg.playerName)
+                continue;
+            if (f.st[0] > 0 && (f.st[2] % 6) == curBuilding && f.st[3] == curRow) {
+                curFoe = f;
+                break;
+            }
+        }
+        if (curFoe == null) {
+            foeActive = false;
+        }
+        else {
+            foeActive = true;
+            var foeID = curFoe.st[1];
+            foe.name = curFoe.nm;
+            foe.nameColor = cols[foeID % 10];
+            foe.headPic = 'cartoongame/imgs/heads/headbig' + (foeID + 1 + ((team == 2) ? 0 : 10)) + '.png';
+            foe.healthStat = curFoe.st[0];
+            foe.items[0] = curFoe.st[4];
+            foe.items[1] = curFoe.st[5];
+            foe.items[2] = curFoe.st[6];
+            foe.resources = curFoe.rs;
+        }
         reset();
     })
         .Register("time", function (p) {
@@ -2345,12 +958,15 @@ function PlayerMovement(apg, id, team) {
         playerStats[p.nm] = p;
         if (p.nm != apg.playerName)
             return;
-        myStats = p;
+        player.healthStat = p.st[0];
         if (p.st[3] != -1)
             curRow = p.st[3];
         if (p.st[2] != -1)
             curBuilding = p.st[2] % 6;
-        resources = p.rs;
+        player.items[0] = p.st[4];
+        player.items[1] = p.st[5];
+        player.items[2] = p.st[6];
+        player.resources = p.rs;
         forceReset = true;
     })
         .Register("submit", function (p) {
@@ -2363,17 +979,15 @@ function PlayerMovement(apg, id, team) {
         playerStats = {};
         apg.WriteToServer("upd", { choices: choices });
     });
-    function setToolTip(str) { toolTip = str; }
-    var tick = 0;
-    new ent(w, 0, 0, 'cartoongame/imgs/bkg_guide4.png', {
+    new ent(w, 0, 0, 'cartoongame/imgs/ClientUI11.png', {
         upd: function (e) {
-            tick++;
             if (accepted) {
                 w.y = w.y * .9 + .1 * -500;
             }
             else {
                 w.y = w.y * .9 + .1 * 0;
             }
+            choiceButtons[2].setParms(curBuilding, player.items[0], player.items[1], player.items[2], player.resources, forceReset);
             forceReset = false;
             if (choiceButtons[3].selected == 0) {
                 endOfRoundSound.play();
@@ -2381,14 +995,16 @@ function PlayerMovement(apg, id, team) {
                 choiceButtons[3].selected = -1;
             }
             choiceButtons[0].update(true);
-            choiceButtons[1].update(true);
             choiceButtons[2].update(true);
             choiceButtons[3].update(true);
         }
     });
-    choiceButtons = addActions(choices, setToolTip);
-    new enttx(w, roundx + 260, 25, "Position for ", { font: '36px ' + fontName, fill: '#444' });
-    new enttx(w, roundx + 420, 25, "Round ", { font: '36px ' + fontName, fill: roundColors[1] }, {
+    var tip = new ToolTip();
+    choiceButtons = addActions(apg, w, team, choices, function (str) { tip.toolTip = str; tip.toolTime = 3; });
+    var roundColors = ['#468', '#846', '#684'];
+    var lastRoundUpdate = 0;
+    new enttx(w, 404, 8, "Choices for ", { font: '45px ' + fontName, fill: '#444' });
+    new enttx(w, 584, 8, "Round ", { font: '45px ' + fontName, fill: roundColors[1] }, {
         upd: function (e) {
             if (roundNumber != lastRoundUpdate) {
                 e.text = "Round " + (roundNumber);
@@ -2397,113 +1013,17 @@ function PlayerMovement(apg, id, team) {
             }
         }
     });
-    function category(msg, x, y) { return new enttx(w, x, y, msg, { font: '18px ' + fontName, fill: '#433' }); }
-    new ent(w, mapBuildingx + 270, mapBuildingy + 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png');
-    new ent(w, mapBuildingx + 680, mapBuildingy + 265, 'cartoongame/imgs/flag' + (team == 1 ? 1 : 2) + 'small.png');
-    locBody = new ent(w, mapBuildingx + 330 + 64 * curBuilding, mapBuildingy + 16 + 285, bodyPic, { scalex: 1, scaley: 1, color: bodyColor });
-    locHead = new ent(w, mapBuildingx + 320 + 64 * curBuilding, mapBuildingy + 16 + 271, sheadPic);
-    playerLabel = new enttx(w, mapBuildingx + 320 + 64 * curBuilding, mapBuildingy + 16 + 320, apg.playerName, { font: '12px ' + fontName, fill: nameColor });
-    var moveArrow = [];
-    for (var k = 0; k < 6; k++) {
-        var art = 'mid';
-        if (k == 0)
-            art = 'cap';
-        if (k == 5)
-            art = 'head';
-        moveArrow.push(new ent(w, 310 + mapBuildingx + 64 * k, 280 + mapBuildingy, 'cartoongame/imgs/arrow' + art + '.png', { alpha: .5, upd: function (e) { e.alpha = .2 + .2 * Math.cos(tick * .03); } }));
-        moveArrow[k].visible = false;
-    }
-    new enttx(w, mapRowx + 700, mapRowy + 110, "", { font: '24px ' + fontName, fill: '#A00' });
-    stanceBody = new ent(w, mapRowx + 740 + (curRow - 1) * 40, mapRowy + 160 + curRow * 40, bodyPic, { scalex: 1, scaley: 1, color: bodyColor });
-    stanceHead = new ent(w, mapRowx + 731 + (curRow - 1) * 40, mapRowy + 146 + curRow * 40, sheadPic);
-    new enttx(w, tipx + 250, tipy + 110, "Tip", { font: '18px ' + fontName, fill: '#433' }, { upd: function (e) { e.visible = (toolTip == "") ? false : true; } });
-    var requiresLabel = new enttx(w, tipx + 250, tipy + 260, "Cost", { font: '18px ' + fontName, fill: '#433' });
-    requiresLabel.visible = false;
-    var resource1 = new ent(w, tipx + 250, tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource1.visible = false;
-    var resource2 = new ent(w, 32 + tipx + 250, tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource2.visible = false;
-    var resource3 = new ent(w, 64 + tipx + 250, tipy + 280, 'cartoongame/imgs/resources/beer.png');
-    resource3.visible = false;
-    var extractx = 48;
-    var extracty = 36;
-    var extractLabel = new enttx(w, -48 + extractx + tipx + 250, 32 + extracty + tipy + 190, "Extract", { font: '18px ' + fontName, fill: '#433' });
-    extractLabel.visible = false;
-    var extractIcon1 = new ent(w, extractx + tipx + 266, extracty + tipy + 210, 'cartoongame/imgs/resources/beer.png');
-    extractIcon1.visible = false;
-    var extractIcon2 = new ent(w, extractx + tipx + 266 + 32, extracty + tipy + 210, 'cartoongame/imgs/resources/beer.png');
-    extractIcon2.visible = false;
-    var extractIcon3 = new ent(w, extractx + tipx + 266 + 64, extracty + tipy + 210, 'cartoongame/imgs/items/ball.png', { scalex: .5, scaley: .5 });
-    extractIcon3.visible = false;
-    var ab1x = 16 + 48;
-    var ab2x = 26 + 48;
-    var aby = 8;
-    var abilitiesLabel = new enttx(w, tipx + 250, 32 + aby + 12 + tipy + 240, "Abilities", { font: '18px ' + fontName, fill: '#433' });
-    abilitiesLabel.visible = false;
-    var skillIcon1 = new ent(w, ab1x + tipx + 250, aby + tipy + 276, 'cartoongame/imgs/abilities/biplane.png', { scalex: .5, scaley: .5 });
-    skillIcon1.visible = false;
-    var skillIcon1r1 = new ent(w, ab1x + tipx + 250, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon1r1.visible = false;
-    var skillIcon1r2 = new ent(w, ab1x + tipx + 250 + 16, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon1r2.visible = false;
-    var skillIcon2 = new ent(w, 40 + ab2x + tipx + 250, aby + tipy + 276, 'cartoongame/imgs/abilities/blimp.png', { scalex: .5, scaley: .5 });
-    skillIcon2.visible = false;
-    var skillIcon2r1 = new ent(w, 40 + ab2x + tipx + 250, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon2r1.visible = false;
-    var skillIcon2r2 = new ent(w, 40 + ab2x + tipx + 250 + 16, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon2r2.visible = false;
-    var skillIcon2r3 = new ent(w, 40 + ab2x + tipx + 250 + 32, aby + tipy + 310, 'cartoongame/imgs/resources/beer.png', { scalex: .5, scaley: .5 });
-    skillIcon2r3.visible = false;
-    var lastToolTip = '';
-    function doBuildingTip(e, id) {
-        var res = 'cartoongame/imgs/resources/';
-        e.text = buildingHints[id];
-        abilitiesLabel.visible = extractLabel.visible = skillIcon1r1.visible = skillIcon1r2.visible = skillIcon1.visible = skillIcon2r1.visible = skillIcon2r2.visible = skillIcon2r3.visible = skillIcon2.visible = extractIcon1.visible = extractIcon2.visible = extractIcon3.visible = true;
-        extractIcon1.tex = res + resourceIcons[extractResources[id][0]];
-        extractIcon2.tex = res + resourceIcons[extractResources[id][1]];
-        extractIcon3.tex = 'cartoongame/imgs/items/' + itemIcons2[extractItems[id]] + '.png';
-        var alpha1 = (resources[firstAbilityCosts[id][0]] > 0 && resources[firstAbilityCosts[id][1]] > 0) ? 1 : .5;
-        skillIcon1.tex = 'cartoongame/imgs/abilities/' + ability1Pics[id] + '.png';
-        skillIcon1.alpha = alpha1;
-        skillIcon1r1.tex = res + resourceIcons[firstAbilityCosts[id][0]];
-        skillIcon1r1.alpha = alpha1;
-        skillIcon1r2.tex = res + resourceIcons[firstAbilityCosts[id][1]];
-        skillIcon1r2.alpha = alpha1;
-        var alpha2 = (resources[secondAbilityCosts[id][0]] > 0 && resources[secondAbilityCosts[id][1]] > 0 && resources[secondAbilityCosts[id][2]] > 0) ? 1 : .5;
-        skillIcon2.tex = 'cartoongame/imgs/abilities/' + ability2Pics[id] + '.png';
-        skillIcon2.alpha = alpha2;
-        skillIcon2r1.tex = res + resourceIcons[secondAbilityCosts[id][0]];
-        skillIcon2r1.alpha = alpha2;
-        skillIcon2r2.tex = res + resourceIcons[secondAbilityCosts[id][1]];
-        skillIcon2r2.alpha = alpha2;
-        skillIcon2r3.tex = res + resourceIcons[secondAbilityCosts[id][2]];
-        skillIcon2r3.alpha = alpha2;
-    }
-    new enttx(w, tipx + 260, tipy + 140, "", { font: '17px ' + fontName, fill: '#455', wordWrap: true, wordWrapWidth: 250 }, {
-        upd: function (e) {
-            if (toolTip != lastToolTip) {
-                e.text = toolTip;
-                lastToolTip = toolTip;
-                extractIcon1.visible = extractIcon2.visible = extractIcon3.visible = skillIcon2r1.visible = skillIcon2r2.visible = skillIcon2r3.visible = skillIcon2.visible = skillIcon1r1.visible = skillIcon1r2.visible = skillIcon1.visible = extractLabel.visible = abilitiesLabel.visible = requiresLabel.visible = resource1.visible = resource2.visible = resource3.visible = false;
-                if (toolTip == 'farm')
-                    doBuildingTip(e, 0);
-                if (toolTip == 'pond')
-                    doBuildingTip(e, 1);
-                if (toolTip == 'greenhouse')
-                    doBuildingTip(e, 2);
-                if (toolTip == 'airport')
-                    doBuildingTip(e, 3);
-                if (toolTip == 'police')
-                    doBuildingTip(e, 4);
-                if (toolTip == 'hospital')
-                    doBuildingTip(e, 5);
-            }
-        }
-    });
-    var timex = 70;
-    var timey = -100;
-    category("Time", -110 + 650 + timex, 30 + 336 + timey);
-    new enttx(w, -110 + 650 + timex, 30 + 354 + timey, "", { font: '40px ' + fontName, fill: '#688' }, { upd: function (e) { e.text = "" + timer; e.fill = roundColors[(roundNumber - 1) % roundColors.length]; } });
+    var actionLabelTextProps = { font: '20px ' + fontName, fill: '#A00' };
+    var updateStats = MakeStats(apg, player, foe, fontName, team, w, 'cartoongame/imgs/buildings/building1.png', actionLabelTextProps, function () { return curBuilding; }, function () { return foeActive; });
+    var updateLocation = MakeLocation(apg, w, id, team, fontName, actionLabelTextProps, 'cartoongame/imgs/body' + (team == 1 ? 'right' : 'left') + '.png', player, function () { return curBuilding; });
+    MakeToolTip(apg, w, player, fontName, tip, function () { return curBuilding; });
+    var timeSet = new Phaser.Group(apg.g);
+    w.add(timeSet);
+    timeSet.x = 760;
+    timeSet.y = 24;
+    new enttx(timeSet, 0, 0, "Time", { font: '18px ' + fontName, fill: '#433' });
+    new enttx(timeSet, 0, 18, "", { font: '40px ' + fontName, fill: '#688' }, { upd: function (e) { e.text = "" + timer; e.fill = roundColors[(roundNumber - 1) % roundColors.length]; } });
+    MakeRoundPlaque(apg, player, foe, fontName, function () { return showRoundPlaque; }, function () { showRoundPlaque = false; accepted = false; });
     if (apg.allowFullScreen) {
         new enttx(w, 100, 700, "Your actions were submitted just fine!  Now just relax until the next round.", { font: '18px ' + fontName, fill: '#433' });
     }
@@ -2538,7 +1058,7 @@ function JoinAcknowledgeCache(c) {
 }
 function WaitingForJoinAcknowledgeTestSequence(apg) {
     apg.ClearLocalMessages();
-    apg.WriteLocalAsServer(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 1 });
+    apg.WriteLocalAsServer(.1, "join", { name: apg.playerName, started: true, playerID: 2, team: 2 });
 }
 function WaitingForJoinAcknowledement(apg) {
     var endOfRoundSound = apg.g.add.audio('cartoongame/snds/fx/strokeup4.mp3', 1, false);
@@ -2660,8 +1180,5 @@ function WaitingToJoin(apg, previousMessage) {
     });
     if (apg.networkTestSequence)
         WaitingToJoinTestSequence(apg);
-    new enttx(apg.g.world, 140, 380, "A", textColor, {
-        upd: function (e) { e.x = vx; e.y = vy; }
-    });
 }
 //# sourceMappingURL=GameLogic.js.map

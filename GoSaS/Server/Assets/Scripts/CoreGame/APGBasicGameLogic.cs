@@ -158,7 +158,7 @@ namespace APG {
 			roundNumber++;
 			apg.WriteToClients("time", new RoundUpdate { time = secondsPerChoice, round = roundNumber + 1 });
 			gameSys.Sound(roundOver, 1);
-            AudiencePhase.MakeRoundEnd(aStatus, roundNumber, buddies.GetPlayerGrid(), () => pauseEnded = true, stransform, textName, playerHighlight, glowMaterial, players.actionBkg, players, backgrounds);}
+            AudiencePhase.MakeRoundEnd(aStatus, roundNumber, buddies.GetPlayerGrid(), () => pauseEnded = true, stransform, textName, playerHighlight, glowMaterial, players.actionBkg, players, backgrounds, players.leaderboard);}
 		void AtPausedTimerEnd() {
 			SetupTimers();
 			gameSys.Sound(roundStart, 1);
