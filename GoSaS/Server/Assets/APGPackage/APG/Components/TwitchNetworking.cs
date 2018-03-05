@@ -142,13 +142,7 @@ public class TwitchNetworking:MonoBehaviour {
 
 		var settingPath = Application.dataPath+ Path.DirectorySeparatorChar + NetworkSettingPath;
 
-		try { 
-			using (StreamReader sr = new StreamReader(settingPath)){
-				settings = JsonUtility.FromJson<NetworkSettings>( sr.ReadToEnd() );
-            }
-		}
-		catch {
-		}
+		try {  using (StreamReader sr = new StreamReader(settingPath)){ settings = JsonUtility.FromJson<NetworkSettings>( sr.ReadToEnd() );}} catch {}
 
 		var forceSettingsWrite = false;
 

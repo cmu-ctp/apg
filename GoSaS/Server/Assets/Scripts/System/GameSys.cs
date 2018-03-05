@@ -20,8 +20,8 @@ public class GameSys {
 	[SerializeField] float timeRemainder = 0;
 
 	public CollisionGrid grid = new CollisionGrid(30, 30);
-	public GameSys(GameObject corePrefab, Transform cameraTransform) {
-		basePrefab = corePrefab;
+	public GameSys(Transform cameraTransform) {
+        basePrefab = Art.Core.BasicSpriteObject.obj;
 		camera = cameraTransform;
 		updaters = new EntLink(null);
 		sysUpdaters = new EntLink(null);
@@ -30,7 +30,7 @@ public class GameSys {
 	public void Sound(AudioClip sound, float volume) {
 		AudioSource.PlayClipAtPoint(sound, camera.position, volume);
 	}
-	public ent Shadow( Sprite shadow, FixedEntPool pool, float size, float alpha, float yOffset ) {
+	public ent Shadow( FixedEntPool pool, float size, float alpha, float yOffset ) {
 		ent me = null;
 		if( pool == null ) {
 			me = new ent();
@@ -39,7 +39,7 @@ public class GameSys {
 			me = new PoolEnt(pool).e;
 		}
 
-		me.sprite = shadow;
+		me.sprite = Art.Shadow.shadow3.spr;
 		me.name ="shadow";
         me.isShadow=true;
 		me.pos = new v3(0,-100,0);// give it a frame to be placed correctly.

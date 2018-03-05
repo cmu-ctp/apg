@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using v3 = UnityEngine.Vector3;
 
 public class SpawnEntry {
-	public Sprite icon;
+	public Sprite icon = null;
 	public float iconYOffset = 0;
 	public int time;
 	public float scale = 1f;
