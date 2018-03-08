@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using v3 = UnityEngine.Vector3;
 
 public class AudiencePhase {
-
 	class ActionInfo {
 		public APlayerInfo g;
 		public bool use, harvest = false;
@@ -13,15 +12,15 @@ public class AudiencePhase {
         public BuildingActionID building=BuildingActionID.Unset;
 		public ActionInfo(APlayerInfo src) { g = src; use = (g != null && g.pl.health > 0);}
 
-		public void DoAction( PlayerHUD hud, Backgrounds backgrounds ) {
+		public void DoAction( PlayerHUD hud, BuildingActions buildingActions, Items items ) {
 			if (harvest) {
 				if (hud.curBuildingUsed) { hud.actionFail = 1; } else { g.funcs.doHarvest(); }
 				hud.curBuildingUsed = true;
 				hud.buildingpic.color = new Color(.3f, .3f, .3f, 1);}
-			if (item != ItemId.Unset) { g.funcs.useUpSelectedItem(); backgrounds.DoItem(item, 1, g.pl.pos);}
+			if (item != ItemId.Unset) { g.funcs.useUpSelectedItem(); items.DoItem(item, 1, g.pl.pos);}
 			if (building != BuildingActionID.Unset) {
 				if (hud.curBuildingUsed) { hud.actionFail = 1; }
-				else { g.funcs.useSelectedBuildingAction(); backgrounds.DoBuilding(building, 1, g.pl.pos); }
+				else { g.funcs.useSelectedBuildingAction(); buildingActions.DoBuilding(building, 1, g.pl.pos); }
 				hud.curBuildingUsed = true;
 				hud.buildingpic.color = new Color(.3f, .3f, .3f, 1);}}}
 
@@ -252,7 +251,6 @@ public class AudiencePhase {
 			update = e2 => {
                 for (var k = 0; k < 12; k++) for (var j = 0; j < 3; j++) { if (grid[k, j] != null) grid[k, j].funcs.updateMove(grid[k, j].pl); }
 				if (textFade(e2, .1f)) { DoStreamerMessage( aStatus, transform, roundNumber, audienceActionsEnded); e2.remove();}}};
-
     }
 
 	static void DoStreamerMessage( AudiencePhaseStatus aStatus, Transform transform, int roundNumber, Action audienceActionsEnded) {
@@ -270,7 +268,7 @@ public class AudiencePhase {
                 case AudienceAction.UseItem2:
                 case AudienceAction.UseItem3: v.g.funcs.startAnim(AnimStyle.UseItem, true, hurt); break;}}
 
-	static void RunActions(HudShared src, PlayerHUD hud1, PlayerHUD hud2, APlayerInfo[,] grid, int curGrid, Backgrounds backgrounds) {
+	static void RunActions(HudShared src, PlayerHUD hud1, PlayerHUD hud2, APlayerInfo[,] grid, int curGrid, BuildingActions buildingActions, Items items) {
 		// Attack.  Stops building actions.
 		// Reckless attack.  Stops building actions.  Stops extract.  Stops items.
 		var v1 = new ActionInfo(grid[src.info.spotList[curGrid], src.info.rowList[curGrid]]);
@@ -321,8 +319,8 @@ public class AudiencePhase {
 			if(v1.use) { if (v1.g.actionId == AudienceAction.Harvest) v1.harvest = true; v1.item = v1.g.itemId; v1.building = v1.g.buildingActionId; RunAnim(v1, false, false, false);}
 			if(v2.use) { if (v2.g.actionId == AudienceAction.Harvest) v2.harvest = true; v2.item = v2.g.itemId; v2.building = v2.g.buildingActionId; RunAnim(v2, false, false, false);} }
 
-		v1.DoAction(hud1, backgrounds);
-		v2.DoAction(hud2, backgrounds);}
+		v1.DoAction(hud1, buildingActions, items );
+		v2.DoAction(hud2, buildingActions, items);}
 
 	static void ChangeAudienceFocus(HudShared src, PlayerHUD hud1, PlayerHUD hud2, APlayerInfo[,] grid) {
 		// This is the logic for transitioning from one set of players to the next
@@ -357,7 +355,7 @@ public class AudiencePhase {
 		if (use1) { var ex = g1.pl; g1.bodyEnt.color = ex.color = new Color(ex.color.r, ex.color.g, ex.color.b, 1); g1.headEnt.color = new Color(1, 1, 1, 1); hud1.shake = hud1.shake * .9f;  hud1.healthRat = hud1.healthRat * .9f + .1f * g1.pl.health / 10f; aStatus.cameraPos = aStatus.audiencePos = g1.pl.pos + new v3(0, .5f, -.1f); src.info.showSet1 = true; } else src.info.showSet1 = false;
 		if( use1 && use2 ){ aStatus.cameraPos = (aStatus.audiencePos + src.audiencePos2) / 2; }}
 
-	static void RunAudiencePhase( AudiencePhaseInfo infoSrc, AudiencePhaseStatus aStatus, APlayerInfo[,] grid, Backgrounds backgrounds, Transform theTransform) {
+	static void RunAudiencePhase( AudiencePhaseInfo infoSrc, AudiencePhaseStatus aStatus, APlayerInfo[,] grid, BuildingActions buildingActions, Items items, Transform theTransform) {
 		var src = new HudShared( infoSrc, theTransform);
 
 		var yadd = -7;
@@ -390,14 +388,14 @@ public class AudiencePhase {
 				src.curDelay--;
 				src.fadeIn = src.fadeIn * .9f;
 				src.actionDelay--;
-				if (src.actionDelay == 0) RunActions( src, hud1, hud2, grid, src.curGrid, backgrounds );
+				if (src.actionDelay == 0) RunActions( src, hud1, hud2, grid, src.curGrid, buildingActions, items );
 				if (src.curDelay <= 0) ChangeAudienceFocus(src, hud1, hud2, grid);
 				else RunNormalFrame(src, hud1, hud2, grid, aStatus);
 				e2.color = (src.info.showSet1) ? new Color(1, 1, 1, .5f + .2f * Mathf.Cos(src.info.tick * .04f)) : new Color(1, 1, 1, 0);
 				if (src.info.atRemove) e2.remove();
 				else { var v = e2.pos; nm.ease(ref v, aStatus.audiencePos, .3f); e2.pos = v;}}};}
 
-	public static void MakeRoundEnd(AudiencePhaseStatus aStatus, int roundNumber, APlayerInfo[,] grid, Action audienceActionsEnded, Transform theTransform, Backgrounds backgrounds ) {
+	public static void MakeRoundEnd(AudiencePhaseStatus aStatus, int roundNumber, APlayerInfo[,] grid, Action audienceActionsEnded, Transform theTransform, BuildingActions buildingActions, Items items ) {
 		aStatus.doingEnd = true;
 		RoundEndMessage( theTransform, roundNumber);
         //Leaderboard(theTransform, roundNumber);
@@ -413,7 +411,7 @@ public class AudiencePhase {
 		new ent() { ignorePause = true,
 			update = e => {
 				info.tick++;
-				if (info.tick == FullGame.ticksPerSecond * audienceActionsTime) RunAudiencePhase(info, aStatus, grid, backgrounds, theTransform);
+				if (info.tick == FullGame.ticksPerSecond * audienceActionsTime) RunAudiencePhase(info, aStatus, grid, buildingActions, items, theTransform);
 				if (info.doingAction ==false) { aStatus.midpointTimer = 1; }
 				else if (!info.atRemove) { aStatus.midpointTimer = .5f;}
 				else {DoWindDown( aStatus, theTransform, roundNumber, grid, audienceActionsEnded );e.remove();}}};}}

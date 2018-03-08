@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System;
 using v3 = UnityEngine.Vector3;
 using APG;
 
@@ -41,8 +40,8 @@ class MusicInfo{
     bool doingSongFade = false;
     AudioClip nextSong = null;
 
-    public void Init( GameObject assets ){
-		audio = assets.GetComponent<AudioSource>();
+    public void Init( AudioSource srcAudio ){
+		audio = srcAudio;
         audio.clip = Art.Music.somenes19b.snd;
         audio.loop = true;
         audio.Play();}
@@ -62,92 +61,7 @@ class MusicInfo{
                 doingSongFade = false;}}
 		else {if (musicVol < .99f) { musicVol = musicVol * .9f + .1f * 1; audio.volume = musicVol;}}}}
 
-class MainGame{
-    public static void Make( FullGame g, APGBasicGameLogic basicGameLogic, TwitchNetworking gameLogicChat ){
-        bool exitingTitle = false;
-        bool isPaused = false;
-        float pauseRatio = 0;
-        var backgrounds = new Backgrounds();
-
-        var transform = basicGameLogic.gameCamera.transform;
-
-        var aspect = Camera.main.aspect;
-		g.gameSys = new GameSys(transform);
-        ent.BaseGameSys = g.gameSys;
-        var reactSys = new ReactSys();
-        reactSys.Init();
-        basicGameLogic.SetFields(g.aStatus, basicGameLogic.gameCamera.transform, backgrounds);
-		basicGameLogic.SetGameSys(g.gameSys);
-        IntroPlaques.MakeIntroPlaque(basicGameLogic.gameCamera, () => { exitingTitle = true; });
-        var playerSys = new PlayerSys();
-        basicGameLogic.SetPlayers(playerSys);
-        var audiencePlayerSys = new AudiencePlayerSys();
-        basicGameLogic.SetAudiencePlayers(audiencePlayerSys);
-		var treatSys = new TreatSys(g.gameSys, reactSys);
-		var foeSys = new FoeSys(g.gameSys, playerSys, audiencePlayerSys, treatSys);
-		playerSys.Setup(g.gameSys, foeSys, reactSys, basicGameLogic.gameCamera.transform, basicGameLogic );
-		audiencePlayerSys.Setup(g.gameSys, foeSys, playerSys, gameLogicChat.GetAudienceSys(), treatSys);
-        backgrounds.Setup(g.gameSys, playerSys, treatSys);
-        var spawnSys = new SpawnSys();
-        SpawnContent.InitSpawns(spawnSys, foeSys, treatSys);
-        var waveHUD = new WaveHUD(g.gameSys, transform, spawnSys, audiencePlayerSys, gameLogicChat.GetAudienceSys().MobileJoinQRCode(), playerSys, basicGameLogic );
-        var musics = new MusicInfo();
-        musics.Init( basicGameLogic.gameCamera );
-        BackgroundUpdates.Make(transform);
-
-        float tick2 = 0;
-        bool DoEndOfGameFadeOut = true;
-        bool pauseLatch = false;
-
-        new ent { ignorePause = true, update = e => {
-            FullGame.tick++;
-		    if (!basicGameLogic.waitingForGameToStart) tick2++;
-		    treatSys.soundTick = tick2;
-		    audiencePlayerSys.soundTick = tick2;
-		    foeSys.tick = tick2;
-		    if (g.gameSys.gameOver) { if (DoEndOfGameFadeOut) { DoEndOfGameFadeOut = false; musics.FadeSongTo( Art.Music.somenes19b.snd );}}
-            musics.UpdateMusic();
-		    pauseRatio = g.aStatus.midpointTimer;
-		    v3 lookPos;
-		    if (playerSys.player2Ent == null) {lookPos = playerSys.playerEnt.pos;}
-		    else {lookPos = (playerSys.playerEnt.pos + playerSys.player2Ent.pos) / 2;}
-		    lookPos.y -= 14f;// 10f;
-		    if(g.aStatus.doingEnd ) waveHUD.pauseRatio = waveHUD.pauseRatio * .99f + .01f * 1;
-		    else waveHUD.pauseRatio = waveHUD.pauseRatio * .9f + .1f * 0;
-		    if (pauseRatio > 0 && pauseRatio < 1) {
-			    AudiencePhase.EndOfRoundCamera(g.aStatus.cameraPos, ref g.aStatus.lastLookAtPos, ref g.aStatus.lastLookFromPos, pauseRatio, ref lookPos, transform);}
-		    else {
-                g.aStatus.lastLookAtPos = lookPos;
-			    nm.ease(ref g.aStatus.lastLookFromPos, new v3(lookPos.x * .03f, lookPos.y * .03f, -10), .3f);
-			    transform.LookAt(new v3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));
-			    transform.position = g.aStatus.lastLookFromPos;}
-		    if (Input.GetKey(KeyCode.Escape)) {if (!pauseLatch) {isPaused = !isPaused;pauseLatch = true;}}
-		    else pauseLatch = false;
-
-		    if (basicGameLogic.waitingForGameToStart) {
-			    if (exitingTitle && (Input.GetKey(KeyCode.Escape) || Input.GetKey(KeyCode.Space) || Input.GetButton("Fire1") || Input.GetButton("Fire2"))) {
-				    basicGameLogic.OnGameStart();
-				    basicGameLogic.waitingForGameToStart = false;
-                    musics.FadeSongTo( Art.Music.GoSaS.snd );}}
-
-		    if (aspect == 1.6f) {transform.position += new Vector3(0, .7f, -1.1f);}
-		    if (aspect == 1.5f) {transform.position += new Vector3(0, 1.3f, -1.9f);} 
-		    if (Mathf.Abs(aspect - 4f / 3f) < .001f) {transform.position += new Vector3(0, 1.9f, -3.3f);}
-
-		    if (!isPaused && pauseRatio == 0 && g.gameSys.gameOver == false && basicGameLogic.waitingForGameToStart == false) {
-			    spawnSys.Update(basicGameLogic.GetGameTime());
-			    backgrounds.GameUpdate(basicGameLogic.GetRoundTime());}
-
-            g.fullPauseActive = isPaused || pauseRatio > 0 || basicGameLogic.waitingForGameToStart;} };}}
-
 public class FullGame {
-    public static Action resetGame;
 	public static float tick = 0;
     public static int ticksPerSecond = 60;
-    public bool fullPauseActive;
-    public GameSys gameSys;
-    public AudiencePhaseStatus aStatus = new AudiencePhaseStatus();
-	public void RunUpdate() { gameSys.Update( fullPauseActive );}
-	public FullGame(APGBasicGameLogic basicGameLogic, TwitchNetworking gameLogicChat) {
-        resetGame = () => { MainGame.Make(this, basicGameLogic, gameLogicChat ); };
-        MainGame.Make(this, basicGameLogic, gameLogicChat );}}
+}

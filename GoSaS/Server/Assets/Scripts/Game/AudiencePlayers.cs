@@ -276,7 +276,7 @@ public class AudiencePlayerSys {
 	public void UpdatePlayersToClients( APGSys apg ) {for( var k = 0; k < playGrid.buddies.Count; k++ ) { playGrid.buddies[k].funcs.updateToClient( apg );}}
 	public APlayerInfo[,] GetPlayerGrid() { return playGrid.oldPlayerGrid; }
 
-	public void Setup(GameSys theGameSys, FoeSys foeSys, PlayerSys playerSys, APGSys apg, TreatSys treats) {
+	public void Setup(GameSys theGameSys, FoeSys foeSys, PlayerSys playerSys, TreatSys treats) {
 		gameSys = theGameSys;
 		Buddies(playerSys, treats );
 		playGrid.InitGrid();}
@@ -321,7 +321,7 @@ public class AudiencePlayerSys {
             //var resources = new int[] { 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 };
             //var items = new ItemId[] { (ItemId)rd.i(0,6), (ItemId)rd.i(0, 6), (ItemId)rd.i(0, 6) };
 			var nameFlash = 0f; var nameFlashColor = new Color(0, 0, 0, 0);
-			var buddyID = k; var tick = 0; var spd = 0f; var healthRatio = 1f; var goalHealthRatio = 1f; var offset = rd.f(0,10000f);
+			var tick = 0; var spd = 0f; var healthRatio = 1f; var goalHealthRatio = 1f; var offset = rd.f(0,10000f);
 			info.itemId = ItemId.Unset;
 			info.buildingActionId = BuildingActionID.Unset;
 			info.curBuilding = info.buildingGoal;
@@ -378,7 +378,6 @@ public class AudiencePlayerSys {
 				setGoalLayer = layer => { info.goalLayer = LayerID.Front/*layer*/;  delayGoalZ = -.4f + .4f * (int)layer; },
 				doMove = () => { goalx = delayGoalX; goalz = delayGoalZ; info.curBuilding = info.buildingGoal; curLayer = info.goalLayer; },
 				updateMove = e => {
-                    var moving = true;
 					var dir = new v3(goalx, -5f, goalz) - e.pos;
 					if (dir.magnitude > .2f) { info.bodyEnt.flipped=e.flipped = (dir.x < 0) ? true : false; }
 					if (dir.magnitude > .4f) {
@@ -386,8 +385,7 @@ public class AudiencePlayerSys {
                         nm.ease(ref spd, .017f * 3, .07f); }
 					else if (dir.magnitude < .3f) {
                         if (animStyle != AnimStyle.Idle) { animTime = tick; animStyle = AnimStyle.Idle; }
-                        nm.ease(ref spd, 0, .05f); info.bodyEnt.flipped = e.flipped = info.team == 1 ? false : true;
-                        moving = false;}
+                        nm.ease(ref spd, 0, .05f); info.bodyEnt.flipped = e.flipped = info.team == 1 ? false : true;}
 					e.MoveBy(dir.normalized * spd);
 					labelBack.pos = new v3(labelBack.pos.x, -1f + (-.4f + e.pos.z) * 1f, labelBack.pos.z);
 					if (dir.magnitude > .1f) { e.ang = spd * Mathf.Cos(tick * .1f); }},
@@ -415,7 +413,6 @@ public class AudiencePlayerSys {
 
 			RegisterHandler(info);
 
-            var animBase = rd.i(0, 12) * 2;
             var animx = new float[] {   0, .2f, 0.05f, -.1f,           0, .2f, .05f, .2f,                   .1f, .1f, -.2f, -.2f,                 .1f, .1f, .1f, .1f,            -.2f, .3f, 0, .2f,                       .05f, .2f, 0.05f, .3f};
             var animy = new float[] {   1.1f, 1.1f, 1.2f, 1.2f,       1.2f, 1f, 1.15f, 1.1f,            1.6f, 1.6f, 1.15f, 1.15f,         .8f, .8f, 1.2f, 1.4f,         1.2f, 1.25f, 1.15f, 1.1f,             1.15f, 1.1f, 1.15f, 1.25f };
             var bodyx = new float[] {   0, 0, 0, 0,                       0, 0, 0, 0,                         0, 0, -.8f, 0,                           0, 0, 0, 0,                   -.5f, 1, -.5f, .5f,                      0, 0, 0, 1 };

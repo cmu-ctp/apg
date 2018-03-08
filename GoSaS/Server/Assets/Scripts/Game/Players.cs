@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System;
 using v3 = UnityEngine.Vector3;
 
-class PlayerAttacks
-{
+class PlayerAttacks{
 	public static void MakeBreath( GameSys gameSys, ent owner, List<Action<v3, float, float, float>> blow, List<Action<v3, float, float, float>> inhale, List<Action<v3, float, float, float>> inhaleBig ) {
 		var src = new ent() { name="breatheSet" };
 		for( var k = 0; k < 20; k++ ) {
@@ -72,7 +71,6 @@ public class PlayerSys {
 
 	public ent playerEnt = null, player2Ent = null;
 
-    //const float breathChargeTime = 90;
     const float breathChargeTime = 45;
 
     GameSys gameSys;
@@ -108,8 +106,6 @@ public class PlayerSys {
         var fallVel = .5f;
         var fallEnd = false;
         var fallRotVel = rd.f(2f, 2f);
-
-        var doneEnd = false;
 
 		var pl = new ent() {
 			sprite = pic, pos = nm.v3x( startingX ), scale = 1.5f, flipped=(id == 2) ? true : false, vel = new v3(0, 0, 0), knockback = new v3(0, 0, 0), name="player"+id, inGrid=true, shadow=gameSys.Shadow(null, 1, 1, 0 ), team= (id==1)?Team.Player1:Team.Player2,

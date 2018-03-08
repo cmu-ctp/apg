@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic; using UnityEngine; using v3 = UnityEngine.Vector3;
 
 public class WaveHUD {
-	private int tick = 0; float hudSlideIn = 0f; AudiencePlayerSys buddies; PlayerSys playerSys;
+	private int tick = 0; float hudSlideIn = 0f; PlayerSys playerSys;
 	public float pauseRatio = 0f;
 	void spawningMessage(SpawnSys spawners, Transform transform ) {
 		bool labelActive = false;
@@ -27,7 +27,7 @@ public class WaveHUD {
 	void makeSpawnTimelineEntries( GameSys gameSys, SpawnSys spawners, ent uiBkg, APG.APGBasicGameLogic basicGameLogic) {
 		for( var k = 0; k < (spawners.spawnSet.Count < 20 ? spawners.spawnSet.Count:20 ); k++ ) {
 			var offset = k;
-			var thePic = new ent() {
+			new ent() {
 				sprite = offset < spawners.spawnSet.Count ? spawners.spawnSet[offset].icon : Art.Foes.foePlantHead.spr, parent = uiBkg, pos = nm.v3z( -.1f ), scale = .2f * spawners.spawnSet[offset].scale, layer = Layers.UI, name="uiTimelinePic", 
 				update = e => {
 					if( gameSys.gameOver) { return; }
@@ -43,7 +43,7 @@ public class WaveHUD {
 					if( s > .5f && s < 1f ) { var al = nm.FadeInOut( s, 40 ); e.color = nm.col( 1, al ); }
 					else { e.color = nm.col( 1, nm.FadeInOut( s, 8 ) ); } } };}
 		var ratio = 1f;
-		var bar = new ent() { parent = uiBkg, sprite = Art.UI.whitesquare.spr, name="roundHighlight", pos = new v3(-4.2f,.48f,-.2f), scale = 1f, layer = Layers.UI, color = new Color( .5f, .5f, .5f, .3f ),
+		new ent() { parent = uiBkg, sprite = Art.UI.whitesquare.spr, name="roundHighlight", pos = new v3(-4.2f,.48f,-.2f), scale = 1f, layer = Layers.UI, color = new Color( .5f, .5f, .5f, .3f ),
 			update = e => {
 				var goalRatio = basicGameLogic.GetRoundTime()/60f / 45f;
 				if( Mathf.Abs( ratio - goalRatio) > .01f ) { nm.ease( ref ratio, goalRatio, .1f ); e.scale3 = new v3(ratio*4.8f,1.8f,1f);}
@@ -113,7 +113,7 @@ public class WaveHUD {
 		var ratio = 1f;
 		var coverPos = new v3(0, 0, 0);
 		var cover = new ent() { ignorePause = true, sprite = Art.UI.chargebar1.spr, name="chargebar1", pos = new v3(-10.7f + hudSlideIn, 5.7f, 1), scale = 1f, layer = Layers.UI, parentTrans = transform, update = e => { e.pos = coverPos + new v3(-4 * pauseRatio, 0, 0); } }; coverPos = cover.pos;
-		var bar = new ent() { parent = cover, sprite = Art.UI.whitesquareBottomCenter.spr, name="chargeBarAnim", pos = new v3(-.05f, -2.1f, -.1f), scale = .5f, layer = Layers.UI, color = new Color( .5f, .5f, 1f, .5f ), 
+		new ent() { parent = cover, sprite = Art.UI.whitesquareBottomCenter.spr, name="chargeBarAnim", pos = new v3(-.05f, -2.1f, -.1f), scale = .5f, layer = Layers.UI, color = new Color( .5f, .5f, 1f, .5f ), 
 			update = e => {
 				var goalRatio = basicGameLogic.player1ChargeRatio;
 				if( goalRatio > .999f ) {
@@ -128,7 +128,7 @@ public class WaveHUD {
 		var ratio = 1f;
 		var coverPos = new v3(0, 0, 0);
 		var cover = new ent() { ignorePause = true, sprite = Art.UI.chargebar2.spr, name = "chargebar2", pos = new v3(10.7f - hudSlideIn, 5.7f, 1), scale = 1f, layer = Layers.UI, parentTrans = transform, update = e =>{ e.pos = coverPos + new v3(3f * pauseRatio, 0, 0); } }; coverPos = cover.pos;
-		var bar = new ent() { parent = cover, sprite = Art.UI.whitesquareBottomCenter.spr, name="chargeBarAnim", pos = new v3(-.25f, -2.1f, -.1f), scale = .5f, layer = Layers.UI, color = new Color( .5f, .5f, 1f, .5f ), 
+		new ent() { parent = cover, sprite = Art.UI.whitesquareBottomCenter.spr, name="chargeBarAnim", pos = new v3(-.25f, -2.1f, -.1f), scale = .5f, layer = Layers.UI, color = new Color( .5f, .5f, 1f, .5f ), 
 			update = e => {
 				var goalRatio = basicGameLogic.player2ChargeRatio;
 				if( goalRatio > .999f ) {
@@ -139,11 +139,10 @@ public class WaveHUD {
 					e.color = new Color(151f/255f*(.5f+ratio*.5f), 65f/255f*(.5f+ratio*.5f), 212f/255f *(.5f+ratio*.5f), .5f);
 					e.scale3 = new v3(.5f, 2.6f*ratio,1);}
 				else if( goalRatio == 0 && e.scale != 0 ) {e.scale = 0;}}};}
-	public WaveHUD( GameSys gameSys, Transform transform, SpawnSys spawners, AudiencePlayerSys audiencePlayerSys, Texture2D mobileQRCode, PlayerSys thePlayerSys, APG.APGBasicGameLogic basicGameLogic) {
+	public WaveHUD( GameSys gameSys, Transform transform, SpawnSys spawners, Texture2D mobileQRCode, PlayerSys thePlayerSys, APG.APGBasicGameLogic basicGameLogic) {
 		if( Camera.main.aspect == 1.6f) { hudSlideIn = 1f; }
 		if( Camera.main.aspect == 1.5f) { hudSlideIn = 2f; }
 		if( Mathf.Abs( Camera.main.aspect - 4f/3f ) < .001f ) { hudSlideIn = 2.6f; }
-		buddies = audiencePlayerSys;
 		playerSys = thePlayerSys;
 		v3 uiSrcPos = new v3(0,0,0);
 		var uiBkg = new ent() { sprite = Art.UI.incomingHUD.spr, name="uibkg", ignorePause=true, pos = new v3(.6f, 5.8f, 1), scale = .75f, layer = Layers.UI, parentTrans = transform, update = e => { tick++; e.pos = uiSrcPos + new v3(0, 8*pauseRatio, 0); } };

@@ -75,7 +75,7 @@ public class Items{
 				vel = vel * .99f + .01f * .01f;
 				e.pos += new v3( 0,vel, 0);}};}
 	void makeItemTennisBall(v3 pos, int side) {
-		var vel = rd.f(.1f, .4f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*rd.f(.15f,.4f); var numBounces = 0; var id = rd.i(0, 10);
+		var vel = rd.f(.1f, .4f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*rd.f(.15f,.4f); var numBounces = 0;
 		new ent() {
 			sprite = Art.Players.itemsFull.tennisball.spr, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="tennisball", inGrid=true, health=0,
 			update = e => {
@@ -109,7 +109,7 @@ public class Items{
 					e.remove();
 					return;}}};}
 	void makeItemHammer(v3 pos, int side) {
-		var vel = rd.f(.3f, .4f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*rd.f(.01f,.2f); var numBounces = 0; var id = rd.i(0, 10);
+		var vel = rd.f(.3f, .4f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*rd.f(.01f,.2f); var numBounces = 0;
 		new ent() {
 			sprite = Art.Players.itemsFull.hammer2.spr, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="hammer", inGrid=true, health=0,
 			update = e => {

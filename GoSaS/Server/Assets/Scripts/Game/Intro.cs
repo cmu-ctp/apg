@@ -13,7 +13,7 @@ class IntroPlaques{
                 else { var v = e2.pos; nm.ease(ref v, new v3(0, -10, 10), .1f); e2.pos = v; }
                 if (e2.pos.y < -9f) e2.remove();}};}
 
-    public static void MakeIntroPlaque(GameObject assets, Action doExit ) {
+    public static void MakeIntroPlaque(Transform transform, Action doExit ) {
         var xs = new float[] {-4, 4, -3f, 4, -2f };
         var ys = new float[] {4, 2.5f, 1, -.5f, -2 };
         var scs = new float[] { .6f, .4f, .6f,.4f,.6f };
@@ -30,7 +30,7 @@ class IntroPlaques{
             var centerGoal = new v3(0, 0, 0);
             var delay = k2 * 20;
             var escape = false;
-		    new ent() { ignorePause = true, sprite = titlePics[k2].spr, parentTrans = assets.transform, scale = scs[k2]+.15f, pos = center, health = 1, children = balloons, name="titleWord",
+		    new ent() { ignorePause = true, sprite = titlePics[k2].spr, parentTrans = transform, scale = scs[k2]+.15f, pos = center, health = 1, children = balloons, name="titleWord",
 			    update = e2 => {
                     if (Input.GetKey(KeyCode.Escape) || Input.GetKey(KeyCode.Space) || Input.GetButton("Fire1") || Input.GetButton("Fire2")) { escape = true; centerGoal= new v3(rd.f(-20, 20), rd.f(15, 30), rd.f(-15, 15)); delay = k * 2; }
                     if (escape == true){
@@ -41,7 +41,7 @@ class IntroPlaques{
                             xs[k] + .3f * Mathf.Cos(tick * .008f + 73.0f+k*32) + .13f * Mathf.Cos(tick * .0123f + 13.0f+k*71), 
                             ys[k] + .1f * Mathf.Cos(tick * .009f + 73.0f+k*66) + .17f * Mathf.Cos(tick * .0133f + 13.0f+k*83), 
                             10  + .5f * Mathf.Cos(tick * .011f + 73.0f+k*44) + .3f * Mathf.Cos(tick * .0143f + 13.0f+k*21));
-                        if (e2.pos.y > 12f) { e2.remove(); if (k == 0) { /*exitingTitle = true;*/ doExit(); MakeIntroPlaque2( assets.transform ); } }
+                        if (e2.pos.y > 12f) { e2.remove(); if (k == 0) { /*exitingTitle = true;*/ doExit(); MakeIntroPlaque2( transform ); } }
                         return;}
                     if (delay > 0) { delay--; return; }
                     center = center * .98f + .02f * centerGoal;

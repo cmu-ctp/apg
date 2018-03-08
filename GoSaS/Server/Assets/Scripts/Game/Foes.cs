@@ -148,7 +148,7 @@ public class PlantGameLogic : Subgame{
 		for( var k = 0; k < 4; k++ ) {
 			var i = new FoeSys.foeInfo();
 			i.startTime = f.tick; i.goal = new v3(0, 4, 30); i.horizontal = rd.f(15); i.vertOffset = rd.f(2, 6); i.tickOffset = rd.f(0, 300); i.horizontalDir = rd.Test(.5f) ? 1:-1; i.sprites = rd.Test(.5f) ? Art.Dishes.Spoons.set : Art.Dishes.Knives.set; i.inBack = false; i.delay = rd.i(0,1200);
-				var backDist = rd.f(10,30);var shotTimer = rd.i(0,300);
+				var shotTimer = rd.i(0,300);
 			new PoolEnt(f.foeEntPool) {
 				sprite = Art.Foes.foePlantHead.spr, pos = new v3((rd.Test(.5f) ? -1:1) * 12 * i.horizontalDir, rd.f(-2, 5), 0), scale = .8f, flipped= i.horizontalDir > 0 ? false:true, name = "plantguy",shadow= f.gameSys.Shadow(f.foeEntPool, 2, 1, 0 ), team = Team.None,
                 update = e => {

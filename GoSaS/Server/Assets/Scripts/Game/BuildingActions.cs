@@ -95,7 +95,7 @@ public class BuildingActions {
 	void makeBroccoli(v3 pos, int side) {
 		new ent() { sprite = Art.Props.Clouds.rand(), pos = new v3( pos.x+rd.f(-.5f,.5f), pos.y + rd.f(-.5f, .5f), .8f + rd.f(-.05f, .05f)), flipped=rd.Test(.5f), name="cowstink", inGrid=true, scale=.7f,
 			update = e => { e.scale *= .9f; if (e.scale <= 0.01) { e.remove(); return;}}};
-		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*.08f; var numBounces = 0; var id = rd.i(0, 10);
+		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*.08f; var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.Broccolis.rand(), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="broccoli", inGrid=true, 
 			update = e => {
@@ -117,7 +117,7 @@ public class BuildingActions {
 	// _________________
 
 	void doTurtle( v3 pos ) {
-		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0; var id = rd.i(0, 10);
+		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.turtle2.spr, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, 
 			update = e => {
@@ -161,7 +161,7 @@ public class BuildingActions {
 	// _________________
 
 	void makeFlower(v3 pos, int side) {
-		var vel = rd.f(.3f, .4f )*.6f; var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*rd.f(.04f,.1f); var numBounces = 0; var id = rd.i(0, 10);
+		var vel = rd.f(.3f, .4f )*.6f; var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*rd.f(.04f,.1f); var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.Flowers.rand(), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="flower", inGrid=true, health=0,
 			update = e => {
@@ -187,7 +187,7 @@ public class BuildingActions {
 				e.health--;
 				if (e.health < 0) { e.remove(); return;}}};}
 	void doSun( v3 pos ) {
-		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0; var id = rd.i(0, 10);
+		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.Flowers.rand(), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, 
 			update = e => {
@@ -260,7 +260,7 @@ public class BuildingActions {
 	// _________________
 
 	void doCopCar( v3 pos ) {
-		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0; var id = rd.i(0, 10);
+		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.Flowers.rand(), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, 
 			update = e => {
@@ -310,7 +310,7 @@ public class BuildingActions {
 			update = e => {
 				e.scale *= .9f;
 				if (e.scale <= 0.01) { e.remove(); return;}}};
-		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*.08f; var numBounces = 0; var id = rd.i(0, 10);
+		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*.08f; var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.pill1a.spr, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .1f, flipped=rd.Test(.5f), name="broccoli", inGrid=true, 
 			update = e => {

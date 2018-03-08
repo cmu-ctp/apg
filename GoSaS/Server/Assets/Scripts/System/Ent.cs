@@ -254,10 +254,10 @@ public class FixedEntPool {
 	[SerializeField] string name;
 	[SerializeField] int size;
 	[SerializeField] bool useFirstFree;
-	[SerializeField] ent[] entSet;
-	[SerializeField] ent allocHead = null;
+	ent[] entSet;
+	ent allocHead = null;
 	[SerializeField] int nextToSpawn = 0;
-	[SerializeField] ent dummyEnt = null;
+	ent dummyEnt = null;
 
 	public FixedEntPool( int poolSize, string poolName, bool getFirstFree=false, GameObject prefab = null ) {
 		name = poolName;

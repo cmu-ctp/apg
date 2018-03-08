@@ -8,7 +8,7 @@ class SpawnContent{
 		var foeOffset = 6;
 
 		var turnEnd = new SpawnEntry { icon = Art.UI.waveDivider.spr, spawn = () => { }, message = "", scale = 5 };
-		var roundMarker = new SpawnEntry { icon = Art.UI.waveDivider.spr, spawn = () => { }, message = "", scale = 2, iconYOffset = -.7f };
+		//var roundMarker = new SpawnEntry { icon = Art.UI.waveDivider.spr, spawn = () => { }, message = "", scale = 2, iconYOffset = -.7f };
 		for (var k = 1; k < 20; k++) spawnSys.Add(5+50 * k, turnEnd);
 
         var rounds = new Sprite[] { Art.UI.RoundNums.round1.spr, Art.UI.RoundNums.round2.spr, Art.UI.RoundNums.round3.spr, Art.UI.RoundNums.round4.spr, Art.UI.RoundNums.round5.spr, Art.UI.RoundNums.round6.spr,

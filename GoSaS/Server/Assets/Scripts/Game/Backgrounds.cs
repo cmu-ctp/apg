@@ -1,28 +1,14 @@
 ﻿using UnityEngine;
 using v3 = UnityEngine.Vector3;
 
-public class Backgrounds {
-    Items items = null;
-    BuildingActions buildingActions;
-
-	public void Title(GameSys theGameSys, PlayerSys thePlayerSys, TreatSys theTreatSys ) {
-        if (items == null){
-            items = new Items(thePlayerSys);
-            buildingActions = new BuildingActions(theGameSys, thePlayerSys, theTreatSys);}
-		Clouds();
-		Trees();
-		Bushes();}
-	public v3[] Setup(GameSys theGameSys, PlayerSys thePlayerSys, TreatSys theTreatSys ) {
-        if (items == null){
-            items = new Items(thePlayerSys);
-            buildingActions = new BuildingActions(theGameSys, thePlayerSys, theTreatSys);}
+public static class Backgrounds {
+	public static void Setup() {
 		Clouds();
 		Trees();
 		Bushes();
-		var lookPositions = Buildings();
-		Flags();
-		return lookPositions;}
-	void Clouds() {
+		Buildings();
+		Flags();}
+	static void Clouds() {
 		var src = new ent() { name="cloudSet" };
 		for( var k = 0; k < 250; k++ ) {
 			var zDist = rd.f(0, 50); var sideScale = zDist / 50; var goal = new v3(rd.f(28) * (1 + sideScale * 2), rd.f(0, 18) * (1 + sideScale * 2), 10 + zDist);
@@ -35,21 +21,17 @@ public class Backgrounds {
 					e.ang = Mathf.Cos(tick * rotateSpeed + offset) * rotateRange;
 					var immediateGoal = e.pos * .99f + .01f * goal;
 					if(immediateGoal.magnitude > .1f) e.MoveBy(immediateGoal - e.pos);}};}}
-	void Trees() {
+	static void Trees() {
 		var src = new ent() { name="treeSet" };
 		for( var k = 0; k < 300; k++ ) {
 			var zDist = rd.f(7f, 60.0f); var sideScale = zDist / 60.0f;
 			new ent() {sprite = Art.Props.Trees.rand(), pos = new v3(rd.f(23) * (1 + sideScale * 2), -5f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f) * 2, name="tree", parent = src,};}}
-	void Bushes() {
+	static void Bushes() {
 		var src = new ent() { name="bushSet" };
 		for( var k = 0; k < 100; k++ ) {
 			var zDist = rd.f(3f, 27.0f); var sideScale = zDist / 60.0f;
 			new ent() { sprite = Art.Props.Bushes.rand(), pos = new v3(rd.f(23) * (1 + sideScale * 2), -5f+rd.f(0, .2f), zDist), scale = rd.f(.3f, .4f), name="bush", parent = src };}}
-
-    public void DoBuilding(BuildingActionID id, int team, v3 pos) { buildingActions.DoBuilding(id, team, pos); }
-    public void DoItem(ItemId id, int team, v3 pos) {items.DoItem(id,team,pos ); }
-
-	v3[] Buildings() {
+	static void Buildings() {
 		v3[] lookPos = new v3[12];
         var bList = new ImageEntry[] { Art.Buildings.barn, Art.Buildings.pond, Art.Buildings.greenhouse, Art.Buildings.airport, Art.Buildings.policestation, Art.Buildings.hospital };
         var scList = new float[] { .7f, 1, .6f, 1, 1, 1 };
@@ -59,10 +41,8 @@ public class Backgrounds {
 			lookPos[k] = new v3(posx, -5f + rd.f(0, .2f), zDist);
 			lookPos[12 - 1 - k] = new v3(-posx, -5f + rd.f(0, .2f), zDist);
 			new ent() { sprite = bList[k].spr, pos = lookPos[k], scale = .4f * scList[k], name = "building", parent = src };
-			new ent() { sprite = bList[k].spr, pos = lookPos[12 - 1 - k], scale = .4f * scList[k], name = "building", parent = src };}
-		return lookPos;}
-	public void GameUpdate( double roundTime ) {}
-	void Flags() {
+			new ent() { sprite = bList[k].spr, pos = lookPos[12 - 1 - k], scale = .4f * scList[k], name = "building", parent = src };}}
+	static void Flags() {
 		var f1 = 7.8f;
 		var f2 = 4.8f;
 

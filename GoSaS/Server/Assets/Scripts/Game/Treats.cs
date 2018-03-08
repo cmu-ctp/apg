@@ -64,7 +64,6 @@ public class TreatSys {
 					vel *= -.4f;
 					if( numBounces > 3 ) { e.remove(); } } },
 			buddyTouch = (e, user, info) => {
-				var styleStr = itemStyles[id];
 				if (soundTick - lastSoundTime > 5) { gameSys.Sound( Art.Sounds.CoinGrab.rand(), 1); lastSoundTime = soundTick; }
 				user.itemTouch(e, user, new TouchInfo { flags = 0, style = id, count = 1, isItem=true });
 				reactSys.React( e.pos+new v3(0,0,0), ""+itemStyles[id], new Color( .3f,.5f,.8f,1));
