@@ -414,13 +414,12 @@ function CartoonAssetCache(c) {
     c.json(['cartoongame/json/TestActions.json', 'cartoongame/json/MoveActions.json', 'cartoongame/json/PlayActions.json']);
     WaitingToJoinCache(c);
     JoinAcknowledgeCache(c);
-    ShowSubmittedCache(c);
     ButtonCache(c);
 }
 function MainInputTestSequence(apg) {
     var names = ["npc1", "npc2", "npc3", "npc4", "npc5", "npc6", "npc7", "npc8", "npc9", "npcr1", "npcr2", "npcr3", "npcr4", "npcr5", "npcr6", "npcr7", "npcr8", "npcr9"];
     apg.ClearLocalMessages();
-    var roundLength = 7;
+    var roundLength = 45;
     function mr() { if (Math.random() < .6)
         return 0; return Math.floor(Math.random() * 3) + 1; }
     for (var j = 1; j <= 10; j++) {
@@ -917,7 +916,7 @@ function MainPlayerInput(apg, id, team) {
         WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game, then connect again!");
     })
         .Register("startround", function (p) {
-        showRoundPlaque = true;
+        accepted = false;
         endOfRoundSound.play();
         var curFoe = null;
         for (var k in playerStats) {
@@ -1023,33 +1022,12 @@ function MainPlayerInput(apg, id, team) {
     timeSet.y = 24;
     new enttx(timeSet, 0, 0, "Time", { font: '18px ' + fontName, fill: '#433' });
     new enttx(timeSet, 0, 18, "", { font: '40px ' + fontName, fill: '#688' }, { upd: function (e) { e.text = "" + timer; e.fill = roundColors[(roundNumber - 1) % roundColors.length]; } });
-    MakeRoundPlaque(apg, player, foe, fontName, function () { return showRoundPlaque; }, function () { showRoundPlaque = false; accepted = false; });
     if (apg.allowFullScreen) {
         new enttx(w, 100, 700, "Your actions were submitted just fine!  Now just relax until the next round.", { font: '18px ' + fontName, fill: '#433' });
     }
     reset();
     if (apg.networkTestSequence)
         MainInputTestSequence(apg);
-}
-function ShowSubmittedCache(c) {
-    c.images('cartoongame/imgs', ['ClientUI3.png']);
-    c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
-    c.googleWebFonts(['Caveat Brush']);
-}
-function ShowSubmitted(apg, playerID, team, getRoundNumber) {
-    var inputUsed = false;
-    var clickSound = apg.g.add.audio('cartoongame/snds/fx/strokeup2.mp3', .4, false);
-    apg.ResetServerMessageRegistry();
-    new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
-        upd: function (e) {
-            if (apg.g.input.activePointer.isDown && !inputUsed) {
-                inputUsed = true;
-                MainPlayerInput(apg, playerID, team);
-                clickSound.play();
-            }
-        }
-    });
-    new enttx(apg.g.world, 60, 50 + 20, "Chosen For Round " + getRoundNumber() + ":", { font: '16px Caveat Brush', fill: '#222' });
 }
 function JoinAcknowledgeCache(c) {
     c.images('cartoongame/imgs', ['ClientUI3.png']);
@@ -1126,6 +1104,7 @@ function WaitingForJoinAcknowledement(apg) {
 }
 function WaitingToJoinCache(c) {
     c.images('cartoongame/imgs', ['ClientUI3.png']);
+    c.images('cartoongame/imgs/tutorial', ['clientHowToPlay.jpg', 'clientIngameScreen.jpg', 'clientMainTitle.jpg', 'clientPickAction.jpg', 'clientPickMove.jpg', 'clientWatchStats.jpg', 'clientPlayerAction.jpg', 'clientFinalClick.jpg']);
     c.sounds('cartoongame/snds/fx', ['strokeup2.mp3']);
     c.googleWebFonts(['Caveat Brush']);
 }
@@ -1148,11 +1127,44 @@ function WaitingToJoin(apg, previousMessage) {
         vx = p.x;
         vy = p.y;
     });
+    var curPage = 0;
+    var pointerDownLatch = false;
+    var pageEnt;
+    var pageNames = ['clientMainTitle', 'clientHowToPlay', 'clientPickAction', 'clientPickMove', 'clientWatchStats', 'clientIngameScreen', 'clientPlayerAction', 'clientFinalClick'];
+    var doneWithTutorial = false;
+    function makeTutorialPage(label) {
+        return new ent(apg.g.world, 240, 0, 'cartoongame/imgs/tutorial/' + label + '.jpg', {
+            health: 2,
+            upd: function (e) {
+                if (e.health == 1) {
+                    e.y = e.y * .7 + .3 * -240;
+                    if (e.y < -230)
+                        e.eliminate();
+                }
+            }
+        });
+    }
     new ent(apg.g.world, 0, 0, 'cartoongame/imgs/ClientUI3.png', {
+        scalex: 0, scaley: 0,
         upd: function (e) {
             if (tryEnd(e, -30))
                 return;
-            if (apg.g.input.activePointer.isDown && !inputUsed) {
+            if (apg.g.input.activePointer.isDown) {
+                if (pointerDownLatch == false) {
+                    pageEnt.health = 1;
+                    curPage++;
+                    if (curPage < pageNames.length)
+                        pageEnt = makeTutorialPage(pageNames[curPage]);
+                    else {
+                        doneWithTutorial = true;
+                    }
+                }
+                pointerDownLatch = true;
+            }
+            else {
+                pointerDownLatch = false;
+            }
+            if (apg.g.input.activePointer.isDown && doneWithTutorial && !inputUsed) {
                 inputUsed = true;
                 clickSound.play();
                 WaitingForJoinAcknowledement(apg);
@@ -1161,23 +1173,12 @@ function WaitingToJoin(apg, previousMessage) {
             }
         }
     });
+    pageEnt = makeTutorialPage('clientMainTitle');
     var tc = 0, textColor = { font: '32px Caveat Brush', fill: '#222' }, textColor2 = { font: '20px Caveat Brush', fill: '#811', wordWrap: true, wordWrapWidth: 430 };
     if (previousMessage != "") {
         new enttx(apg.g.world, 200, 60, previousMessage, textColor2, { upd: function (e) { if (tryEnd(e, -50))
                 return; } });
     }
-    else {
-        new enttx(apg.g.world, 140, 60, "Thanks for helping playtest Gods of Socks and Spoons!", textColor2, { upd: function (e) { if (tryEnd(e, -50))
-                return; } });
-        new enttx(apg.g.world, 140, 160, "Two streamers face off.  Help one beat the other.  Each round, perform an action and then move - then the streamer will protect you in an action phase.  Only you can hurt and defeat the foe streamer (with items and special abilities) and win!  ", textColor2, {
-            upd: function (e) { if (tryEnd(e, -50))
-                return; }
-        });
-    }
-    new enttx(apg.g.world, 140, 380, "Tap or click to Connect to the Streamer's Game!", textColor, {
-        upd: function (e) { if (tryEnd(e, -50))
-            return; tc++; e.visible = (tc % 120 < 60) ? false : true; }
-    });
     if (apg.networkTestSequence)
         WaitingToJoinTestSequence(apg);
 }

@@ -14,7 +14,6 @@ function CartoonAssetCache(c: Cacher): void {
 
 	WaitingToJoinCache(c);
 	JoinAcknowledgeCache(c);
-	ShowSubmittedCache(c);
 	ButtonCache(c);}
 
 interface RoundUpdate { round: number; time: number;}
@@ -28,7 +27,7 @@ function MainInputTestSequence(apg: APGSys): void {
     var names = ["npc1", "npc2", "npc3", "npc4", "npc5", "npc6", "npc7", "npc8", "npc9", "npcr1", "npcr2", "npcr3", "npcr4", "npcr5", "npcr6", "npcr7", "npcr8", "npcr9"];
 
     apg.ClearLocalMessages();
-    var roundLength: number = 7;//45;//15;
+    var roundLength: number = 45;//45;//15;
     function mr() { if (Math.random() < .6) return 0; return Math.floor(Math.random() * 3) + 1;}
     for (var j = 1; j <= 10; j++ ){
         var roundTimeOffset: number = (j - 1) * roundLength;
@@ -426,8 +425,8 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
             enttx.clearAll();
             WaitingToJoin(apg, "Something went wrong - no response from the streamer's game...  Make sure the streamer is online and still playing this game, then connect again!");})
         .Register<RoundParms>("startround", p => {
-            //accepted = false;
-			showRoundPlaque = true;
+            accepted = false;
+			//showRoundPlaque = true;
             endOfRoundSound.play();
             var curFoe:PlayerUpdate = null;
             for (var k in playerStats) {
@@ -517,7 +516,7 @@ function MainPlayerInput(apg: APGSys, id:number, team:number ): void {
 	new enttx(timeSet, 0, 0, "Time", { font: '18px ' + fontName, fill: '#433' });
 	new enttx(timeSet, 0, 18, "", { font: '40px ' + fontName, fill: '#688' }, { upd: e => { e.text = "" + timer; e.fill = roundColors[(roundNumber-1) % roundColors.length];}});
 
-	MakeRoundPlaque(apg, player, foe, fontName, () => showRoundPlaque, () => { showRoundPlaque = false; accepted = false; });
+	//MakeRoundPlaque(apg, player, foe, fontName, () => showRoundPlaque, () => { showRoundPlaque = false; accepted = false; });
 
     if (apg.allowFullScreen) {new enttx(w, 100, 700, "Your actions were submitted just fine!  Now just relax until the next round.", { font: '18px ' + fontName, fill: '#433' });}
 

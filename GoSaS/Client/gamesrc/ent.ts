@@ -52,10 +52,12 @@ class ent extends Phaser.Sprite implements entUser {
 
 	set src(value: ent) { value.addChild( this ); }
 
-    id: number;
+	id: number;
+
+	health: number;
 
 	constructor(t: Phaser.Group, x: number, y: number, key?: string | Phaser.RenderTexture | Phaser.BitmapData | PIXI.Texture,
-		fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, color?: number, scalex?: number, scaley?: number, visible?: boolean, anchorx?: number, anchory?: number, use?: (m: ent) => void, upd?: (m: ent) => void }) {
+		fields?: { src?: ent, rotation?: number, alpha?: number, alive?: boolean, blendMode?: PIXI.blendModes, color?: number, scalex?: number, scaley?: number, visible?: boolean, anchorx?: number, anchory?: number, health?:number, use?: (m: ent) => void, upd?: (m: ent) => void }) {
 		super(t.game, x, y, key);
 		this.visible = true; 
 		if (fields) Object.assign(this, fields);

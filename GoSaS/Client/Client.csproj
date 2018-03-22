@@ -38,7 +38,6 @@
     <TypeScriptCompile Include="gamesrc\Libraries\phaser.d.ts" />
     <TypeScriptCompile Include="gamesrc\Libraries\pixi.comments.d.ts" />
     <TypeScriptCompile Include="gamesrc\MainPlayerInput.ts" />
-    <TypeScriptCompile Include="gamesrc\ShowSubmitted.ts" />
     <TypeScriptCompile Include="gamesrc\WaitingForJoinAcknowledgement.ts" />
     <TypeScriptCompile Include="gamesrc\WaitingToJoin.ts" />
   </ItemGroup>
