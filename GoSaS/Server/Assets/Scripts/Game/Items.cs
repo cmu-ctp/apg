@@ -1,4 +1,4 @@
-﻿using System; using UnityEngine; using System.Collections.Generic; using v3 = UnityEngine.Vector3; using APG;
+﻿using System; using UnityEngine; using v3 = UnityEngine.Vector3; using APG;
 
 public class Items{
     PlayerSys playerSys;
@@ -10,7 +10,7 @@ public class Items{
         if (((int)FullGame.tick) % 10 == 0) e.color = new Color(0, 0, 0, alpha);
         else if (((int)FullGame.tick) % 10 == 2) e.color = new Color(1, 1, 1, alpha);}
 
-    void makeRocket(v3 pos, ent targ) {
+    void makeRocket(v3 pos, ent targ, int side, APlayerInfo player) {
 		var turnSpd = .96f;
 		new ent() {
 			sprite = Art.Players.itemsFull.rocket2.spr, pos = new v3( pos.x, pos.y, .8f), flipped=false, name="rocket", inGrid=true, scale=.3f, health=60*7, vel= new v3(0, .035f, 0),
@@ -26,24 +26,25 @@ public class Items{
 				e.removeIfOffScreen();
 				if (e.health <= 0) { e.remove();return;}},
 			playerTouch = (e, user, info) => {
-				user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
+                player.didDamage(side, 1);
+                user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
 				for ( var k = 0; k < 15; k++) {
 					new ent() {
 						sprite = Art.Props.Clouds.rand(), pos = new v3( e.pos.x+rd.f(-1.5f,1.5f), 1 + e.pos.y + rd.f(-1.5f, 1.5f), .8f + rd.f(-.05f, .05f)), flipped=rd.Test(.5f), name="rocketExplode", scale=.7f,
 						update = e2 => { e2.scale *= .9f; if (e2.scale <= 0.01) { e2.remove(); return;}}};}
 				e.remove();}};}
-	void doItemRocket( v3 pos, ent targ ) {
+	void doItemRocket( v3 pos, ent targ, int side, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.Cows.rand(), pos = new v3( pos.x, pos.y, .9f), flipped=rd.Test(.5f), name="rocketMaker", inGrid=true, health=60*12,scale=0f,
 			update = e => {
 				if (e.health > 30) {
 					var cycle = e.health % (60 * 1);
-					if (cycle == 0) { makeRocket(pos, targ); }}
+					if (cycle == 0) { makeRocket(pos, targ, side, player); }}
 				e.health--;
 				if (e.health <= 0) {
 					e.remove();
 					return;}}};}
-	void doItemBomb( v3 pos, int side, ent targ) {
+	void doItemBomb( v3 pos, int side, ent targ, APlayerInfo player) {
 		var vel = .35f; var spin = rd.f(-6,6); var xvel = -side*rd.f(.09f, .11f);
 		new ent() {
 			sprite = Art.Players.itemsFull.bomb.spr, pos = new v3(pos.x + rd.f(1), pos.y + rd.f(.5f), rd.f(.5f)), scale = .3f, flipped = rd.Test(.5f), name = "bomb", health = 130,
@@ -51,7 +52,9 @@ public class Items{
 				e.health--;
 				if(e.health <= 0) {
 					var dif = targ.pos - e.pos;
-					if (dif.magnitude < 3) { targ.onHurt(targ, e, new TouchInfo { flags = 0, damage = 5, showDamage = true }); }
+					if (dif.magnitude < 3) {
+                        player.didDamage(side, 5);
+                        targ.onHurt(targ, e, new TouchInfo { flags = 0, damage = 5, showDamage = true });}
 					for ( var k = 0; k < 25; k++) {
 						new ent() {
 							sprite = Art.Props.Clouds.rand(), pos = new v3( e.pos.x+rd.f(-2f,2f), 1 + e.pos.y + rd.f(-2f, 2f), .8f + rd.f(-.05f, .05f)), flipped=rd.Test(.5f), name="rocketExplode", scale=.7f,
@@ -62,7 +65,7 @@ public class Items{
 				vel -= .005f;
 				e.ang += spin;
 				e.removeIfOffScreen();}};}
-	void doItemShield( v3 pos, ent targ) {
+	void doItemShield( v3 pos, ent targ, APlayerInfo player) {
 		var vel = 0f; var shake = 0f;var tick = 0f;
 		var angAnim = new DualWave(12, .025f);
 		new ent() {
@@ -74,7 +77,7 @@ public class Items{
 				tick += .01f;
 				vel = vel * .99f + .01f * .01f;
 				e.pos += new v3( 0,vel, 0);}};}
-	void makeItemTennisBall(v3 pos, int side) {
+	void makeItemTennisBall(v3 pos, int side, APlayerInfo player) {
 		var vel = rd.f(.1f, .4f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*rd.f(.15f,.4f); var numBounces = 0;
 		new ent() {
 			sprite = Art.Players.itemsFull.tennisball.spr, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="tennisball", inGrid=true, health=0,
@@ -91,24 +94,25 @@ public class Items{
 					vel *= -.4f;
 					if( numBounces > 3 ) { e.remove(); } } },
 			playerTouch = (e, user, info) => {
-				user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
+                player.didDamage(side, 1);
+                user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
 				for ( var k = 0; k < 7; k++) {
 					new ent() {
 						sprite = Art.Props.Clouds.rand(), pos = new v3( e.pos.x+rd.f(-1.5f,1.5f), 1 + e.pos.y + rd.f(-1.5f, 1.5f), .8f + rd.f(-.05f, .05f)), flipped=rd.Test(.5f), name="hammerHit", scale=.7f,
 						update = e2 => { e2.scale *= .9f; if (e2.scale <= 0.01) { e2.remove(); return;}}};}
 				e.remove();}};}
-	void doItemTennisBall( v3 pos, int side ) {
+	void doItemTennisBall( v3 pos, int side, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.cannon.spr, pos = new v3( pos.x, pos.y, .9f), flipped= (side > 0 ) ? true:false, name="tennisBallSpewer", inGrid=true, health=60*10,scale=0f, 
 			update = e => {
 				if (e.health > 60) {
 					var cycle = e.health % 15;
-					if (cycle == 0) { e.ang = 0; makeItemTennisBall(e.pos, -side ); }}
+					if (cycle == 0) { e.ang = 0; makeItemTennisBall(e.pos, -side, player ); }}
 				e.health--;
 				if (e.health < 0) {
 					e.remove();
 					return;}}};}
-	void makeItemHammer(v3 pos, int side) {
+	void makeItemHammer(v3 pos, int side, APlayerInfo player) {
 		var vel = rd.f(.3f, .4f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*rd.f(.01f,.2f); var numBounces = 0;
 		new ent() {
 			sprite = Art.Players.itemsFull.hammer2.spr, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="hammer", inGrid=true, health=0,
@@ -125,24 +129,25 @@ public class Items{
 					vel *= -.4f;
 					if( numBounces > 3 ) { e.remove(); } } },
 			playerTouch = (e, user, info) => {
-				user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
+                player.didDamage(side, 1);
+                user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
 				for( var k = 0; k < 7; k++) {
 					new ent() {
 						sprite = Art.Props.Clouds.rand(), pos = new v3( e.pos.x+rd.f(-1.5f,1.5f), 1 + e.pos.y + rd.f(-1.5f, 1.5f), .8f + rd.f(-.05f, .05f)), flipped=rd.Test(.5f), name="hammerHit", scale=.7f,
 						update = e2 => { e2.scale *= .9f; if (e2.scale <= 0.01) { e2.remove(); return;}}};}
 				e.remove();}};}
-	void doItemHammer( v3 pos, int side ) {
+	void doItemHammer( v3 pos, int side, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.cannon.spr, pos = new v3( pos.x, pos.y, .9f), flipped= (side > 0 ) ? true:false, name="hammerSpewer", inGrid=true, health=60*6,scale=0f, 
 			update = e => {
 				if (e.health > 60) {
 					var cycle = e.health % 5;
-					if (cycle == 0) { e.ang = 0; makeItemHammer(e.pos, -side ); }}
+					if (cycle == 0) { e.ang = 0; makeItemHammer(e.pos, -side, player); }}
 				e.health--;
 				if (e.health < 0) {
 					e.remove();
 					return;}}};}
-	void doItemScaryMask( v3 pos ) {
+	void doItemScaryMask( v3 pos, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Players.itemsFull.scarymask.spr, pos = new v3( pos.x+ rd.f(1), 1f+pos.y+rd.f(.5f), rd.f(.5f)), scale = .4f, flipped=rd.Test(.5f), name="scaryMask", health=120,
 			update = e => {
@@ -152,11 +157,11 @@ public class Items{
 				e.color = new Color(1, 1, 1, e.health / 120f);
 				if (e.health < 0) { e.remove(); return;} } };}
 
-	public void DoItem( ItemId id, int team, v3 pos ) {
+	public void DoItem( ItemId id, int team, v3 pos, APlayerInfo player ) {
 		switch (id) {
-			case ItemId.TennisBall: doItemTennisBall(pos, (team == 1) ? 1 : -1); break;
-			case ItemId.Bomb: doItemBomb(pos, (team == 1) ? -1 : 1, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt); break;
-			case ItemId.Hammer: doItemHammer(pos, (team == 1) ? 1 : -1); break;
-			case ItemId.ScaryMask: doItemScaryMask(pos); break;
-			case ItemId.Rocket: doItemRocket(pos, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt); break;
-			case ItemId.Shield: doItemShield(pos, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt);/*!!!*/ break;}}}
+			case ItemId.TennisBall: doItemTennisBall(pos, (team == 1) ? 1 : -1, player ); break;
+			case ItemId.Bomb: doItemBomb(pos, (team == 1) ? -1 : 1, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt, player); break;
+			case ItemId.Hammer: doItemHammer(pos, (team == 1) ? 1 : -1, player); break;
+			case ItemId.ScaryMask: doItemScaryMask(pos, player); break;
+			case ItemId.Rocket: doItemRocket(pos, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt, (team == 1) ? 1 : -1, player); break;
+			case ItemId.Shield: doItemShield(pos, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt, player);/*!!!*/ break;}}}

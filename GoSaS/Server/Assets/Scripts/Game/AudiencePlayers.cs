@@ -40,11 +40,17 @@ public class APlayerInfo {
 	public ItemId itemId;
 	public LayerID goalLayer;
 	public int curBuilding;
+    public int damageCaused = 0;
 	public ent pl;
 	public int headID;
 	public int colorID;
 	public int team;
-	public int buildingGoal;}
+	public int buildingGoal;
+    public void didDamage(int side, int damage) {
+        damageCaused += damage * (side == team ? -1 : 1);
+        if (damageCaused < 0) damageCaused = 0;
+    }
+}
 
 class AudiencePlayerAnim{
     public static int Update(float team1Health, float team2Health, ref AnimStyle animStyle, bool animSuccessful, bool animHurt, float offset, float tick, int k, ref float animTime ){
@@ -215,20 +221,23 @@ public class PlayGrid{
 			LayerID layer = blocked[k].goalLayer;
 			var building2 = (building) % 6;
             var layerNum = (int)layer;
-			if (layer > 0 && playerGrid[building, layerNum - 1] == null) playerGrid[building, layerNum - 1] = blocked[k];
+			/*if (layer > 0 && playerGrid[building, layerNum - 1] == null) playerGrid[building, layerNum - 1] = blocked[k];
 			else if (layer < LayerID.Back && playerGrid[building, layerNum + 1] == null) playerGrid[building, layerNum + 1] = blocked[k];
-			else if (building2 > 0 && playerGrid[building - 1, layerNum] == null) playerGrid[building - 1, layerNum] = blocked[k];
+			else*/ if (building2 > 0 && playerGrid[building - 1, layerNum] == null) playerGrid[building - 1, layerNum] = blocked[k];
 			else if (building2 < 5 && playerGrid[building + 1, layerNum] == null) playerGrid[building + 1, layerNum] = blocked[k];
-			else if (building2 > 0 && layer > LayerID.Front && playerGrid[building - 1, layerNum - 1] == null) playerGrid[building - 1, layerNum - 1] = blocked[k];
+			/*else if (building2 > 0 && layer > LayerID.Front && playerGrid[building - 1, layerNum - 1] == null) playerGrid[building - 1, layerNum - 1] = blocked[k];
 			else if (building2 < 5 && layer > LayerID.Front && playerGrid[building + 1, layerNum - 1] == null) playerGrid[building + 1, layerNum - 1] = blocked[k];
 			else if (building2 > 0 && layer < LayerID.Back && playerGrid[building - 1, layerNum + 1] == null) playerGrid[building - 1, layerNum + 1] = blocked[k];
-			else if (building2 < 5 && layer < LayerID.Back && playerGrid[building + 1, layerNum + 1] == null) playerGrid[building + 1, layerNum + 1] = blocked[k];
+			else if (building2 < 5 && layer < LayerID.Back && playerGrid[building + 1, layerNum + 1] == null) playerGrid[building + 1, layerNum + 1] = blocked[k];*/
 			else {reallyBlocked.Add(blocked[k]);}}
 		if (reallyBlocked.Count > 0) {
 			for( var k = 0; k < reallyBlocked.Count; k++) {
 				int baseVal = blocked[k].funcs.getGoalBuilding() < 6 ? 0:6;
 				bool found = false;
-				for( var l = 0; l < 3 && !found; l++ )for( var j = 0; j < 6 && !found; j++ )if(playerGrid[j + baseVal, l] == null) {found = true;playerGrid[j + baseVal, l] = reallyBlocked[k];}}}
+                //for( var l = 0; l < 3 && !found; l++ )
+                for (var l = 1; l < 2 && !found; l++)
+                    for ( var j = 0; j < 6 && !found; j++ )
+                        if (playerGrid[j + baseVal, l] == null) {found = true;playerGrid[j + baseVal, l] = reallyBlocked[k];}}}
 		for( var k = 0; k < 12; k++ )for( var l = 0; l < 3; l++)if( playerGrid[k,l] != null) {playerGrid[k, l].funcs.setBuilding(k);playerGrid[k, l].funcs.setGoalLayer((LayerID)l);}}}
 
 
@@ -392,9 +401,10 @@ public class AudiencePlayerSys {
                 startAnim = (style, successful,hurt) => { animStyle = style; animTime = tick; animSuccessful = successful; animHurt = hurt;},
 				onRoundEnd = () => {
 					var id = info.curBuilding % 6;
-					//if( !inUse) { bufferedParms = new int[] { rd.i(0, 6), rd.i(0, 3), rd.f(0, 1) < .7f ? rd.i(0, 4) : rd.i(0, 9), rd.i(0, 7), rd.i(0, 6), 1 }; }
-					if (!inUse) { bufferedParms = new int[] { rd.i(0, 6), rd.i(0, 3), rd.f(0, 1) < .4f ? rd.i(0, 4) : rd.i(0, 9), rd.i(0, 7), rd.i(0, 6), 1 }; }
-					parms = bufferedParms;
+                    if (!inUse) { bufferedParms = new int[] { rd.i(0, 6), 1, rd.f(0, 1) < .7f ? rd.i(0, 4) : rd.i(0, 9), rd.i(0, 7), rd.i(0, 6), 1 }; }
+                    //if( !inUse) { bufferedParms = new int[] { rd.i(0, 6), rd.i(0, 3), rd.f(0, 1) < .7f ? rd.i(0, 4) : rd.i(0, 9), rd.i(0, 7), rd.i(0, 6), 1 }; }
+                    //if (!inUse) { bufferedParms = new int[] { rd.i(0, 6), rd.i(0, 3), rd.f(0, 1) < .4f ? rd.i(0, 4) : rd.i(0, 9), rd.i(0, 7), rd.i(0, 6), 1 }; }
+                    parms = bufferedParms;
 					parms[0] = nm.Between(0, parms[0], 5);
 					parms[1] = nm.Between(0, parms[1], 2);
 					parms[2] = nm.Between(0, parms[2], 8);

@@ -49,7 +49,7 @@ public class BuildingActions {
         if (((int)FullGame.tick) % 10 == 0) e.color = new Color(0, 0, 0, alpha);
         else if (((int)FullGame.tick) % 10 == 2) e.color = new Color(1, 1, 1, alpha);}
 
-	void makeCowToot(v3 pos, ent targ) {
+	void makeCowToot(v3 pos, ent targ, int side, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.StinkLines.rand(), pos = new v3( pos.x, pos.y, .8f), flipped=rd.Test(.5f), name="cowstink", inGrid=true, scale=1f, color=new Color(1,1,1,1), health=6,
 			update = e => {
@@ -71,13 +71,14 @@ public class BuildingActions {
 				e.removeIfOffScreen();
 				if (e.health <= 0) { e.remove(); return;}},
 			playerTouch = (e, user, info) => {
-				user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
+                player.didDamage(side, 1);
+                user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
 				for ( var k = 0; k < 15; k++) {
 					new ent() {
 						sprite = Art.Buildings.StinkClouds.rand(), pos = new v3( e.pos.x+rd.f(-1.5f,1.5f), 1 + e.pos.y + rd.f(-1.5f, 1.5f), .8f + rd.f(-.05f, .05f)), flipped=rd.Test(.5f), name="stinkExplode", scale=.7f, color = new Color(1, 1, 1, .5f),
 						update = e2 => { e2.scale *= .9f; if (e2.scale <= 0.01) { e2.remove(); return;}}};}
 				e.remove();}};}
-	void doCow( v3 pos, ent targ ) {
+	void doCow( v3 pos, ent targ, int side, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.Cows.rand(), pos = new v3( pos.x, pos.y, .9f), flipped=rd.Test(.5f), name="cow", inGrid=true, health=60*30,scale=0f,
 			update = e => {
@@ -85,7 +86,7 @@ public class BuildingActions {
 				else e.scale = e.scale * .9f;
 				if (e.health > 30) {
 					var cycle = e.health % (60 * 2);
-					if (cycle == 0) { e.ang = 0; makeCowToot(e.pos, targ); } // toot!
+					if (cycle == 0) { e.ang = 0; makeCowToot(e.pos, targ, side, player); } // toot!
 					else if (cycle < 60) e.ang = rd.f(-(60 - cycle), 60 - cycle) * .5f;}
 				e.health--;
 				if (e.health < 30 && e.scale < .01f) { e.remove(); return;}}};}
@@ -104,7 +105,7 @@ public class BuildingActions {
 				e.ang += spin;
 				e.removeIfOffScreen();
 				if( e.pos.y < -5f && vel < 0 ) { numBounces++; if( firstBounce ) { firstBounce = false; xvel = rd.f(.1f); } vel *= -.4f; if( numBounces > 3 ) { e.remove(); } } }};}
-	void doBroccoliCannon( v3 pos, int side ) {
+	void doBroccoliCannon( v3 pos, int side, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.cannon.spr, pos = new v3( pos.x, pos.y, .9f), flipped= (side > 0 ) ? true:false, name="cannon", inGrid=true, health=60*4,scale=0f, 
 			update = e => {
@@ -116,7 +117,7 @@ public class BuildingActions {
 
 	// _________________
 
-	void doTurtle( v3 pos ) {
+	void doTurtle( v3 pos, APlayerInfo player) {
 		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.turtle2.spr, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, 
@@ -130,7 +131,7 @@ public class BuildingActions {
 					if( firstBounce ) { firstBounce = false; xvel = rd.f(.1f); }
 					vel *= -.4f;
 					if( numBounces > 3 ) { e.remove(); } } }};}
-	void doFish( v3 pos, ent targ ) {
+	void doFish( v3 pos, ent targ, APlayerInfo player) {
 		var active = false; var activeTime = 0;
 		new ent() {
 			sprite = Art.Buildings.tendril.spr, pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale3 = new v3(1,0,1), flipped=rd.Test(.5f), name="basicTreat", inGrid=true, health=60*40,
@@ -160,7 +161,7 @@ public class BuildingActions {
 
 	// _________________
 
-	void makeFlower(v3 pos, int side) {
+	void makeFlower(v3 pos, int side, APlayerInfo player) {
 		var vel = rd.f(.3f, .4f )*.6f; var spin = rd.f(-6,6); var firstBounce = true; var xvel = -side*rd.f(.04f,.1f); var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.Flowers.rand(), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="flower", inGrid=true, health=0,
@@ -173,20 +174,21 @@ public class BuildingActions {
 				e.removeIfOffScreen();
 				if( e.pos.y < -5f && vel < 0 ) { numBounces++; if( firstBounce ) { firstBounce = false; xvel = rd.f(.1f); } vel *= -.4f; if( numBounces > 3 ) { e.remove(); } } },
 			playerTouch = (e, user, info) => {
-				user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
+                player.didDamage(side, 1);
+                user.onHurt(user, e, new TouchInfo { flags = 0, damage = 1, showDamage = true });
 				for ( var k = 0; k < 7; k++) {
 					new ent() {
 						sprite = Art.Props.Clouds.rand(), pos = new v3( e.pos.x+rd.f(-1.5f,1.5f), 1 + e.pos.y + rd.f(-1.5f, 1.5f), .8f + rd.f(-.05f, .05f)), flipped=rd.Test(.5f), name="flowerMaker", scale=.7f,
 						update = e2 => { e2.scale *= .9f; if (e2.scale <= 0.01) { e2.remove(); return;}}};}
 				e.remove();}};}
-	void doFlowerBarrage( v3 pos, int side ) {
+	void doFlowerBarrage( v3 pos, int side, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.Flowers.rand(), pos = new v3( pos.x, pos.y, .9f), flipped= (side > 0 ) ? true:false, name="tennisBallSpewer", inGrid=true, health=60*3,scale=0f, 
 			update = e => {
-				if (e.health > 60) { var cycle = e.health % 4; if (cycle == 0) { e.ang = 0; makeFlower(e.pos, -side ); }}
+				if (e.health > 60) { var cycle = e.health % 4; if (cycle == 0) { e.ang = 0; makeFlower(e.pos, -side, player); }}
 				e.health--;
 				if (e.health < 0) { e.remove(); return;}}};}
-	void doSun( v3 pos ) {
+	void doSun( v3 pos, APlayerInfo player) {
 		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.Flowers.rand(), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, 
@@ -199,7 +201,7 @@ public class BuildingActions {
 
 	// _________________
 
-	void makeDrunkPlane(v3 pos, ent targ) {
+	void makeDrunkPlane(v3 pos, ent targ, APlayerInfo player) {
 		var turnSpd = .96f;
 		new ent() {
 			sprite = Art.Buildings.biplane.spr, pos = new v3( pos.x, pos.y, .8f), flipped=false, name="drunkbiplane", inGrid=true, scale=.3f, health=60*7, vel= new v3(0, .035f, 0),
@@ -221,16 +223,16 @@ public class BuildingActions {
 						sprite = Art.Props.Clouds.rand(), pos = new v3( e.pos.x+rd.f(-1.5f,1.5f), e.pos.y + rd.f(-1.5f, 1.5f), .8f + rd.f(-.05f, .05f)), flipped=rd.Test(.5f), name="blimpExplode", scale=.7f,
 						update = e2 => { e2.scale *= .9f; if (e2.scale <= 0.01) { e2.remove(); return;}}};}
 				e.remove();}};}
-	void doDrunkPlane( v3 pos, ent targ ) {
+	void doDrunkPlane( v3 pos, ent targ, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.Cows.rand(), pos = new v3( pos.x, pos.y, .9f), flipped=rd.Test(.5f), name="drunkPlaneMaker", inGrid=true, health=60*6*1,scale=0f,
 			update = e => {
 				if (e.health > 30) {
 					var cycle = e.health % 40;
-					if (cycle == 0) { makeDrunkPlane(pos, targ); }}
+					if (cycle == 0) { makeDrunkPlane(pos, targ, player); }}
 				e.health--;
 				if (e.health <= 0) { e.remove(); return;}}};}
-	void doBlimp( v3 pos ) {
+	void doBlimp( v3 pos, APlayerInfo player) {
 		var vel = 0f; var shake = 0f; var lastPush = 0.0f; var tick = 0f;
 		var angAnim = new DualWave(12, .025f);
 		new ent() {
@@ -259,7 +261,7 @@ public class BuildingActions {
 
 	// _________________
 
-	void doCopCar( v3 pos ) {
+	void doCopCar( v3 pos, APlayerInfo player) {
 		var vel = rd.f(.1f, .2f ); var spin = rd.f(-6,6); var firstBounce = true; var xvel = 0f; var numBounces = 0;
 		new ent() {
 			sprite = Art.Buildings.Flowers.rand(), pos = new v3( pos.x+ rd.f(1), pos.y+rd.f(.5f), rd.f(.5f)), scale = .3f, flipped=rd.Test(.5f), name="basicTreat", inGrid=true, 
@@ -269,7 +271,7 @@ public class BuildingActions {
 				e.ang += spin;
 				e.removeIfOffScreen();
 				if( e.pos.y < -5f && vel < 0 ) { numBounces++; if( firstBounce ) { firstBounce = false; xvel = rd.f(.1f); } vel *= -.4f; if( numBounces > 3 ) { e.remove(); } } }};}
-	void makeCopHelicopter(v3 pos) {
+	void makeCopHelicopter(v3 pos, APlayerInfo player) {
 		var turnSpd = .96f;
 		var dest = pos + new v3(rd.f(-3,3), 2+rd.f(-1,1), 0);var vel = 0f;
 		new ent() {
@@ -294,11 +296,11 @@ public class BuildingActions {
 				e.removeIfOffScreen();
 				gameSys.grid.Find(e.pos - new v3(0, .7f, 0), 1.75f, e, (me, targ) => { targ.buddyTouch(targ, me, new TouchInfo { flags = 0, strength = 1 }); });
 				if (e.health <= 0) { e.remove(); return;}}};}
-	void doCopHelicopter( v3 pos ) {
+	void doCopHelicopter( v3 pos, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.Cows.rand(), pos = new v3( pos.x, pos.y, .9f), flipped=rd.Test(.5f), name="copHelicopterMaker", inGrid=true, health=60*6*1,scale=0f,
 			update = e => {
-				if (e.health > 30) { var cycle = e.health % (60 * 1); if (cycle == 0) { makeCopHelicopter(pos); }}
+				if (e.health > 30) { var cycle = e.health % (60 * 1); if (cycle == 0) { makeCopHelicopter(pos, player); }}
 				e.health--;
 				if (e.health <= 0) { e.remove(); return;}}};}
 
@@ -319,14 +321,14 @@ public class BuildingActions {
 				e.ang += spin;
 				e.removeIfOffScreen();
 				if( e.pos.y < -5f && vel < 0 ) { numBounces++; if( firstBounce ) { firstBounce = false; xvel = rd.f(.1f); } vel *= -.4f; if( numBounces > 3 ) { e.remove(); } } }};}
-	void doPills( v3 pos, int side ) {
+	void doPills( v3 pos, int side, APlayerInfo player) {
 		new ent() {
 			sprite = Art.Buildings.cannon.spr, pos = new v3( pos.x, pos.y, .9f), flipped= (side > 0 ) ? true:false, name="pillSpewer", inGrid=true, health=60*4,scale=0f, 
 			update = e => {
 				if (e.health < 60 * 3 && e.health > 60) { var cycle = e.health % 8; if (cycle == 0) { e.ang = 0; makePills(e.pos, -side ); }}
 				e.health--;
 				if (e.health < 0) { e.remove(); return;}}};}
-	void doFairyMD( v3 pos, ent targ ) {
+	void doFairyMD( v3 pos, ent targ, APlayerInfo player) {
 		var vel = 0f; var tick = 0f; 
 		var angAnim = new DualWave(12, .025f);
 		new ent() {
@@ -349,17 +351,17 @@ public class BuildingActions {
 				vel = vel * .99f + .01f * .006f;
 				e.pos += new v3( 0,vel, 0);}};}
 
-	public void DoBuilding(BuildingActionID id, int team, v3 pos) {
+	public void DoBuilding(BuildingActionID id, int team, v3 pos, APlayerInfo player) {
 		switch (id) {
-			case BuildingActionID.Building1:        doCow(pos, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt); break;
-			case BuildingActionID.Building1Big:    doBroccoliCannon(pos, (team == 1) ? -1 : 1);/*!!!*/ break;
-			case BuildingActionID.Building2:        doFish(pos, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt);/*!!!*/ break;
-			case BuildingActionID.Building2Big:    doTurtle(pos);/*!!!*/ break;
-			case BuildingActionID.Building3:         doFlowerBarrage(pos, (team == 1) ? 1 : -1); break;
-			case BuildingActionID.Building3Big:    doSun(pos);/*!!!*/ break;
-			case BuildingActionID.Building4:        doDrunkPlane(pos, (team==1) ? playerSys.player2Ent: playerSys.playerEnt); break;
-			case BuildingActionID.Building4Big:    doBlimp(pos); break;
-			case BuildingActionID.Building5:        doCopHelicopter(pos); break;
-			case BuildingActionID.Building5Big:    doCopCar(pos);/*!!!*/ break;
-            case BuildingActionID.Building6:        doPills(pos, (team == 1) ? -1 : 1);/*!!!*/ break;
-			case BuildingActionID.Building6Big:    doFairyMD(pos, (team == 1) ? playerSys.playerEnt : playerSys.player2Ent);/*!!!*/ break;}}}
+			case BuildingActionID.Building1:        doCow(pos, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt, (team == 1) ? -1 : 1, player ); break;
+			case BuildingActionID.Building1Big:    doBroccoliCannon(pos, (team == 1) ? -1 : 1, player);/*!!!*/ break;
+			case BuildingActionID.Building2:        doFish(pos, (team == 1) ? playerSys.player2Ent : playerSys.playerEnt, player);/*!!!*/ break;
+			case BuildingActionID.Building2Big:    doTurtle(pos, player);/*!!!*/ break;
+			case BuildingActionID.Building3:         doFlowerBarrage(pos, (team == 1) ? 1 : -1, player); break;
+			case BuildingActionID.Building3Big:    doSun(pos, player);/*!!!*/ break;
+			case BuildingActionID.Building4:        doDrunkPlane(pos, (team==1) ? playerSys.player2Ent: playerSys.playerEnt, player); break;
+			case BuildingActionID.Building4Big:    doBlimp(pos, player); break;
+			case BuildingActionID.Building5:        doCopHelicopter(pos, player); break;
+			case BuildingActionID.Building5Big:    doCopCar(pos, player);/*!!!*/ break;
+            case BuildingActionID.Building6:        doPills(pos, (team == 1) ? -1 : 1, player);/*!!!*/ break;
+			case BuildingActionID.Building6Big:    doFairyMD(pos, (team == 1) ? playerSys.playerEnt : playerSys.player2Ent, player);/*!!!*/ break;}}}

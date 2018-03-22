@@ -42,7 +42,6 @@ namespace APG {
         int maxPlayers = 10;
         int secondsAfterLockedInChoice = 7;
         int nextAudiencePlayerChoice;
-        bool pauseEnded = false;
         int gameTime = 0;
         int appTime = 0;
         AudiencePhaseStatus aStatus;
@@ -100,7 +99,7 @@ namespace APG {
 		        if(aStatus.doingEnd ) waveHUD.pauseRatio = waveHUD.pauseRatio * .99f + .01f * 1;
 		        else waveHUD.pauseRatio = waveHUD.pauseRatio * .9f + .1f * 0;
 		        if (pauseRatio > 0 && pauseRatio < 1) {
-			        AudiencePhase.EndOfRoundCamera(aStatus.cameraPos, ref aStatus.lastLookAtPos, ref aStatus.lastLookFromPos, pauseRatio, ref lookPos, transform);}
+			        AudiencePhase.EndOfRoundCamera(aStatus.cameraPos, ref aStatus.lastLookAtPos, ref aStatus.lastLookFromPos, ref lookPos, transform);}
 		        else {
                     aStatus.lastLookAtPos = lookPos;
 			        nm.ease(ref aStatus.lastLookFromPos, new v3(lookPos.x * .03f, lookPos.y * .03f, -10), .3f);
@@ -143,13 +142,12 @@ namespace APG {
 			if (playerMap.ContainsKey(user) == false) return false;
 			playerMap[user].funcs.onInput(parms);
 			return true;}
-		int ChoiceTime() { return nextAudiencePlayerChoice - FullGame.ticksPerSecond * 2 - FullGame.ticksPerSecond * secondsAfterLockedInChoice; }
 
 		void Start() {
             Application.runInBackground = true;
             Make();
-            SetupTimers();
-			nextChatInviteTime = FullGame.ticksPerSecond * 10;
+            SetupAllTimers();
+            nextChatInviteTime = FullGame.ticksPerSecond * 10;
 			apg = network.GetAudienceSys();
 			apg.ResetClientMessageRegistry()
 				.Register<AliveParms>("alive", (user, p) => {SetPlayerMessageTime(user);})
@@ -178,48 +176,50 @@ namespace APG {
 			if ((appTime % (50 * 2)) == 0) ClearDisconnectedPlayers();
 			if (playerSys.team1Health == 0 ) {gameSys.gameOver=true;}
 			else if(playerSys.team2Health == 0 ) {gameSys.gameOver=true;}
-			else {  InviteAudience(); if( !waitingForGameToStart ) timerUpdater();}}
+			else {
+                InviteAudience();
+                if ( !waitingForGameToStart ) timerUpdater();}
+        }
 
-		void SetupTimers() {
-			nextAudiencePlayerChoice = FullGame.ticksPerSecond * secondsPerChoice;
-			pauseEnded = false;
-			timerUpdater = PlayersEnterChoicesTimer;}
-		void AtEnterChoicesEnd() {
-			apg.WriteToClients("submit", new EmptyParms());
-			apg.WriteToClients("time", new RoundUpdate { time = (int)(ChoiceTime() / 60), round = roundNumber + 1 });}
-		void AtCollectPlayerActionsEnd() {
-			audiencePlayerSys.RoundUpdate();
-			audiencePlayerSys.playGrid.SetGoalPositions();
-			audiencePlayerSys.UpdatePlayersToClients(apg);}
-        void AtStartActionEnd() {
-			roundNumber++;
-			apg.WriteToClients("time", new RoundUpdate { time = secondsPerChoice, round = roundNumber + 1 });
-			gameSys.Sound( Art.Sounds.boomstart2.snd, 1);
-            AudiencePhase.MakeRoundEnd(aStatus, roundNumber, audiencePlayerSys.GetPlayerGrid(), () => pauseEnded = true, gameCamera.transform, buildingActions, items );}
-		void AtPausedTimerEnd() {
-			SetupTimers();
-			gameSys.Sound( Art.Sounds.boomend.snd, 1);
-			apg.WriteToClients("startround", new RoundParms { health1=(int)playerSys.team1Health, health2 = (int)playerSys.team2Health  });}
-		void PausedTimer() {
-			if( pauseEnded ) {
-				AtPausedTimerEnd();}}
-		void StartActionTimer() {
-			gameTime++;
-			nextAudiencePlayerChoice--;
-			if(nextAudiencePlayerChoice <= 0 ) {
-				AtStartActionEnd();
-				timerUpdater = PausedTimer;}}
-		void CollectPlayerChoicesTimer() {
-			gameTime++;
-			nextAudiencePlayerChoice--;
-			if(nextAudiencePlayerChoice <= FullGame.ticksPerSecond * 2) {
-				AtCollectPlayerActionsEnd();
-				timerUpdater = StartActionTimer;}}
-		void PlayersEnterChoicesTimer() {
-			gameTime++;
-			if ((ChoiceTime() % (FullGame.ticksPerSecond * 5) == 0) || (ChoiceTime() % (FullGame.ticksPerSecond * 1) == 0 && ChoiceTime() < (FullGame.ticksPerSecond * 5))) {
-				apg.WriteToClients( "time", new RoundUpdate {time=(int)(ChoiceTime()/ 60),round= roundNumber+1});}
-			nextAudiencePlayerChoice--;
-			if ( nextAudiencePlayerChoice <= FullGame.ticksPerSecond * 2 + FullGame.ticksPerSecond * secondsAfterLockedInChoice) {
-				AtEnterChoicesEnd();
-				timerUpdater = CollectPlayerChoicesTimer;}}}}
+        void SetupAllTimers(){
+            bool pauseEnded = false;
+            Action PlayersEnterChoicesTimer=null;
+            Action SetupTimers = () =>{
+                nextAudiencePlayerChoice = FullGame.ticksPerSecond * secondsPerChoice;
+                pauseEnded = false;
+                timerUpdater = PlayersEnterChoicesTimer; };
+            Action PausedTimer = () => {
+                if (pauseEnded) {
+                    SetupTimers();
+                    gameSys.Sound(Art.Sounds.boomend.snd, 1);
+                    apg.WriteToClients("startround", new RoundParms { health1 = (int)playerSys.team1Health, health2 = (int)playerSys.team2Health });} };
+            Action StartActionTimer = () => {
+                gameTime++;
+                nextAudiencePlayerChoice--;
+                if (nextAudiencePlayerChoice <= 0) {
+                    roundNumber++;
+                    apg.WriteToClients("time", new RoundUpdate { time = secondsPerChoice, round = roundNumber + 1 });
+                    gameSys.Sound(Art.Sounds.boomstart2.snd, 1);
+                    AudiencePhase.MakeRoundEnd(aStatus, roundNumber, audiencePlayerSys.GetPlayerGrid(), () => pauseEnded = true, gameCamera.transform, buildingActions, items);
+                    timerUpdater = PausedTimer; } };
+            Action CollectPlayerChoicesTimer = () => {
+                gameTime++;
+                nextAudiencePlayerChoice--;
+                if (nextAudiencePlayerChoice <= FullGame.ticksPerSecond * 2) {
+                    audiencePlayerSys.RoundUpdate();
+                    audiencePlayerSys.playGrid.SetGoalPositions();
+                    audiencePlayerSys.UpdatePlayersToClients(apg);
+                    timerUpdater = StartActionTimer; } };
+            PlayersEnterChoicesTimer = () => {
+                Func<int> ChoiceTime = () => { return nextAudiencePlayerChoice - FullGame.ticksPerSecond * 2 - FullGame.ticksPerSecond * secondsAfterLockedInChoice; };
+                gameTime++;
+			    if ((ChoiceTime() % (FullGame.ticksPerSecond * 5) == 0) || (ChoiceTime() % (FullGame.ticksPerSecond * 1) == 0 && ChoiceTime() < (FullGame.ticksPerSecond * 5))) {
+				    apg.WriteToClients( "time", new RoundUpdate {time=(int)(ChoiceTime()/ 60),round= roundNumber+1});}
+			    nextAudiencePlayerChoice--;
+			    if ( nextAudiencePlayerChoice <= FullGame.ticksPerSecond * 2 + FullGame.ticksPerSecond * secondsAfterLockedInChoice) {
+                    apg.WriteToClients("submit", new EmptyParms());
+                    apg.WriteToClients("time", new RoundUpdate { time = (int)(ChoiceTime() / 60), round = roundNumber + 1 });
+                    timerUpdater = CollectPlayerChoicesTimer;}};
+
+            SetupTimers();}
+    } }
