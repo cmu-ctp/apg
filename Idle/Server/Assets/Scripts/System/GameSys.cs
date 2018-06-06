@@ -15,8 +15,6 @@ public class GameSys {
     public EntLink activeEnts;
     Transform camera;
 
-	public bool gameOver = false;
-
 	[SerializeField] float timeRemainder = 0;
 
 	public CollisionGrid grid = new CollisionGrid(30, 30);

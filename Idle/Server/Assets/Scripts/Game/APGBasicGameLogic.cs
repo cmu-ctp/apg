@@ -1,151 +1,134 @@
-﻿using System;
-using System.Collections.Generic;
-using v3 = UnityEngine.Vector3;
-using UnityEngine;
+﻿/*
+
+How do I make this work?
+Players connect.
+We check to see if we have a record of them.
+If we do, we send info about the current state of their account, along with information about what kinds of idle updates there are,
+   as well as game world updates they need to know about.
+Then they get to playing locally.  And then they send updates about what they're up to every so often.
+Meanwhile, the main game cycles through visuals of interesting updates in the shared game world, leaderboards, etc.
+ */
+
+using System; using System.Collections.Generic; using v3 = UnityEngine.Vector3; using UnityEngine;
 
 namespace APG {
-	class PlayerEntry { public string name; public int lastMessageTime; public int buddyID; public BuddyFuncs funcs;}
+	class PlayerEntry { public string name; public int lastMessageTime; public int buddyID; }
+
+    class BackgroundUpdates{
+        public static void Make( Transform transform ){
+            var tick = 0f;
+            var src = new ent() { name = "worldBkg" };
+            new ent { sprite = Art.Backgrounds.sky.set.files[2].spr, parent = src, ignorePause=true, pos = new v3(0, 0, 60), scale = 50, name = "Sky1", layer=Layers.Background };
+            var skyFade = new DualWave(1, .003f);
+            new ent { sprite = Art.Backgrounds.sky.set.files[3].spr, parent = src, ignorePause = true, pos = new v3(0, 0, 59), scale = 50, name = "Sky2", layer = Layers.Background, update = e=> { tick++; e.color = new Color(1f, 1f, 1f, skyFade.Val(tick) * .5f + .5f); } };
+            new ent { sprite = Art.Backgrounds.LandToHorizon.spr, parent = src, ignorePause = true, pos = new v3(0, -6, 9), scale3 = new v3(5,3,1), name = "Ground", layer = Layers.Background, update = e => { e.pos = new v3( transform.position.x, transform.position.y-6, 9); } };
+
+            new ent { sprite = Art.Overlays.screenlight.spr, parent = src, ignorePause=true, pos = new v3(0, 0, -7f), scale = 1.4f, name = "Overlay1", layer = Layers.OverlayFX,
+                update = e => {
+                    e.pos = new v3(  transform.position.x, transform.position.y, transform.position.z + 3);
+                    e.color = new Color(1f, 1f, .9f, .15f + .11f * Mathf.Cos(tick * .01f + 73.0f) + .13f * Mathf.Cos(tick * .0073f + 13.0f));
+                    e.ang = .2f + 21f * Mathf.Cos(tick * .01f + 73.0f) + 16f * Mathf.Cos(tick * .0153f + 13.0f); } };
+            new ent { sprite = Art.Overlays.screenlight.spr, parent = src, ignorePause=true, pos = new v3(0, 0, 2f), scale = 6f, name = "Overlay2", layer = Layers.OverlayFX,
+                update = e => {
+                    e.pos = new v3(  transform.position.x, transform.position.y, 2);
+                    e.color = new Color(1f, 1f, .9f, .22f + .09f * Mathf.Cos(tick * .0083f + 173.0f) + .17f * Mathf.Cos(tick * .0063f + 23.0f));
+                    e.ang = .2f + 11f * Mathf.Cos(tick * .0111f + 173.0f) + 23f * Mathf.Cos(tick * .0273f + 213.0f); } };
+            new ent { sprite = Art.Overlays.screenlight.spr, parent = src, ignorePause=true, pos = new v3(0, 0, 6f), scale = 8f, name = "Overlay3", layer = Layers.OverlayFX,
+                update = e => {
+                    e.pos = new v3(  transform.position.x, transform.position.y, 6);
+                    e.color = new Color(1f, 1f, .9f, .22f + .07f * Mathf.Cos(tick * .0113f + 273.0f) + .23f * Mathf.Cos(tick * .0093f + 33.0f));
+                    e.ang = .2f + 17f * Mathf.Cos(tick * .0131f + 273.0f) + 13f * Mathf.Cos(tick * .0193f + 313.0f); } };
+        }}
+
+    class MusicInfo{
+        float musicVol = 1f;
+        AudioSource audio;
+        bool doingSongFade = false;
+        AudioClip nextSong = null;
+
+        public void Init( AudioSource srcAudio ){
+		    audio = srcAudio;
+            audio.clip = Art.Music.rand();
+            audio.loop = true;
+            audio.Play();}
+	    public void FadeSongTo(AudioClip theNextSong) {
+            nextSong = theNextSong;
+            doingSongFade = true;}
+        public void UpdateMusic() {
+            if (doingSongFade) {
+                musicVol *= .9f;
+                audio.volume = musicVol;
+			    if (musicVol < .01f) {
+                    audio.Stop();
+                    audio.clip = nextSong;
+                    musicVol = audio.volume = 0;
+                    audio.Play();
+                    nextSong = null;
+                    doingSongFade = false;}}
+		    else {if (musicVol < .99f) { musicVol = musicVol * .9f + .1f * 1; audio.volume = musicVol;}}}}
 
 	public class APGBasicGameLogic:MonoBehaviour {
 		public TwitchNetworking network;
         public GameObject gameCamera;
-		public int secondsPerChoice = 40;
 
-        public float player1ChargeRatio = 0f;
-        public float player2ChargeRatio = 0f;
-
-        public int GetRoundNumber() { return roundNumber; }
-        public int GetRoundTime() { return nextAudiencePlayerChoice; }
+        public static int ticksPerSecond = 60;
 
         // ___________________________________
 
-        [Serializable] struct RoundUpdate{ public int round; public int time; }
-		[Serializable] struct EmptyParms{ }
+        [Serializable] struct EmptyParms{ }
         [Serializable] struct AliveParms { public int t; }
-        [Serializable] struct RoundParms { public int health1; public int health2; }
 		[Serializable] struct ClientJoinParms{ public string name; public int team; public int playerID; public bool started;}
 		[Serializable] struct SelectionParms { public int[] choices; }
 
 		// ___________________________________
 
-        bool waitingForGameToStart = true;
-        bool fullPauseActive;
-        PlayerSys playerSys;
         Dictionary<string, PlayerEntry> playerMap = new Dictionary<string, PlayerEntry>();
-        int activePlayers = 0;
         float nextChatInviteTime;
-        int roundNumber = 1;
         GameSys gameSys;
-        AudiencePlayerSys audiencePlayerSys;
         APGSys apg;
-        Action timerUpdater;
-        int maxPlayers = 10;
-        int secondsAfterLockedInChoice = 7;
-        int nextAudiencePlayerChoice;
-        int gameTime = 0;
         int appTime = 0;
-        AudiencePhaseStatus aStatus;
-        Items items;
-        BuildingActions buildingActions;
 
         // ___________________________________
 
         void Make(){
-            bool exitingTitle = false;
-            bool isPaused = false;
-            float pauseRatio = 0;
             var transform = gameCamera.transform;
-            aStatus = new AudiencePhaseStatus();
 
             var aspect = Camera.main.aspect;
 		    gameSys = new GameSys(transform);
             ent.BaseGameSys = gameSys;
-            var reactSys = new ReactSys();
-            reactSys.Init();
 
-            //IntroPlaques.MakeIntroPlaque(transform, () => { exitingTitle = true; });
-            exitingTitle = true;
-
-            playerSys = new PlayerSys();
-            audiencePlayerSys = new AudiencePlayerSys();
-		    var treatSys = new TreatSys(gameSys, reactSys);
-		    var foeSys = new FoeSys(gameSys, playerSys, audiencePlayerSys, treatSys);
-
-            playerSys.Setup(gameSys, reactSys, this );
-
-            audiencePlayerSys.Setup(gameSys, foeSys, playerSys, treatSys);
             Backgrounds.Setup();
-            items = new Items(playerSys);
-            buildingActions = new BuildingActions(gameSys, playerSys, treatSys);
-            var spawnSys = new SpawnSys();
-            SpawnContent.InitSpawns(spawnSys, foeSys, treatSys);
-            var waveHUD = new WaveHUD(gameSys, transform, spawnSys, network.GetAudienceSys().MobileJoinQRCode(), playerSys, this );
             var musics = new MusicInfo();
             musics.Init( gameCamera.GetComponent<AudioSource>());
             BackgroundUpdates.Make(transform);
 
-            float tick2 = 0f;
-            bool DoEndOfGameFadeOut = true;
-            bool pauseLatch = false;
+            v3 lastLookFromPos = new v3(0, 0, 0);
 
             new ent { ignorePause = true, update = e => {
-                FullGame.tick++;
-		        if (!waitingForGameToStart) tick2++;
-		        treatSys.soundTick = tick2;
-                audiencePlayerSys.soundTick = tick2;
-		        foeSys.tick = tick2;
-		        if (gameSys.gameOver) { if (DoEndOfGameFadeOut) { DoEndOfGameFadeOut = false; musics.FadeSongTo( Art.Music.somenes19b.snd );}}
                 musics.UpdateMusic();
-		        pauseRatio = aStatus.midpointTimer;
 		        v3 lookPos = new v3(0,0,0);
-		        /*if (playerSys.player2Ent == null) {lookPos = playerSys.playerEnt.pos;}
-		        else {lookPos = (playerSys.playerEnt.pos + playerSys.player2Ent.pos) / 2;}*/
 		        lookPos.y -= 14f;// 10f;
-		        if(aStatus.doingEnd ) waveHUD.pauseRatio = waveHUD.pauseRatio * .99f + .01f * 1;
-		        else waveHUD.pauseRatio = waveHUD.pauseRatio * .9f + .1f * 0;
-		        if (pauseRatio > 0 && pauseRatio < 1) {
-			        AudiencePhase.EndOfRoundCamera(aStatus.cameraPos, ref aStatus.lastLookAtPos, ref aStatus.lastLookFromPos, ref lookPos, transform);}
-		        else {
-                    aStatus.lastLookAtPos = lookPos;
-			        nm.ease(ref aStatus.lastLookFromPos, new v3(lookPos.x * .03f, lookPos.y * .03f, -10), .3f);
-			        transform.LookAt(new v3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));
-			        transform.position = aStatus.lastLookFromPos;}
-		        if (Input.GetKey(KeyCode.Escape)) {if (!pauseLatch) {isPaused = !isPaused;pauseLatch = true;}}
-		        else pauseLatch = false;
-
-		        if (waitingForGameToStart) {
-			        if (exitingTitle && (Input.GetKey(KeyCode.Escape) || Input.GetKey(KeyCode.Space) || Input.GetButton("Fire1") || Input.GetButton("Fire2"))) {
-                        apg.WriteToClients("start", new EmptyParms { });
-                        waitingForGameToStart = false;
-                        musics.FadeSongTo( Art.Music.GoSaS.snd );}}
-
+			    nm.ease(ref lastLookFromPos, new v3(lookPos.x * .03f, lookPos.y * .03f, -10), .3f);
+			    transform.LookAt(new v3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));
+			    transform.position = lastLookFromPos;
 		        if (aspect == 1.6f) {transform.position += new Vector3(0, .7f, -1.1f);}
 		        if (aspect == 1.5f) {transform.position += new Vector3(0, 1.3f, -1.9f);} 
 		        if (Mathf.Abs(aspect - 4f / 3f) < .001f) {transform.position += new Vector3(0, 1.9f, -3.3f);}
-
-		        if (!isPaused && pauseRatio == 0 && gameSys.gameOver == false && waitingForGameToStart == false) spawnSys.Update(gameTime);
-
-                fullPauseActive = isPaused || pauseRatio > 0 || waitingForGameToStart;} };}
+                } };}
         void ClearDisconnectedPlayers() {
 			var deadPlayers = new List<string>();
 			foreach( var p in playerMap.Values) {
-				if (appTime - p.lastMessageTime > 50 * 50) { activePlayers--; p.funcs.onLeave(); deadPlayers.Add(p.name); }}
+				if (appTime - p.lastMessageTime > 50 * 50) { deadPlayers.Add(p.name); }}
 			for (var k = 0; k < deadPlayers.Count; k++) playerMap.Remove(deadPlayers[k]);}
 		void SetPlayerMessageTime( string user ) {
 			if (playerMap.ContainsKey(user) == false) return;
 			playerMap[user].lastMessageTime = appTime;}
 		bool AddPlayer(string user) {
 			if (playerMap.ContainsKey(user) == true) return false;
-			var buddyID = -1;
-			for( var k = 0; k < audiencePlayerSys.playGrid.buddies.Count; k++) { if( audiencePlayerSys.playGrid.buddies[k].funcs.inUse() == false) { buddyID = k; break; }}
-			if( buddyID == -1) return false;
-			playerMap[user] = new PlayerEntry { lastMessageTime=appTime, name=user, buddyID=buddyID, funcs = audiencePlayerSys.playGrid.buddies[buddyID].funcs  };
-			playerMap[user].funcs.onJoin(user);
-			activePlayers++;
-			return true;}
+            playerMap[user] = new PlayerEntry { lastMessageTime = appTime, name = user};
+            return true;}
 		bool SetPlayerInput(string user, int[] parms) {
 			if (playerMap.ContainsKey(user) == false) return false;
-			playerMap[user].funcs.onInput(parms);
 			return true;}
 
 		void Start() {
@@ -154,80 +137,26 @@ namespace APG {
 
             Application.runInBackground = true;
             Make();
-            SetupAllTimers();
-            nextChatInviteTime = FullGame.ticksPerSecond * 10;
+            nextChatInviteTime = ticksPerSecond * 10;
 			apg = network.GetAudienceSys();
 			apg.ResetClientMessageRegistry()
 				.Register<AliveParms>("alive", (user, p) => {SetPlayerMessageTime(user);})
 				.Register<EmptyParms>("join", (user, p) => {
 					if (AddPlayer(user)) {
-						SetPlayerMessageTime(user);
+                        SetPlayerMessageTime(user);
 						var id = playerMap[user].buddyID;
-						apg.WriteToClients("join", new ClientJoinParms { name = user, started=!waitingForGameToStart, playerID=id/2, team= (id%2==0)?1:2 });}})
+                        apg.WriteToClients("join", new ClientJoinParms { name = user, started=true, playerID=id/2, team= (id%2==0)?1:2 });}})
 				.Register<SelectionParms>("upd", (user, p) => {
 					SetPlayerMessageTime(user);
 					SetPlayerInput(user, p.choices);});}
 		void InviteAudience() {
 			nextChatInviteTime--;
-			if(activePlayers < maxPlayers) {
-				if(nextChatInviteTime <= 0) {
-					if(activePlayers == 0) {apg.WriteToChat("Up to 20 people can play!  Join here: " + apg.LaunchAPGClientURL());}
-					else {apg.WriteToChat("" + activePlayers + " of " + maxPlayers + " are playing!  Join here: " + apg.LaunchAPGClientURL());}
-					nextChatInviteTime = FullGame.ticksPerSecond * 30;}}
-			else {
-				if(nextChatInviteTime <= 0) {
-					apg.WriteToChat("The game is full!  Get in line to play: " + apg.LaunchAPGClientURL());
-					nextChatInviteTime = FullGame.ticksPerSecond * 60;}}}
+			if(nextChatInviteTime <= 0) {
+				apg.WriteToChat("Join here: " + apg.LaunchAPGClientURL());
+				nextChatInviteTime = ticksPerSecond * 30;}}
 		void FixedUpdate() {
-            gameSys.Update(fullPauseActive);
+            gameSys.Update(false);
             appTime++;
 			if ((appTime % (50 * 2)) == 0) ClearDisconnectedPlayers();
-			if (playerSys.team1Health == 0 ) {gameSys.gameOver=true;}
-			else if(playerSys.team2Health == 0 ) {gameSys.gameOver=true;}
-			else {
-                InviteAudience();
-                if ( !waitingForGameToStart ) timerUpdater();}
-        }
-
-        void SetupAllTimers(){
-            bool pauseEnded = false;
-            Action PlayersEnterChoicesTimer=null;
-            Action SetupTimers = () =>{
-                nextAudiencePlayerChoice = FullGame.ticksPerSecond * secondsPerChoice;
-                pauseEnded = false;
-                timerUpdater = PlayersEnterChoicesTimer; };
-            Action PausedTimer = () => {
-                if (pauseEnded) {
-                    SetupTimers();
-                    gameSys.Sound(Art.Sounds.boomend.snd, 1);
-                    apg.WriteToClients("startround", new RoundParms { health1 = (int)playerSys.team1Health, health2 = (int)playerSys.team2Health });} };
-            Action StartActionTimer = () => {
-                gameTime++;
-                nextAudiencePlayerChoice--;
-                if (nextAudiencePlayerChoice <= 0) {
-                    roundNumber++;
-                    apg.WriteToClients("time", new RoundUpdate { time = secondsPerChoice, round = roundNumber + 1 });
-                    gameSys.Sound(Art.Sounds.boomstart2.snd, 1);
-                    AudiencePhase.MakeRoundEnd(aStatus, roundNumber, audiencePlayerSys.GetPlayerGrid(), () => pauseEnded = true, gameCamera.transform, buildingActions, items);
-                    timerUpdater = PausedTimer; } };
-            Action CollectPlayerChoicesTimer = () => {
-                gameTime++;
-                nextAudiencePlayerChoice--;
-                if (nextAudiencePlayerChoice <= FullGame.ticksPerSecond * 2) {
-                    audiencePlayerSys.RoundUpdate();
-                    audiencePlayerSys.playGrid.SetGoalPositions();
-                    audiencePlayerSys.UpdatePlayersToClients(apg);
-                    timerUpdater = StartActionTimer; } };
-            PlayersEnterChoicesTimer = () => {
-                Func<int> ChoiceTime = () => { return nextAudiencePlayerChoice - FullGame.ticksPerSecond * 2 - FullGame.ticksPerSecond * secondsAfterLockedInChoice; };
-                gameTime++;
-			    if ((ChoiceTime() % (FullGame.ticksPerSecond * 5) == 0) || (ChoiceTime() % (FullGame.ticksPerSecond * 1) == 0 && ChoiceTime() < (FullGame.ticksPerSecond * 5))) {
-				    apg.WriteToClients( "time", new RoundUpdate {time=(int)(ChoiceTime()/ 60),round= roundNumber+1});}
-			    nextAudiencePlayerChoice--;
-			    if ( nextAudiencePlayerChoice <= FullGame.ticksPerSecond * 2 + FullGame.ticksPerSecond * secondsAfterLockedInChoice) {
-                    apg.WriteToClients("submit", new EmptyParms());
-                    apg.WriteToClients("time", new RoundUpdate { time = (int)(ChoiceTime() / 60), round = roundNumber + 1 });
-                    timerUpdater = CollectPlayerChoicesTimer;}};
-
-            SetupTimers();}
+            InviteAudience();}
     } }
