@@ -3,7 +3,7 @@ using v3 = UnityEngine.Vector3;
 
 public static class Backgrounds {
 	public static void Setup() {
-		Clouds();
+		//Clouds();
 		Trees();
 		Bushes();}
 	static void Clouds() {

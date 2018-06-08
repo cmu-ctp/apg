@@ -14,6 +14,77 @@ using UnityEngine;
 			public static ImageSet set = new ImageSet( new ImageEntry[]{ sky11, sky23, sky27, sky4, sky5 } );
 			public static Sprite rand(){ return set.files[Random.Range(0, set.files.Length)].spr; }
 		}
+		public static class sun{
+			public static class day{
+				public static ImageEntry daybkg01 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg01" };
+				public static ImageEntry daybkg02 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg02" };
+				public static ImageEntry daybkg03 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg03" };
+				public static ImageEntry daybkg04 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg04" };
+				public static ImageEntry daybkg05 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg05" };
+				public static ImageEntry daybkg06 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg06" };
+				public static ImageEntry daybkg07 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg07" };
+				public static ImageEntry daybkg08 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg08" };
+				public static ImageEntry daybkg09 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg09" };
+				public static ImageEntry daybkg10 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg10" };
+				public static ImageEntry daybkg11 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg11" };
+				public static ImageEntry daybkg12 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg12" };
+				public static ImageEntry daybkg13 = new ImageEntry{ name = "Backgrounds/sun/day/daybkg13" };
+				public static ImageSet set = new ImageSet( new ImageEntry[]{ daybkg01, daybkg02, daybkg03, daybkg04, daybkg05, daybkg06, daybkg07, daybkg08, daybkg09, daybkg10, daybkg11, daybkg12, daybkg13 } );
+				public static Sprite rand(){ return set.files[Random.Range(0, set.files.Length)].spr; }
+			}
+			public static class morning{
+				public static ImageEntry morningbkg01 = new ImageEntry{ name = "Backgrounds/sun/morning/morningbkg01" };
+				public static ImageEntry morningbkg02 = new ImageEntry{ name = "Backgrounds/sun/morning/morningbkg02" };
+				public static ImageEntry morningbkg03 = new ImageEntry{ name = "Backgrounds/sun/morning/morningbkg03" };
+				public static ImageEntry morningbkg04 = new ImageEntry{ name = "Backgrounds/sun/morning/morningbkg04" };
+				public static ImageEntry morningbkg05 = new ImageEntry{ name = "Backgrounds/sun/morning/morningbkg05" };
+				public static ImageEntry morningbkg06 = new ImageEntry{ name = "Backgrounds/sun/morning/morningbkg06" };
+				public static ImageEntry morningbkg07 = new ImageEntry{ name = "Backgrounds/sun/morning/morningbkg07" };
+				public static ImageEntry morningbkg08 = new ImageEntry{ name = "Backgrounds/sun/morning/morningbkg08" };
+				public static ImageSet set = new ImageSet( new ImageEntry[]{ morningbkg01, morningbkg02, morningbkg03, morningbkg04, morningbkg05, morningbkg06, morningbkg07, morningbkg08 } );
+				public static Sprite rand(){ return set.files[Random.Range(0, set.files.Length)].spr; }
+			}
+			public static class night{
+				public static ImageEntry nightbkg01 = new ImageEntry{ name = "Backgrounds/sun/night/nightbkg01" };
+				public static ImageEntry nightbkg02 = new ImageEntry{ name = "Backgrounds/sun/night/nightbkg02" };
+				public static ImageEntry nightbkg03 = new ImageEntry{ name = "Backgrounds/sun/night/nightbkg03" };
+				public static ImageEntry nightbkg04 = new ImageEntry{ name = "Backgrounds/sun/night/nightbkg04" };
+				public static ImageEntry nightbkg05 = new ImageEntry{ name = "Backgrounds/sun/night/nightbkg05" };
+				public static ImageEntry nightbkg06 = new ImageEntry{ name = "Backgrounds/sun/night/nightbkg06" };
+				public static ImageEntry nightbkg07 = new ImageEntry{ name = "Backgrounds/sun/night/nightbkg07" };
+				public static ImageEntry nightbkg08 = new ImageEntry{ name = "Backgrounds/sun/night/nightbkg08" };
+				public static ImageSet set = new ImageSet( new ImageEntry[]{ nightbkg01, nightbkg02, nightbkg03, nightbkg04, nightbkg05, nightbkg06, nightbkg07, nightbkg08 } );
+				public static Sprite rand(){ return set.files[Random.Range(0, set.files.Length)].spr; }
+			}
+			public static class rainy{
+				public static ImageEntry rainybkg01 = new ImageEntry{ name = "Backgrounds/sun/rainy/rainybkg01" };
+				public static ImageEntry rainybkg02 = new ImageEntry{ name = "Backgrounds/sun/rainy/rainybkg02" };
+				public static ImageEntry rainybkg03 = new ImageEntry{ name = "Backgrounds/sun/rainy/rainybkg03" };
+				public static ImageEntry rainybkg04 = new ImageEntry{ name = "Backgrounds/sun/rainy/rainybkg04" };
+				public static ImageEntry rainybkg05 = new ImageEntry{ name = "Backgrounds/sun/rainy/rainybkg05" };
+				public static ImageEntry rainybkg06 = new ImageEntry{ name = "Backgrounds/sun/rainy/rainybkg06" };
+				public static ImageEntry rainybkg07 = new ImageEntry{ name = "Backgrounds/sun/rainy/rainybkg07" };
+				public static ImageEntry rainybkg08 = new ImageEntry{ name = "Backgrounds/sun/rainy/rainybkg08" };
+				public static ImageSet set = new ImageSet( new ImageEntry[]{ rainybkg01, rainybkg02, rainybkg03, rainybkg04, rainybkg05, rainybkg06, rainybkg07, rainybkg08 } );
+				public static Sprite rand(){ return set.files[Random.Range(0, set.files.Length)].spr; }
+			}
+			public static class sunset{
+				public static ImageEntry sunsetbkg01 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg01" };
+				public static ImageEntry sunsetbkg02 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg02" };
+				public static ImageEntry sunsetbkg03 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg03" };
+				public static ImageEntry sunsetbkg04 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg04" };
+				public static ImageEntry sunsetbkg05 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg05" };
+				public static ImageEntry sunsetbkg06 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg06" };
+				public static ImageEntry sunsetbkg07 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg07" };
+				public static ImageEntry sunsetbkg08 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg08" };
+				public static ImageEntry sunsetbkg09 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg09" };
+				public static ImageEntry sunsetbkg10 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg10" };
+				public static ImageEntry sunsetbkg11 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg11" };
+				public static ImageEntry sunsetbkg12 = new ImageEntry{ name = "Backgrounds/sun/sunset/sunsetbkg12" };
+				public static ImageSet set = new ImageSet( new ImageEntry[]{ sunsetbkg01, sunsetbkg02, sunsetbkg03, sunsetbkg04, sunsetbkg05, sunsetbkg06, sunsetbkg07, sunsetbkg08, sunsetbkg09, sunsetbkg10, sunsetbkg11, sunsetbkg12 } );
+				public static Sprite rand(){ return set.files[Random.Range(0, set.files.Length)].spr; }
+			}
+		}
 	}
 	public static class Bags{
 		public static ImageEntry bag1 = new ImageEntry{ name = "Bags/bag1" };
@@ -348,235 +419,6 @@ using UnityEngine;
 		public static ImageEntry foeTrash = new ImageEntry{ name = "Foes/foeTrash" };
 		public static ImageSet set = new ImageSet( new ImageEntry[]{ foeCloudMustache, foeMicrowave, foeMustache, foePlantHead, foeTrash } );
 		public static Sprite rand(){ return set.files[Random.Range(0, set.files.Length)].spr; }
-	}
-	public static class Music{
-		public static SoundEntry _12th_echo = new SoundEntry{ name = "Music/12th_echo" };
-		public static SoundEntry _4wtudone = new SoundEntry{ name = "Music/4wtudone" };
-		public static SoundEntry _69513_chippie = new SoundEntry{ name = "Music/69513-chippie" };
-		public static SoundEntry _80616_industrial = new SoundEntry{ name = "Music/80616-industrial" };
-		public static SoundEntry _83623_blinded = new SoundEntry{ name = "Music/83623-blinded" };
-		public static SoundEntry _84692_im_the_freak = new SoundEntry{ name = "Music/84692-im_the_freak" };
-		public static SoundEntry _85659_64k = new SoundEntry{ name = "Music/85659-64k" };
-		public static SoundEntry a_autumn = new SoundEntry{ name = "Music/a-autumn" };
-		public static SoundEntry a_mist = new SoundEntry{ name = "Music/a-mist" };
-		public static SoundEntry a_polar = new SoundEntry{ name = "Music/a-polar" };
-		public static SoundEntry ac_ll = new SoundEntry{ name = "Music/ac-ll" };
-		public static SoundEntry achip = new SoundEntry{ name = "Music/achip" };
-		public static SoundEntry achip2 = new SoundEntry{ name = "Music/achip2" };
-		public static SoundEntry aciddril = new SoundEntry{ name = "Music/aciddril" };
-		public static SoundEntry acid_drill = new SoundEntry{ name = "Music/acid_drill" };
-		public static SoundEntry acid_nation_dmxdtn = new SoundEntry{ name = "Music/acid_nation_dmxdtn" };
-		public static SoundEntry again___mobiledit_crk = new SoundEntry{ name = "Music/again_-_mobiledit!crk" };
-		public static SoundEntry ajoj = new SoundEntry{ name = "Music/ajoj" };
-		public static SoundEntry alf2_zalza_edit = new SoundEntry{ name = "Music/alf2_zalza_edit" };
-		public static SoundEntry algar___happy_holidays = new SoundEntry{ name = "Music/algar_-_happy_holidays" };
-		public static SoundEntry algar___ninja_on_speed = new SoundEntry{ name = "Music/algar_-_ninja_on_speed" };
-		public static SoundEntry alpha_c_and_bubsy___scrollers = new SoundEntry{ name = "Music/alpha_c_and_bubsy_-_scrollers" };
-		public static SoundEntry analogue_hotsteps = new SoundEntry{ name = "Music/analogue_hotsteps" };
-		public static SoundEntry and_i_will_ever_be = new SoundEntry{ name = "Music/and_i_will_ever_be" };
-		public static SoundEntry astralrm = new SoundEntry{ name = "Music/astralrm" };
-		public static SoundEntry a_shogun_named_paul = new SoundEntry{ name = "Music/a_shogun_named_paul" };
-		public static SoundEntry bam_vfh = new SoundEntry{ name = "Music/bam-vfh" };
-		public static SoundEntry beacon_stars_edit = new SoundEntry{ name = "Music/beacon_stars-edit" };
-		public static SoundEntry bfapollo = new SoundEntry{ name = "Music/bfapollo" };
-		public static SoundEntry blib = new SoundEntry{ name = "Music/blib" };
-		public static SoundEntry bloodfist = new SoundEntry{ name = "Music/bloodfist" };
-		public static SoundEntry blue_phoebe_love = new SoundEntry{ name = "Music/blue_phoebe_love" };
-		public static SoundEntry boberek = new SoundEntry{ name = "Music/boberek" };
-		public static SoundEntry boesendorfer_p_s_s = new SoundEntry{ name = "Music/boesendorfer_p_s_s" };
-		public static SoundEntry breathow = new SoundEntry{ name = "Music/breathow" };
-		public static SoundEntry Calm_a = new SoundEntry{ name = "Music/Calm_a" };
-		public static SoundEntry camefrom = new SoundEntry{ name = "Music/camefrom" };
-		public static SoundEntry charismofdark = new SoundEntry{ name = "Music/charismofdark" };
-		public static SoundEntry Cheery = new SoundEntry{ name = "Music/Cheery" };
-		public static SoundEntry choke = new SoundEntry{ name = "Music/choke" };
-		public static SoundEntry ckafternoon = new SoundEntry{ name = "Music/ckafternoon" };
-		public static SoundEntry ckalternative = new SoundEntry{ name = "Music/ckalternative" };
-		public static SoundEntry ckayulan = new SoundEntry{ name = "Music/ckayulan" };
-		public static SoundEntry ckinrem = new SoundEntry{ name = "Music/ckinrem" };
-		public static SoundEntry ckout = new SoundEntry{ name = "Music/ckout" };
-		public static SoundEntry clkmelon = new SoundEntry{ name = "Music/clkmelon" };
-		public static SoundEntry Clockwork_Poet___Copy = new SoundEntry{ name = "Music/Clockwork Poet - Copy" };
-		public static SoundEntry Clockwork_Poet = new SoundEntry{ name = "Music/Clockwork Poet" };
-		public static SoundEntry cl_rfb = new SoundEntry{ name = "Music/cl_rfb" };
-		public static SoundEntry Comfortable_Trot = new SoundEntry{ name = "Music/Comfortable Trot" };
-		public static SoundEntry coretex___home = new SoundEntry{ name = "Music/coretex_-_home" };
-		public static SoundEntry corridor = new SoundEntry{ name = "Music/corridor" };
-		public static SoundEntry crippled_machine = new SoundEntry{ name = "Music/crippled_machine" };
-		public static SoundEntry cs_mdnt = new SoundEntry{ name = "Music/cs-mdnt" };
-		public static SoundEntry Determined1 = new SoundEntry{ name = "Music/Determined1" };
-		public static SoundEntry Determined2 = new SoundEntry{ name = "Music/Determined2" };
-		public static SoundEntry dev_ijgl = new SoundEntry{ name = "Music/dev-ijgl" };
-		public static SoundEntry dexorcism_ep_b = new SoundEntry{ name = "Music/dexorcism_ep-b" };
-		public static SoundEntry dmageofd = new SoundEntry{ name = "Music/dmageofd" };
-		public static SoundEntry dn_redc = new SoundEntry{ name = "Music/dn-redc" };
-		public static SoundEntry dnb4faster = new SoundEntry{ name = "Music/dnb4faster" };
-		public static SoundEntry dp_canon = new SoundEntry{ name = "Music/dp-canon" };
-		public static SoundEntry drifting_mix = new SoundEntry{ name = "Music/drifting_mix" };
-		public static SoundEntry Drowsy = new SoundEntry{ name = "Music/Drowsy" };
-		public static SoundEntry empty_space = new SoundEntry{ name = "Music/empty_space" };
-		public static SoundEntry END = new SoundEntry{ name = "Music/END" };
-		public static SoundEntry energydrive = new SoundEntry{ name = "Music/energydrive" };
-		public static SoundEntry Erratic = new SoundEntry{ name = "Music/Erratic" };
-		public static SoundEntry ex_da_174 = new SoundEntry{ name = "Music/ex-da-174" };
-		public static SoundEntry freezed_fantasies = new SoundEntry{ name = "Music/freezed_fantasies" };
-		public static SoundEntry gem_pivi = new SoundEntry{ name = "Music/gem-pivi" };
-		public static SoundEntry gh_kott = new SoundEntry{ name = "Music/gh-kott" };
-		public static SoundEntry give_yourself_to_the_darkside = new SoundEntry{ name = "Music/give_yourself_to_the_darkside" };
-		public static SoundEntry GoSaS = new SoundEntry{ name = "Music/GoSaS" };
-		public static SoundEntry go_to_sleep = new SoundEntry{ name = "Music/go_to_sleep" };
-		public static SoundEntry harmoniz = new SoundEntry{ name = "Music/harmoniz" };
-		public static SoundEntry high_ruby = new SoundEntry{ name = "Music/high_ruby" };
-		public static SoundEntry hilarious = new SoundEntry{ name = "Music/hilarious" };
-		public static SoundEntry hold = new SoundEntry{ name = "Music/hold" };
-		public static SoundEntry hummy = new SoundEntry{ name = "Music/hummy" };
-		public static SoundEntry huom = new SoundEntry{ name = "Music/huom" };
-		public static SoundEntry Incredulous = new SoundEntry{ name = "Music/Incredulous" };
-		public static SoundEntry industrial = new SoundEntry{ name = "Music/industrial" };
-		public static SoundEntry inspace = new SoundEntry{ name = "Music/inspace" };
-		public static SoundEntry jitter = new SoundEntry{ name = "Music/jitter" };
-		public static SoundEntry Journey_Untaken = new SoundEntry{ name = "Music/Journey Untaken" };
-		public static SoundEntry Joyful = new SoundEntry{ name = "Music/Joyful" };
-		public static SoundEntry joyfulfull = new SoundEntry{ name = "Music/joyfulfull" };
-		public static SoundEntry lamb___mind_validator = new SoundEntry{ name = "Music/lamb_-_mind_validator" };
-		public static SoundEntry lvraidnu = new SoundEntry{ name = "Music/lvraidnu" };
-		public static SoundEntry lz_esoul = new SoundEntry{ name = "Music/lz-esoul" };
-		public static SoundEntry maran_project___sensazioni_110214 = new SoundEntry{ name = "Music/maran_project_-_sensazioni_110214" };
-		public static SoundEntry mcd_rain = new SoundEntry{ name = "Music/mcd-rain" };
-		public static SoundEntry mg_dark = new SoundEntry{ name = "Music/mg_dark" };
-		public static SoundEntry musix_wild_perspective = new SoundEntry{ name = "Music/musix-wild-perspective" };
-		public static SoundEntry mypowers_x = new SoundEntry{ name = "Music/mypowers_x" };
-		public static SoundEntry Mysterious_March = new SoundEntry{ name = "Music/Mysterious March" };
-		public static SoundEntry Mysterious_start = new SoundEntry{ name = "Music/Mysterious start" };
-		public static SoundEntry Mysterious2 = new SoundEntry{ name = "Music/Mysterious2" };
-		public static SoundEntry navajo5 = new SoundEntry{ name = "Music/navajo5" };
-		public static SoundEntry newclinch = new SoundEntry{ name = "Music/newclinch" };
-		public static SoundEntry newer = new SoundEntry{ name = "Music/newer" };
-		public static SoundEntry newer2 = new SoundEntry{ name = "Music/newer2" };
-		public static SoundEntry nitrous_oxide = new SoundEntry{ name = "Music/nitrous_oxide" };
-		public static SoundEntry osaka_subways = new SoundEntry{ name = "Music/osaka_subways" };
-		public static SoundEntry Peaceful_a = new SoundEntry{ name = "Music/Peaceful_a" };
-		public static SoundEntry ra = new SoundEntry{ name = "Music/ra" };
-		public static SoundEntry rectum_analysis = new SoundEntry{ name = "Music/rectum_analysis" };
-		public static SoundEntry Resolute = new SoundEntry{ name = "Music/Resolute" };
-		public static SoundEntry revenge = new SoundEntry{ name = "Music/revenge" };
-		public static SoundEntry rotating = new SoundEntry{ name = "Music/rotating" };
-		public static SoundEntry Saunter = new SoundEntry{ name = "Music/Saunter" };
-		public static SoundEntry secrets = new SoundEntry{ name = "Music/secrets" };
-		public static SoundEntry slashing = new SoundEntry{ name = "Music/slashing" };
-		public static SoundEntry slippery = new SoundEntry{ name = "Music/slippery" };
-		public static SoundEntry smallmod = new SoundEntry{ name = "Music/smallmod" };
-		public static SoundEntry somenes = new SoundEntry{ name = "Music/somenes" };
-		public static SoundEntry somenes11 = new SoundEntry{ name = "Music/somenes11" };
-		public static SoundEntry somenes12 = new SoundEntry{ name = "Music/somenes12" };
-		public static SoundEntry somenes13 = new SoundEntry{ name = "Music/somenes13" };
-		public static SoundEntry somenes14 = new SoundEntry{ name = "Music/somenes14" };
-		public static SoundEntry somenes15 = new SoundEntry{ name = "Music/somenes15" };
-		public static SoundEntry somenes16 = new SoundEntry{ name = "Music/somenes16" };
-		public static SoundEntry somenes16a = new SoundEntry{ name = "Music/somenes16a" };
-		public static SoundEntry somenes16b = new SoundEntry{ name = "Music/somenes16b" };
-		public static SoundEntry somenes17 = new SoundEntry{ name = "Music/somenes17" };
-		public static SoundEntry somenes18 = new SoundEntry{ name = "Music/somenes18" };
-		public static SoundEntry somenes19 = new SoundEntry{ name = "Music/somenes19" };
-		public static SoundEntry somenes19b = new SoundEntry{ name = "Music/somenes19b" };
-		public static SoundEntry somenes2 = new SoundEntry{ name = "Music/somenes2" };
-		public static SoundEntry somenes20 = new SoundEntry{ name = "Music/somenes20" };
-		public static SoundEntry somenes20a = new SoundEntry{ name = "Music/somenes20a" };
-		public static SoundEntry somenes3 = new SoundEntry{ name = "Music/somenes3" };
-		public static SoundEntry somenes30 = new SoundEntry{ name = "Music/somenes30" };
-		public static SoundEntry somenes31 = new SoundEntry{ name = "Music/somenes31" };
-		public static SoundEntry somenes4 = new SoundEntry{ name = "Music/somenes4" };
-		public static SoundEntry somenes5 = new SoundEntry{ name = "Music/somenes5" };
-		public static SoundEntry somenes6 = new SoundEntry{ name = "Music/somenes6" };
-		public static SoundEntry somenes7 = new SoundEntry{ name = "Music/somenes7" };
-		public static SoundEntry somenes8 = new SoundEntry{ name = "Music/somenes8" };
-		public static SoundEntry somenes9 = new SoundEntry{ name = "Music/somenes9" };
-		public static SoundEntry spacey2 = new SoundEntry{ name = "Music/spacey2" };
-		public static SoundEntry spacey3 = new SoundEntry{ name = "Music/spacey3" };
-		public static SoundEntry Sparkle_Dust_2 = new SoundEntry{ name = "Music/Sparkle Dust 2" };
-		public static SoundEntry Sparkle_Dust_a = new SoundEntry{ name = "Music/Sparkle Dust a" };
-		public static SoundEntry Sparkle_Dust_a2 = new SoundEntry{ name = "Music/Sparkle Dust a2" };
-		public static SoundEntry Sparkle_Dust = new SoundEntry{ name = "Music/Sparkle Dust" };
-		public static SoundEntry spineless = new SoundEntry{ name = "Music/spineless" };
-		public static SoundEntry st3_eht = new SoundEntry{ name = "Music/st3_eht" };
-		public static SoundEntry START14a = new SoundEntry{ name = "Music/START14a" };
-		public static SoundEntry star_horizon = new SoundEntry{ name = "Music/star_horizon" };
-		public static SoundEntry subtropical = new SoundEntry{ name = "Music/subtropical" };
-		public static SoundEntry survive = new SoundEntry{ name = "Music/survive" };
-		public static SoundEntry Tension = new SoundEntry{ name = "Music/Tension" };
-		public static SoundEntry Tensionfull = new SoundEntry{ name = "Music/Tensionfull" };
-		public static SoundEntry testloop2 = new SoundEntry{ name = "Music/testloop2" };
-		public static SoundEntry thanks_for_the_fish = new SoundEntry{ name = "Music/thanks_for_the_fish" };
-		public static SoundEntry THEGRIM = new SoundEntry{ name = "Music/THEGRIM" };
-		public static SoundEntry THEGRIM11 = new SoundEntry{ name = "Music/THEGRIM11" };
-		public static SoundEntry THEGRIM12 = new SoundEntry{ name = "Music/THEGRIM12" };
-		public static SoundEntry THEGRIM15 = new SoundEntry{ name = "Music/THEGRIM15" };
-		public static SoundEntry THEGRIM16 = new SoundEntry{ name = "Music/THEGRIM16" };
-		public static SoundEntry THEGRIM17 = new SoundEntry{ name = "Music/THEGRIM17" };
-		public static SoundEntry THEGRIM18 = new SoundEntry{ name = "Music/THEGRIM18" };
-		public static SoundEntry THEGRIM19 = new SoundEntry{ name = "Music/THEGRIM19" };
-		public static SoundEntry THEGRIM20 = new SoundEntry{ name = "Music/THEGRIM20" };
-		public static SoundEntry THEGRIM21 = new SoundEntry{ name = "Music/THEGRIM21" };
-		public static SoundEntry THEGRIM22 = new SoundEntry{ name = "Music/THEGRIM22" };
-		public static SoundEntry THEGRIM23 = new SoundEntry{ name = "Music/THEGRIM23" };
-		public static SoundEntry THEGRIM23a = new SoundEntry{ name = "Music/THEGRIM23a" };
-		public static SoundEntry THEGRIM24 = new SoundEntry{ name = "Music/THEGRIM24" };
-		public static SoundEntry THEGRIM24a = new SoundEntry{ name = "Music/THEGRIM24a" };
-		public static SoundEntry THEGRIM25 = new SoundEntry{ name = "Music/THEGRIM25" };
-		public static SoundEntry THEGRIM26 = new SoundEntry{ name = "Music/THEGRIM26" };
-		public static SoundEntry THEGRIM26a = new SoundEntry{ name = "Music/THEGRIM26a" };
-		public static SoundEntry THEGRIM27 = new SoundEntry{ name = "Music/THEGRIM27" };
-		public static SoundEntry THEGRIM27a = new SoundEntry{ name = "Music/THEGRIM27a" };
-		public static SoundEntry THEGRIM27a2 = new SoundEntry{ name = "Music/THEGRIM27a2" };
-		public static SoundEntry THEGRIM27b = new SoundEntry{ name = "Music/THEGRIM27b" };
-		public static SoundEntry THEGRIM28 = new SoundEntry{ name = "Music/THEGRIM28" };
-		public static SoundEntry THEGRIM29 = new SoundEntry{ name = "Music/THEGRIM29" };
-		public static SoundEntry THEGRIM29a = new SoundEntry{ name = "Music/THEGRIM29a" };
-		public static SoundEntry THEGRIM30 = new SoundEntry{ name = "Music/THEGRIM30" };
-		public static SoundEntry THEGRIM30b = new SoundEntry{ name = "Music/THEGRIM30b" };
-		public static SoundEntry THEGRIM31 = new SoundEntry{ name = "Music/THEGRIM31" };
-		public static SoundEntry THEGRIM31a = new SoundEntry{ name = "Music/THEGRIM31a" };
-		public static SoundEntry THEGRIM32 = new SoundEntry{ name = "Music/THEGRIM32" };
-		public static SoundEntry THEGRIM33 = new SoundEntry{ name = "Music/THEGRIM33" };
-		public static SoundEntry THEGRIM35 = new SoundEntry{ name = "Music/THEGRIM35" };
-		public static SoundEntry THEGRIM36 = new SoundEntry{ name = "Music/THEGRIM36" };
-		public static SoundEntry THEGRIM37 = new SoundEntry{ name = "Music/THEGRIM37" };
-		public static SoundEntry THEGRIM41 = new SoundEntry{ name = "Music/THEGRIM41" };
-		public static SoundEntry THEGRIM42 = new SoundEntry{ name = "Music/THEGRIM42" };
-		public static SoundEntry THEGRIM43 = new SoundEntry{ name = "Music/THEGRIM43" };
-		public static SoundEntry THEGRIM44 = new SoundEntry{ name = "Music/THEGRIM44" };
-		public static SoundEntry THEGRIM45 = new SoundEntry{ name = "Music/THEGRIM45" };
-		public static SoundEntry THEGRIM46 = new SoundEntry{ name = "Music/THEGRIM46" };
-		public static SoundEntry THEGRIM47 = new SoundEntry{ name = "Music/THEGRIM47" };
-		public static SoundEntry THEGRIM47a = new SoundEntry{ name = "Music/THEGRIM47a" };
-		public static SoundEntry THEGRIM48 = new SoundEntry{ name = "Music/THEGRIM48" };
-		public static SoundEntry THEGRIM49 = new SoundEntry{ name = "Music/THEGRIM49" };
-		public static SoundEntry THEGRIM49a = new SoundEntry{ name = "Music/THEGRIM49a" };
-		public static SoundEntry THEGRIM5 = new SoundEntry{ name = "Music/THEGRIM5" };
-		public static SoundEntry THEGRIM50 = new SoundEntry{ name = "Music/THEGRIM50" };
-		public static SoundEntry THEGRIM55 = new SoundEntry{ name = "Music/THEGRIM55" };
-		public static SoundEntry THEGRIM6 = new SoundEntry{ name = "Music/THEGRIM6" };
-		public static SoundEntry THEGRIM60 = new SoundEntry{ name = "Music/THEGRIM60" };
-		public static SoundEntry THEGRIM61 = new SoundEntry{ name = "Music/THEGRIM61" };
-		public static SoundEntry THEGRIM62 = new SoundEntry{ name = "Music/THEGRIM62" };
-		public static SoundEntry THEGRIM7 = new SoundEntry{ name = "Music/THEGRIM7" };
-		public static SoundEntry THEGRIM70 = new SoundEntry{ name = "Music/THEGRIM70" };
-		public static SoundEntry THEGRIM81 = new SoundEntry{ name = "Music/THEGRIM81" };
-		public static SoundEntry THEGRIM9 = new SoundEntry{ name = "Music/THEGRIM9" };
-		public static SoundEntry THEGRIM_energy = new SoundEntry{ name = "Music/THEGRIM_energy" };
-		public static SoundEntry THEGRIM_newer2 = new SoundEntry{ name = "Music/THEGRIM_newer2" };
-		public static SoundEntry THEGRIM_newloop2 = new SoundEntry{ name = "Music/THEGRIM_newloop2" };
-		public static SoundEntry THEGRIM_singe = new SoundEntry{ name = "Music/THEGRIM_singe" };
-		public static SoundEntry trimcrop = new SoundEntry{ name = "Music/trimcrop" };
-		public static SoundEntry Triumphant = new SoundEntry{ name = "Music/Triumphant" };
-		public static SoundEntry twigs = new SoundEntry{ name = "Music/twigs" };
-		public static SoundEntry vaporf = new SoundEntry{ name = "Music/vaporf" };
-		public static SoundEntry vibe_rate = new SoundEntry{ name = "Music/vibe-rate" };
-		public static SoundEntry x_engage = new SoundEntry{ name = "Music/x-engage" };
-		public static SoundEntry yukatan = new SoundEntry{ name = "Music/yukatan" };
-		public static SoundEntry Zan = new SoundEntry{ name = "Music/Zan" };
-		public static SoundSet snds = new SoundSet( new SoundEntry[]{ _12th_echo, _4wtudone, _69513_chippie, _80616_industrial, _83623_blinded, _84692_im_the_freak, _85659_64k, a_autumn, a_mist, a_polar, ac_ll, achip, achip2, aciddril, acid_drill, acid_nation_dmxdtn, again___mobiledit_crk, ajoj, alf2_zalza_edit, algar___happy_holidays, algar___ninja_on_speed, alpha_c_and_bubsy___scrollers, analogue_hotsteps, and_i_will_ever_be, astralrm, a_shogun_named_paul, bam_vfh, beacon_stars_edit, bfapollo, blib, bloodfist, blue_phoebe_love, boberek, boesendorfer_p_s_s, breathow, Calm_a, camefrom, charismofdark, Cheery, choke, ckafternoon, ckalternative, ckayulan, ckinrem, ckout, clkmelon, Clockwork_Poet___Copy, Clockwork_Poet, cl_rfb, Comfortable_Trot, coretex___home, corridor, crippled_machine, cs_mdnt, Determined1, Determined2, dev_ijgl, dexorcism_ep_b, dmageofd, dn_redc, dnb4faster, dp_canon, drifting_mix, Drowsy, empty_space, END, energydrive, Erratic, ex_da_174, freezed_fantasies, gem_pivi, gh_kott, give_yourself_to_the_darkside, GoSaS, go_to_sleep, harmoniz, high_ruby, hilarious, hold, hummy, huom, Incredulous, industrial, inspace, jitter, Journey_Untaken, Joyful, joyfulfull, lamb___mind_validator, lvraidnu, lz_esoul, maran_project___sensazioni_110214, mcd_rain, mg_dark, musix_wild_perspective, mypowers_x, Mysterious_March, Mysterious_start, Mysterious2, navajo5, newclinch, newer, newer2, nitrous_oxide, osaka_subways, Peaceful_a, ra, rectum_analysis, Resolute, revenge, rotating, Saunter, secrets, slashing, slippery, smallmod, somenes, somenes11, somenes12, somenes13, somenes14, somenes15, somenes16, somenes16a, somenes16b, somenes17, somenes18, somenes19, somenes19b, somenes2, somenes20, somenes20a, somenes3, somenes30, somenes31, somenes4, somenes5, somenes6, somenes7, somenes8, somenes9, spacey2, spacey3, Sparkle_Dust_2, Sparkle_Dust_a, Sparkle_Dust_a2, Sparkle_Dust, spineless, st3_eht, START14a, star_horizon, subtropical, survive, Tension, Tensionfull, testloop2, thanks_for_the_fish, THEGRIM, THEGRIM11, THEGRIM12, THEGRIM15, THEGRIM16, THEGRIM17, THEGRIM18, THEGRIM19, THEGRIM20, THEGRIM21, THEGRIM22, THEGRIM23, THEGRIM23a, THEGRIM24, THEGRIM24a, THEGRIM25, THEGRIM26, THEGRIM26a, THEGRIM27, THEGRIM27a, THEGRIM27a2, THEGRIM27b, THEGRIM28, THEGRIM29, THEGRIM29a, THEGRIM30, THEGRIM30b, THEGRIM31, THEGRIM31a, THEGRIM32, THEGRIM33, THEGRIM35, THEGRIM36, THEGRIM37, THEGRIM41, THEGRIM42, THEGRIM43, THEGRIM44, THEGRIM45, THEGRIM46, THEGRIM47, THEGRIM47a, THEGRIM48, THEGRIM49, THEGRIM49a, THEGRIM5, THEGRIM50, THEGRIM55, THEGRIM6, THEGRIM60, THEGRIM61, THEGRIM62, THEGRIM7, THEGRIM70, THEGRIM81, THEGRIM9, THEGRIM_energy, THEGRIM_newer2, THEGRIM_newloop2, THEGRIM_singe, trimcrop, Triumphant, twigs, vaporf, vibe_rate, x_engage, yukatan, Zan } );
-		public static AudioClip rand(){ return snds.files[Random.Range(0, snds.files.Length)].snd; }
 	}
 	public static class old{
 		public static class aliens{
@@ -1208,6 +1050,43 @@ using UnityEngine;
 		public static SoundEntry up1 = new SoundEntry{ name = "Sounds/up1" };
 		public static SoundSet snds = new SoundSet( new SoundEntry[]{ boomend, boomstart2, bump, complain1, dying1, flick, multihit1, point1a, point2a, point3a, salute, up1 } );
 		public static AudioClip rand(){ return snds.files[Random.Range(0, snds.files.Length)].snd; }
+		public static class ambient{
+			public static class day{
+				public static SoundEntry day_anotherstream = new SoundEntry{ name = "Sounds/ambient/day/day_anotherstream" };
+				public static SoundEntry day_forestbirdswind = new SoundEntry{ name = "Sounds/ambient/day/day_forestbirdswind" };
+				public static SoundEntry day_lotsofbirds = new SoundEntry{ name = "Sounds/ambient/day/day_lotsofbirds" };
+				public static SoundEntry day_stream = new SoundEntry{ name = "Sounds/ambient/day/day_stream" };
+				public static SoundEntry day_windbirds = new SoundEntry{ name = "Sounds/ambient/day/day_windbirds" };
+				public static SoundEntry day_windbirdsinsects = new SoundEntry{ name = "Sounds/ambient/day/day_windbirdsinsects" };
+				public static SoundEntry day_windinsects = new SoundEntry{ name = "Sounds/ambient/day/day_windinsects" };
+				public static SoundEntry day_windrustlinggrass = new SoundEntry{ name = "Sounds/ambient/day/day_windrustlinggrass" };
+				public static SoundSet snds = new SoundSet( new SoundEntry[]{ day_anotherstream, day_forestbirdswind, day_lotsofbirds, day_stream, day_windbirds, day_windbirdsinsects, day_windinsects, day_windrustlinggrass } );
+				public static AudioClip rand(){ return snds.files[Random.Range(0, snds.files.Length)].snd; }
+			}
+			public static class evening{
+				public static SoundEntry evening_drippingrustling = new SoundEntry{ name = "Sounds/ambient/evening/evening_drippingrustling" };
+				public static SoundEntry evening_windbirdsinsects = new SoundEntry{ name = "Sounds/ambient/evening/evening_windbirdsinsects" };
+				public static SoundSet snds = new SoundSet( new SoundEntry[]{ evening_drippingrustling, evening_windbirdsinsects } );
+				public static AudioClip rand(){ return snds.files[Random.Range(0, snds.files.Length)].snd; }
+			}
+			public static class night{
+				public static SoundEntry night_cricketsbirds = new SoundEntry{ name = "Sounds/ambient/night/night_cricketsbirds" };
+				public static SoundEntry night_cricketsfrogs = new SoundEntry{ name = "Sounds/ambient/night/night_cricketsfrogs" };
+				public static SoundEntry night_forestcricketswind = new SoundEntry{ name = "Sounds/ambient/night/night_forestcricketswind" };
+				public static SoundEntry night_frogs = new SoundEntry{ name = "Sounds/ambient/night/night_frogs" };
+				public static SoundSet snds = new SoundSet( new SoundEntry[]{ night_cricketsbirds, night_cricketsfrogs, night_forestcricketswind, night_frogs } );
+				public static AudioClip rand(){ return snds.files[Random.Range(0, snds.files.Length)].snd; }
+			}
+			public static class rain{
+				public static SoundEntry rain_drizzle = new SoundEntry{ name = "Sounds/ambient/rain/rain_drizzle" };
+				public static SoundEntry rain_hardrain = new SoundEntry{ name = "Sounds/ambient/rain/rain_hardrain" };
+				public static SoundEntry rain_thunder = new SoundEntry{ name = "Sounds/ambient/rain/rain_thunder" };
+				public static SoundEntry rain_thunderwind = new SoundEntry{ name = "Sounds/ambient/rain/rain_thunderwind" };
+				public static SoundEntry rain_windthunder = new SoundEntry{ name = "Sounds/ambient/rain/rain_windthunder" };
+				public static SoundSet snds = new SoundSet( new SoundEntry[]{ rain_drizzle, rain_hardrain, rain_thunder, rain_thunderwind, rain_windthunder } );
+				public static AudioClip rand(){ return snds.files[Random.Range(0, snds.files.Length)].snd; }
+			}
+		}
 		public static class BalloonPop{
 			public static SoundEntry balloon1 = new SoundEntry{ name = "Sounds/BalloonPop/balloon1" };
 			public static SoundEntry balloon2 = new SoundEntry{ name = "Sounds/BalloonPop/balloon2" };

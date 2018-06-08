@@ -18,24 +18,23 @@ namespace APG {
         public static void Make( Transform transform ){
             var tick = 0f;
             var src = new ent() { name = "worldBkg" };
-            new ent { sprite = Art.Backgrounds.sky.set.files[2].spr, parent = src, ignorePause=true, pos = new v3(0, 0, 60), scale = 50, name = "Sky1", layer=Layers.Background };
-            var skyFade = new DualWave(1, .003f);
-            new ent { sprite = Art.Backgrounds.sky.set.files[3].spr, parent = src, ignorePause = true, pos = new v3(0, 0, 59), scale = 50, name = "Sky2", layer = Layers.Background, update = e=> { tick++; e.color = new Color(1f, 1f, 1f, skyFade.Val(tick) * .5f + .5f); } };
-            new ent { sprite = Art.Backgrounds.LandToHorizon.spr, parent = src, ignorePause = true, pos = new v3(0, -6, 9), scale3 = new v3(5,3,1), name = "Ground", layer = Layers.Background, update = e => { e.pos = new v3( transform.position.x, transform.position.y-6, 9); } };
+			//new ent { sprite = Art.Backgrounds.sun.sunset.rand(), parent = src, ignorePause=true, pos = new v3(0, 0, 60), scale = 15, name = "Sky1", layer=Layers.Background };
+			new ent { sprite = Art.Backgrounds.sun.rainy.rand(), parent = src, ignorePause=true, pos = new v3(0, 30, 60), scale = 8, name = "Sky1", layer=Layers.Background, update = e => { e.pos = new v3( transform.position.x, transform.position.y+9, 60); } };
+            new ent { sprite = Art.Backgrounds.LandToHorizon.spr, parent = src, ignorePause = true, pos = new v3(0, -6, 9), scale3 = new v3(5,3,1), name = "Ground", layer = Layers.Background, update = e => { tick+=.2f; e.pos = new v3( transform.position.x, transform.position.y-6, 9); } };
 
-            new ent { sprite = Art.Overlays.screenlight.spr, parent = src, ignorePause=true, pos = new v3(0, 0, -7f), scale = 1.4f, name = "Overlay1", layer = Layers.OverlayFX,
+            new ent { sprite = Art.Overlays.screenlight.spr, parent = src, ignorePause=true, pos = new v3(0, 0, -7f), scale = 1.8f, name = "Overlay1", layer = Layers.OverlayFX,
                 update = e => {
-                    e.pos = new v3(  transform.position.x, transform.position.y, transform.position.z + 3);
+                    e.pos = new v3(  transform.position.x, transform.position.y, -7);
                     e.color = new Color(1f, 1f, .9f, .15f + .11f * Mathf.Cos(tick * .01f + 73.0f) + .13f * Mathf.Cos(tick * .0073f + 13.0f));
                     e.ang = .2f + 21f * Mathf.Cos(tick * .01f + 73.0f) + 16f * Mathf.Cos(tick * .0153f + 13.0f); } };
-            new ent { sprite = Art.Overlays.screenlight.spr, parent = src, ignorePause=true, pos = new v3(0, 0, 2f), scale = 6f, name = "Overlay2", layer = Layers.OverlayFX,
+            new ent { sprite = Art.Overlays.screenlight.spr, parent = src, ignorePause=true, pos = new v3(0, 0, 2f), scale = 1.8f, name = "Overlay2", layer = Layers.OverlayFX,
                 update = e => {
-                    e.pos = new v3(  transform.position.x, transform.position.y, 2);
+                    e.pos = new v3(  transform.position.x, transform.position.y, -7);
                     e.color = new Color(1f, 1f, .9f, .22f + .09f * Mathf.Cos(tick * .0083f + 173.0f) + .17f * Mathf.Cos(tick * .0063f + 23.0f));
                     e.ang = .2f + 11f * Mathf.Cos(tick * .0111f + 173.0f) + 23f * Mathf.Cos(tick * .0273f + 213.0f); } };
-            new ent { sprite = Art.Overlays.screenlight.spr, parent = src, ignorePause=true, pos = new v3(0, 0, 6f), scale = 8f, name = "Overlay3", layer = Layers.OverlayFX,
+            new ent { sprite = Art.Overlays.screenlight.spr, parent = src, ignorePause=true, pos = new v3(0, 0, 2f), scale = 1.8f, name = "Overlay3", layer = Layers.OverlayFX,
                 update = e => {
-                    e.pos = new v3(  transform.position.x, transform.position.y, 6);
+                    e.pos = new v3(  transform.position.x, transform.position.y, -7);
                     e.color = new Color(1f, 1f, .9f, .22f + .07f * Mathf.Cos(tick * .0113f + 273.0f) + .23f * Mathf.Cos(tick * .0093f + 33.0f));
                     e.ang = .2f + 17f * Mathf.Cos(tick * .0131f + 273.0f) + 13f * Mathf.Cos(tick * .0193f + 313.0f); } };
         }}
@@ -48,9 +47,10 @@ namespace APG {
 
         public void Init( AudioSource srcAudio ){
 		    audio = srcAudio;
-            audio.clip = Art.Music.rand();
+			audio.clip = Art.Sounds.ambient.rain.rand();
             audio.loop = true;
-            audio.Play();}
+            audio.Play();
+		}
 	    public void FadeSongTo(AudioClip theNextSong) {
             nextSong = theNextSong;
             doingSongFade = true;}
@@ -104,10 +104,15 @@ namespace APG {
 
             v3 lastLookFromPos = new v3(0, 0, 0);
 
+			var wanderx = new DualWave( 1, .1f );
+			var wandery = new DualWave( 1, .1f );
+
+			var tick = 0f;
+
             new ent { ignorePause = true, update = e => {
+				tick++;
                 musics.UpdateMusic();
-		        v3 lookPos = new v3(0,0,0);
-		        lookPos.y -= 14f;// 10f;
+		        v3 lookPos = new v3(3*wanderx.Val(tick*.05f),-14 + 1*wandery.Val(tick*.05f),0);
 			    nm.ease(ref lastLookFromPos, new v3(lookPos.x * .03f, lookPos.y * .03f, -10), .3f);
 			    transform.LookAt(new v3(transform.position.x * .97f + .03f * lookPos.x, transform.position.y * .97f + .03f * lookPos.y, lookPos.z));
 			    transform.position = lastLookFromPos;
