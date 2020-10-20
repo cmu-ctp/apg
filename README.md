@@ -1,3 +1,13 @@
+**OUT OF DATE**
+We are currently refactoring things and this documentation is out of date.
+
+Key planned changes so far:
+
+1. Changing terminology throughout: Server -> Unity Game, Client -> Viewer Interface
+2. Twitch APIs need to be updated
+3. More robust Meta Data pipeline
+4. Evaluating commitment to Phaser
+
 # apg
 
 This is the work-in-progress Audience Participation Game Project.

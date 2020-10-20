@@ -1,6 +1,0 @@
-C:\apg\apg\apg\BasicClientServerExample\BasicClient\bin\Client.dll.config
-C:\apg\apg\apg\BasicClientServerExample\BasicClient\bin\Client.dll
-C:\apg\apg\apg\BasicClientServerExample\BasicClient\bin\Client.pdb
-C:\apg\apg\apg\BasicClientServerExample\BasicClient\obj\Debug\Client.csproj.CoreCompileInputs.cache
-C:\apg\apg\apg\BasicClientServerExample\BasicClient\obj\Debug\Client.dll
-C:\apg\apg\apg\BasicClientServerExample\BasicClient\obj\Debug\Client.pdb

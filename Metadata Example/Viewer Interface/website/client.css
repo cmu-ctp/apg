@@ -1,0 +1,47 @@
+h1 {
+  font-size: 3vw;
+}
+
+.hidden {
+    display: none;
+}
+
+body {
+    background: #ffffff;
+    color: #000000;
+    font-family: arial;
+    font-size: 90%;
+}
+
+.container {
+    width: 1230px;
+    height: auto;
+    overflow: hidden;
+}
+
+.gameClient {
+    background:0;
+    color:white;
+    width : 1024px;
+    height : 576px;
+    position: absolute;
+    transform: translate(0px, 96px);
+}
+
+.video {
+    background:0;
+    color:white;
+    width : 1024px;
+    height : 768px;
+    position: absolute;
+    transform: translate(0px, 0px);
+}
+
+.chat {
+    background:0;
+    color:white;
+    width : 400px;
+    height : 720px;
+    position: absolute;
+    transform: translate(1024px, 0px);
+}

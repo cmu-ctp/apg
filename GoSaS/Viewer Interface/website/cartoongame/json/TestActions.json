@@ -1,0 +1,50 @@
+{"all":[
+  {
+    "name": "Move",
+    "x": 324,
+    "y": 338,
+    "isActions": 0,
+    "choices": [
+	  {"x": 0, "y": 0, "name": "Rustic Farm", "pic": "buildings/building1",     "tip": "farm"},
+      {"x": 64, "y": 0, "name": "Fishing Pond", "pic": "buildings/building2",   "tip": "pond"},
+      {"x": 128, "y": 0, "name": "Bed and Breakfast", "pic": "buildings/building3","tip": "greenhouse"},
+      {"x": 192, "y": 0, "name": "Commuter Airport", "pic": "buildings/building4","tip": "airport"},
+      {"x": 256, "y": 0, "name": "Day Spa", "pic": "buildings/building5",       "tip": "police"},
+      {"x": 320, "y": 0, "name": "Office Park","pic": "buildings/building6",    "tip": "hospital"}
+    ] },
+  {
+    "name": "Action", 
+    "x": 1700,
+    "y": 190,
+    "isActions": 0,
+      "choices":[
+      {"x": 0, "y": 0, "name": "Back", "pic": "movein",                                "tip": "BACK ROW.  This offers the most protection from flying attacks, but you likely won't collect falling treats.  Gives priority for buildings abilities and Extract."},
+      {"x": 0, "y": 64, "name": "Mid", "pic": "middle",                                 "tip": "MIDDLE ROW.  A balanced position.  Back row will have priority using buildings. Front row will take hits from flying attacks and collect falling treats first."},
+      {"x": 0, "y": 128, "name": "Forward","pic": "moveback",                    "tip": "FRONT ROW.  Stand here to collect all falling treats, but prepared to be hit by flying attacks too.  Not good for using buildings."}
+    ]},
+  {
+    "name": "Items",
+    "x": 330,
+    "y": 134,
+    "isActions": 1,
+    "choices": [
+      {"x": 0, "y": 0, "name": "Do Slash",  "pic": "slash",                                "tip":"SLASH: Slash at your foe.  This move will interrupt Building abilities.  If your foe Retaliates, though, expect it to hurt!" },
+      {"x": 64, "y": 0, "name": "Do Reckless Slash", "pic": "recklessability",     "tip":"RECKLESS ATTACK: Recklessly attack your foe for extra damage.  This move will interrupts foes who are Extracting, using Building abilities, and Items.  But watch out!  If your foe is Retaliating, you will be hurt badly!" },
+      {"x": 128, "y": 0, "name": "Do Retaliate","pic": "strikeback",                   "tip": "RETALIATE: Adopt a defensive pose and protect against melee attacks.  If your foe Slashes or Recklessly attacks, you won't take any damage, and they will instead."},
+	  {"x": 0, "y": 64, "name": "Do Extract", "pic": "harvest", "harvest": 1,       "tip":"extract" },
+      {"x": 64, "y": 64, "name": "building1", "pic": "activate", "specialID": 2, "tip":"building1" },
+      {"x": 128, "y": 64, "name": "building2", "pic": "activate", "specialID": 3,"tip": "building2"},
+      {"x": 0, "y": 128, "name": "item1","pic": "bag1", "specialID": 4,        "tip": "item1"},
+      {"x": 64, "y": 128, "name": "item2","pic": "bag2", "specialID": 5,       "tip": "item2"},
+      {"x": 128, "y": 128, "name": "item3","pic": "bag3", "specialID": 6,      "tip": "item3"}
+    ]
+  },
+ {
+    "name": "System",
+    "x": 730,
+    "y": 354,
+    "choices": [
+      {"x": 0, "y": 0, "name": "Confirm Actions","pic": "accept","tip": "Accept these choices"}
+    ]
+  }
+ ]}

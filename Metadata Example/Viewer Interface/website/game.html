@@ -1,0 +1,115 @@
+﻿<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+    <title>APG Game</title>
+
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="https://ttv-api.s3.amazonaws.com/twitch.min.js"></script>
+    <script src="http://player.twitch.tv/js/embed/v1.js"></script>
+    <script src="http://cdn.tmijs.org/js/latest/1.x/tmi.min.js"></script>
+    <script src="phaser.min.js"></script>
+    <script src="APGApp.js"></script>
+    <script src="GameLogic.js"></script>
+
+    <link rel="stylesheet" href="client.css" type="text/css" />
+
+    <script>
+        /*
+
+        */
+        appParms = {
+
+            /* IMPORTANT!*/
+            cacheFunction: CacheGameAssets,              /* The function to cache this game's assets.  Please see AGPSys.ts for more information about this function. */
+
+            /* IMPORTANT!*/
+            gameLaunchFunction: InitializeGame,              /* The function to launch this game once assets have been cached, Twitch has been logged into, and Phaser has been initialized.  Please see AGPSys.ts for more information about this function.*/
+
+            useMetadata: true,
+
+            gameName: "DefaultApp",                          /* The string will be used in the default preloader */
+
+            gameWidth: 1024,                                     /* Width of the Phaser Game Canvas */
+            gameHeight: 576,                                    /* Height of the Phaser Game Canvas */
+
+            videoWidth: 1024,                                   /* In the web interface, the width of the Twitch video */
+            videoHeight: 768,                                   /* In the web interface, the height of the Twitch video */
+            chatWidth: 400,                                     /* In the web interface, the width of the Twitch IRC chat */
+            chatHeight: 720                                     /* In the web interface, the height of the Twitch IRC chat */
+        };
+
+        /*
+
+        */
+        devParms = {
+            /* Disable networking entirely.  This will prevent the app from connecting to Twitch IRC.  This will make the
+            * client app launch much more quickly, which can be preferable for faster iteration.  Using this will require
+            * mocking server messages for testing purposes - more on this later.
+            */
+            disableNetworking: true,
+
+            useLocalTestNetworking: true,
+            forceMetadataFrames: false,
+
+            /*
+            */
+            networkingTestSequence: false,
+
+            /* By default, the process for launching the client app will work like this:
+            * The streamer's game provides a URL (or, more likely, a shortened bit.ly URL) for clients to launch the client app.  This link will be either output as a clickable link in the streamer's
+            * IRC channel, or embedded in their actual video stream.
+            * The audience member will then either click the link (to open the page in their browser) or type the shortened URL into their mobile browser.
+            * Importantly, information for connecting to the streamer's game logic IRC channel, which is used for networking, is embedded in this URL.
+            * Then, this link will redirect the browser to a dedicated Twitch log-in page (handled by Twitch), where a player will enter their Twitch username and password, which will
+            * verified by Twitch's servers, which will then append the user's name and authentication credentials the URL.
+            * THEN, finally, this app will be launched, with all of this information appended to the URL it recieves.
+            * This is very inconvenient for testing.
+            * For testing, the following settings let the client app launch immediately with hardcoded player names, authentication credentials, clientID, and server chat channel.
+            */
+            skipAuthentication: true,                         /* */
+            forceChatIRCChannelName: "ludolab",     /* */
+            forceLogicIRCChannelName: "",               /* */
+            forcePlayerName: "",                              /* */
+            forcePlayerOauth: "",                              /* */
+            forceClientID: '',                                     /* */
+
+            /* By default, this client auto-detects whether it is being run in a desktop browser or on a mobile device.
+            * The web version embeds Twitch streaming video and Twitch chat along side the HTML5 client app.
+            * The mobile version only launches the client app, and excludes video and chat, as it is intended to be used
+            * as a second screen for someone on the main Twitch website.  The mobile version also resizes the app to fill the browser.
+            * This field is useful for testing the mobile verion on PCs.
+            * Note that connecting to Twitch Video and Twitch Chat is time-consuming, so for the sake of testing and iterating, launching the
+            * mobile webpage interface is considerably faster and might be preferable for development.
+            */
+            forceMobile: false
+        };
+    </script>
+</head>
+<body onload="launchAPGClient(devParms, appParms);">
+    <div id="loadLabel">Please wait while the audience app loads</div>
+    <div id="orientationWarning"></div>
+    <div id="appErrorMessage"></div>
+    <div class="mobile">
+        <center>
+            <div id="APGInputWidgetMobile"></div>
+        </center>
+    </div>
+    <div class="browser">
+        <center>
+            <div id="container">
+                <div class="chat">
+                    <div id="TwitchChat"></div>
+                </div>
+                <div class="video">
+                    <div id="TwitchVideo"></div>
+                </div>
+                <div class="gameClient">
+                    <div id="APGInputWidget"></div>
+                </div>
+            </div>
+        </center>
+    </div>
+</body>
+</html>
