@@ -7,6 +7,7 @@ using System.Linq;
 using System;
 using StackExchange.Redis;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace APG {
 
@@ -21,14 +22,15 @@ namespace APG {
         private int inbetweenNum = 0;
         private float lastKeyTime = 0;
 
-        private List<Hashtable> tweens = new List<Hashtable>();
-        private Hashtable currentFrameData = new Hashtable();
+        private JArray tweens = new JArray();
+        private JObject currentFrameData = new JObject();
 
         public string metaDataURL = "localhost";
         public int metaDataPort = 6379;
         public int metaDataKeepAlive = 180;
         public string metaDataPassword = "changeme";
         public bool connectOnStart = false;
+        private ConfigurationOptions metaDataConfig = null;
 
         [Tooltip("Name of your game, hardcoded for the start message")]
         public string gameName = "";
@@ -60,12 +62,18 @@ namespace APG {
         IEnumerator Start() {
             yield return new WaitForEndOfFrame();
             if (connectOnStart) {
-                StartMetaDataConnection();
+                StartMetaData();
             }
             SnapKeyFrame();
         }
 
-        public void StartMetaDataConnection() {
+        private void WriteMetaData(string key, string message) {
+            WriteMetaData(key, message, false);
+        }
+
+        private void WriteMetaData(string key, string message, bool asynchronous) {
+            Debug.Log("Writing Meta Data: " + key + ", " + message);
+            
             ConfigurationOptions config = new ConfigurationOptions {
                 EndPoints = {
                     { metaDataURL, metaDataPort },
@@ -77,7 +85,16 @@ namespace APG {
             redisConn = ConnectionMultiplexer.Connect(config);
             redDb = redisConn.GetDatabase();
 
-            var startMessage = new Hashtable() {
+            if (asynchronous) {
+                redDb.StringSetAsync(key, message, flags: CommandFlags.FireAndForget);
+            }
+            else {
+                redDb.StringSet(key, message);
+            }
+        }
+
+        public void StartMetaData() {
+            var startMessage = new JObject {
                 { "game_name", gameName },
                 {"streamer_name", streamerName },
                 {"key_frame_rate", keyFrameRate },
@@ -86,19 +103,17 @@ namespace APG {
                 {"clock_mills",DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString() },
             };
             string mess = JsonConvert.SerializeObject(startMessage);
-            Debug.Log("Start Metadata:" + mess);
-            redDb.StringSet(START_FRAME, mess);
+            WriteMetaData(START_FRAME, mess);
         }
 
         public void EndMetaDataConnection() {
-            var endMessage = new Hashtable() {
+            var endMessage = new JObject {
                 {"final_frame_num", keyFrameNum },
                 {"game_secs", Time.fixedTime },
                 {"clock_mills",DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString() },
             };
             string mess = JsonConvert.SerializeObject(endMessage);
-            Debug.Log("End Metadata:" + mess);
-            redDb.StringSet(END_FRAME, mess);
+            WriteMetaData(END_FRAME, mess);
         }
 
         /** General Data Schema
@@ -116,17 +131,14 @@ namespace APG {
          *               "events": [{"event1"}, {"event2"}]}
          * 
          */
-        void FixedUpdated() {
+        void FixedUpdate() {
             if (Time.fixedTime - lastKeyTime > keyFrameRate) {
                 // add the tweens to the previous keyframe
                 currentFrameData["tweens"] = tweens;
 
                 string frameString = JsonConvert.SerializeObject(currentFrameData);
-                redDb.StringSetAsync(keyFrameNum.ToString(), frameString, flags: CommandFlags.FireAndForget);
-                redDb.StringSetAsync(LATEST_FRAME, frameString, flags: CommandFlags.FireAndForget);
-
-
-
+                WriteMetaData(keyFrameNum.ToString(), frameString);
+                WriteMetaData(LATEST_FRAME, frameString);
                 inbetweenNum = 0;
                 keyFrameNum += 1;
                 lastKeyTime = Time.fixedTime;
@@ -134,7 +146,7 @@ namespace APG {
             }
             else {
                 inbetweenNum += 1;
-                Hashtable newInbetween = new Hashtable() {
+                JObject newInbetween = new JObject {
                     {"dt", Time.fixedDeltaTime },
                     {"frame_num", inbetweenNum }
                 };
@@ -148,11 +160,11 @@ namespace APG {
         }
 
         private void SnapKeyFrame() {
-            currentFrameData = new Hashtable() {
+            currentFrameData = new JObject {
                 {"game_secs", Time.fixedTime },
                 {"frame_num", keyFrameNum }
             };
-            Hashtable key = new Hashtable();
+            JObject key = new JObject();
             foreach (IMetaDataTrackable mdo in mdItems) {
                 key[mdo.ObjectKey] = mdo.KeyFrameData();
             }
@@ -170,6 +182,10 @@ namespace APG {
 
         public void RemoveTrackableObject(IMetaDataTrackable mdo) {
             this.mdItems.Remove(mdo);
+        }
+
+        void OnDestroy() {
+            EndMetaDataConnection();
         }
     }
 }

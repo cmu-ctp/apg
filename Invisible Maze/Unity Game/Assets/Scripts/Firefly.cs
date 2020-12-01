@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using APG;
 using System.Collections;
+using Newtonsoft.Json.Linq;
 
 public class Firefly : MetaDataTrackable {
 
@@ -26,7 +27,7 @@ public class Firefly : MetaDataTrackable {
         MetaDataTracker.Instance.AddTrackableObject(this);
     }
 
-    public override Hashtable KeyFrameData() {
+    public override JObject KeyFrameData() {
         var frame = base.KeyFrameData();
         frame["lifeSpan"] = lifeSpan;
         frame["lifeRemaining"] = lifeSpan - (int)(Time.fixedTime - birthTime);

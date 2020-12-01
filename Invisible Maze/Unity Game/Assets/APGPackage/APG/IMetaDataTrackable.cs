@@ -1,8 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace APG {
     public enum MetaDataFrameType {
@@ -46,7 +46,7 @@ namespace APG {
         /// This is currently a Hashtable as a Hack, this will be replaced with a better JSON solution later.
         /// </summary>
         /// <returns>A JSON serialization of this GameObject.</returns>
-        Hashtable KeyFrameData();
+        JObject KeyFrameData();
 
         /// <summary>
         /// A function to get description of this object for an Inbetween Frame. This should conain only metadata that 
@@ -56,7 +56,7 @@ namespace APG {
         /// This is currently a Hashtable as a Hack, this will be replaced with a better JSON solution later.
         /// </summary>
         /// <returns>A JSON serialization of this GameObject.</returns>
-        Hashtable InbetweenData();
+        JObject InbetweenData();
 
     }
 
@@ -77,27 +77,33 @@ namespace APG {
         protected ScreenRectStyle screenRectStyle;
         public ScreenRectStyle ScreenRectStyle { get { return ScreenRectStyle; } set { screenRectStyle = value; } }
 
+        private Collider col;
+        private Renderer ren;
+
+
         void Awake() {
             objectKey = System.Guid.NewGuid().ToString();
         }
 
         void Start() {
             MetaDataTracker.Instance.AddTrackableObject(this);
+            col = GetComponent<Collider>();
+            ren = GetComponent<Renderer>();
         }
 
         void OnDestroy() {
             MetaDataTracker.Instance.RemoveTrackableObject(this);
         }
 
-        public virtual Hashtable InbetweenData() {
-            Hashtable baseObject = new Hashtable();
+        public virtual JObject InbetweenData() {
+            JObject jObject = new JObject();
             switch (this.screenRectStyle) {
                 case ScreenRectStyle.Collider:
                     //TODO we might want to have a better system for referencing cameras here. Both for flexibility and performance.
-                    baseObject["screenRect"] = APG.Helper.ScreenRect(Camera.main, this.GetComponent<Collider>());
+                    jObject["screenRect"] = JsonConvert.SerializeObject(APG.Helper.ScreenRect(Camera.main, col));
                     break;
                 case ScreenRectStyle.Renderer:
-                    baseObject["screenRect"] = APG.Helper.ScreenRect(Camera.main, this.GetComponent<Renderer>());
+                    jObject["screenRect"] = JsonConvert.SerializeObject(APG.Helper.ScreenRect(Camera.main, ren));
                     break;
                 case ScreenRectStyle.None:
                     break;
@@ -105,18 +111,18 @@ namespace APG {
                     Debug.LogWarning("Unrecognized ScreenRect Style");
                     break;
             }
-            return baseObject;
+            return jObject;
         }
 
-        public virtual Hashtable KeyFrameData() {
-            Hashtable baseObject = new Hashtable();
+        public virtual JObject KeyFrameData() {
+            JObject jObject = new JObject();
             switch (this.screenRectStyle) {
                 case ScreenRectStyle.Collider:
                     //TODO we might want to have a better system for referencing cameras here. Both for flexibility and performance.
-                    baseObject["screenRect"] = APG.Helper.ScreenRect(Camera.main, this.GetComponent<Collider>());
+                    jObject["screenRect"] = JsonConvert.SerializeObject(APG.Helper.ScreenRect(Camera.main, col));
                     break;
                 case ScreenRectStyle.Renderer:
-                    baseObject["screenRect"] = APG.Helper.ScreenRect(Camera.main, this.GetComponent<Renderer>());
+                    jObject["screenRect"] = JsonConvert.SerializeObject(APG.Helper.ScreenRect(Camera.main, ren));
                     break;
                 case ScreenRectStyle.None:
                     break;
@@ -124,7 +130,7 @@ namespace APG {
                     Debug.LogWarning("Unrecognized ScreenRect Style");
                     break;
             }
-            return baseObject;
+            return jObject;
         }
     }
 

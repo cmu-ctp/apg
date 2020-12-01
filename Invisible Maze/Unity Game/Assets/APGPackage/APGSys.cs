@@ -135,10 +135,18 @@ namespace APG {
 		private static Vector2 max = Vector2.zero;
 
 		public static Rect ScreenRect(Camera camera, Renderer renderer) {
+			if(renderer  == null) {
+				Debug.LogWarning("ScreenRect Called on null Renderer");
+				return new Rect(0, 0, 0, 0);
+            }
 			return ScreenRect(camera, renderer.bounds);
 		}
 
 		public static Rect ScreenRect(Camera camera, Collider collider) {
+			if (collider == null) {
+				Debug.LogWarning("ScreenRect Called on null Collider");
+				return new Rect(0, 0, 0, 0);
+			}
 			return ScreenRect(camera, collider.bounds);
 		}
 
