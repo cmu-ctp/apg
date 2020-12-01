@@ -42,6 +42,7 @@ namespace APG {
         private const string LATEST_FRAME = "latest";
         private const string START_FRAME = "start_frame";
         private const string END_FRAME = "end_frame";
+        private const string PUB_SUB_CHANNEL = "server_control";
 
         [Tooltip("The number of seconds per keyframe")]
         public float keyFrameRate = 1.0f;
@@ -93,9 +94,23 @@ namespace APG {
             }
         }
 
+        private void PublishMetaData(string channel, string message) {
+            ConfigurationOptions config = new ConfigurationOptions {
+                EndPoints = {
+                    { metaDataURL, metaDataPort },
+                },
+                KeepAlive = metaDataKeepAlive,
+                Password = metaDataPassword
+            };
+
+            redisConn = ConnectionMultiplexer.Connect(config);
+            redDb = redisConn.GetDatabase();
+            redDb.Publish(channel, message);
+        }
+
         public void StartMetaData() {
             var startMessage = new JObject {
-                { "game_name", gameName },
+                {"game_name", gameName },
                 {"streamer_name", streamerName },
                 {"key_frame_rate", keyFrameRate },
                 {"tween_frame_rate", Application.targetFrameRate }, // I am not confident this is the right value but conceptually this is the idea. Ultimately we probably want this living in its own coroutine.
@@ -103,6 +118,7 @@ namespace APG {
                 {"clock_mills",DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString() },
             };
             string mess = JsonConvert.SerializeObject(startMessage);
+            PublishMetaData(PUB_SUB_CHANNEL, "start");
             WriteMetaData(START_FRAME, mess);
         }
 
@@ -114,6 +130,7 @@ namespace APG {
             };
             string mess = JsonConvert.SerializeObject(endMessage);
             WriteMetaData(END_FRAME, mess);
+            PublishMetaData(PUB_SUB_CHANNEL, "end");
         }
 
         /** General Data Schema
