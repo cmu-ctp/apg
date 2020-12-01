@@ -72,7 +72,7 @@ namespace APG {
         }
 
         private void WriteMetaData(string key, string message, bool asynchronous) {
-            Debug.Log("Writing Meta Data: " + key + ", " + message);
+            //Debug.Log("Writing Meta Data: " + key + ", " + message);
             
             ConfigurationOptions config = new ConfigurationOptions {
                 EndPoints = {
@@ -137,8 +137,8 @@ namespace APG {
                 currentFrameData["tweens"] = tweens;
 
                 string frameString = JsonConvert.SerializeObject(currentFrameData);
-                WriteMetaData(keyFrameNum.ToString(), frameString);
-                WriteMetaData(LATEST_FRAME, frameString);
+                WriteMetaData(keyFrameNum.ToString(), frameString, true);
+                WriteMetaData(LATEST_FRAME, frameString, true);
                 inbetweenNum = 0;
                 keyFrameNum += 1;
                 lastKeyTime = Time.fixedTime;
