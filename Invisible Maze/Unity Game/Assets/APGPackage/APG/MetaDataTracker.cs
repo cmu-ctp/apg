@@ -72,9 +72,7 @@ namespace APG {
             WriteMetaData(key, message, false);
         }
 
-        private void WriteMetaData(string key, string message, bool asynchronous) {
-            //Debug.Log("Writing Meta Data: " + key + ", " + message);
-            
+        void InitConnection() {
             ConfigurationOptions config = new ConfigurationOptions {
                 EndPoints = {
                     { metaDataURL, metaDataPort },
@@ -85,7 +83,12 @@ namespace APG {
 
             redisConn = ConnectionMultiplexer.Connect(config);
             redDb = redisConn.GetDatabase();
+        }
 
+        private void WriteMetaData(string key, string message, bool asynchronous) {
+            //Debug.Log("Writing Meta Data: " + key + ", " + message);
+            if (redDb == null) { InitConnection(); }
+            
             if (asynchronous) {
                 redDb.StringSetAsync(key, message, flags: CommandFlags.FireAndForget);
             }
@@ -95,7 +98,10 @@ namespace APG {
         }
 
         private void PublishMetaData(string channel, string message) {
-            ConfigurationOptions config = new ConfigurationOptions {
+            if (redDb == null) {
+                InitConnection();
+            }
+            /*ConfigurationOptions config = new ConfigurationOptions {
                 EndPoints = {
                     { metaDataURL, metaDataPort },
                 },
@@ -104,7 +110,7 @@ namespace APG {
             };
 
             redisConn = ConnectionMultiplexer.Connect(config);
-            redDb = redisConn.GetDatabase();
+            redDb = redisConn.GetDatabase();*/
             redDb.Publish(channel, message);
         }
 
