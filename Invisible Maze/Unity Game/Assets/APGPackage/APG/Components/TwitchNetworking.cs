@@ -68,7 +68,7 @@ public class TwitchNetworking:MonoBehaviour {
 
     [SerializeField] NetworkSettings settings = null;
 
-    public GameObject FrameNumber;
+    //public GameObject FrameNumber;
 
     //___________________________________________
 
@@ -333,11 +333,11 @@ public class TwitchNetworking:MonoBehaviour {
 	}
 
 	void Start() {
-        FrameNumber.active = UseMetadata;
+        //FrameNumber.active = UseMetadata;
 
         if (UseSingleMachineTestNetworking){
-            System.IO.DirectoryInfo di = new DirectoryInfo(SingleMachineTestNetworkingDirectory);
-            foreach (FileInfo file in di.GetFiles()) file.Delete();
+           // System.IO.DirectoryInfo di = new DirectoryInfo(SingleMachineTestNetworkingDirectory);
+           // foreach (FileInfo file in di.GetFiles()) file.Delete();
         }
 
         InitIRCChat();

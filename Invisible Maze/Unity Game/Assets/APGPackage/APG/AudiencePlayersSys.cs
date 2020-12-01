@@ -78,9 +78,9 @@ namespace APG {
 			recorder.PlaybackNetworking( messagesFromClientsFileName );
 		}
 
-        public void WriteMetadata<T>(string msg, T parms){
+        /*public void WriteMetadata<T>(string msg, T parms){
             network.WriteMetadata(msg, parms);
-        }
+        }*/
 
 	}
 }

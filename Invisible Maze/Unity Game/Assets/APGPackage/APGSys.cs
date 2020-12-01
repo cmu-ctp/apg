@@ -66,7 +66,7 @@ namespace APG {
 		 * @param msg The message name for this message being sent to the clients.
 		 * @param parms The parameters connected to this message.  This field will be converted into a JSON-encoded string.
 		 */
-        void WriteMetadata<T>(string msg, T parms);
+       // void WriteMetadata<T>(string msg, T parms);
 
         /* _____________________________________Input______________________________________ */
 
@@ -120,14 +120,49 @@ namespace APG {
 		void PlaybackNetworking( string messagesFromClientsFileName );*/
 	}
 
-    public static class Helper{
-        public static Vector2 ScreenPosition( Camera camera, Vector3 position){
-            var screenPos = camera.WorldToScreenPoint(position);
-            return new Vector2((int)(10000 * screenPos.x / camera.pixelWidth), (int)(10000 * screenPos.y / camera.pixelHeight));
-        }
+	public static class Helper {
+		public static Vector2 ScreenPosition(Camera camera, Vector3 position) {
+			var screenPos = camera.WorldToScreenPoint(position);
+			return new Vector2((int)(10000 * screenPos.x / camera.pixelWidth), (int)(10000 * screenPos.y / camera.pixelHeight));
+		}
 
-        public static Vector2 ScreenPosition( Camera camera, MonoBehaviour gameObject){
-            return ScreenPosition(camera, gameObject.transform.position);
-        }
-    }
+		public static Vector2 ScreenPosition(Camera camera, MonoBehaviour gameObject) {
+			return ScreenPosition(camera, gameObject.transform.position);
+		}
+
+		private static Vector2[] boundsHelper = new Vector2[8];
+		private static Vector2 min = Vector2.zero;
+		private static Vector2 max = Vector2.zero;
+
+		public static Rect ScreenRect(Camera camera, Renderer renderer) {
+			return ScreenRect(camera, renderer.bounds);
+		}
+
+		public static Rect ScreenRect(Camera camera, Collider collider) {
+			return ScreenRect(camera, collider.bounds);
+		}
+
+		public static Rect ScreenRect(Camera camera, Bounds bounds) {
+			boundsHelper[0] = APG.Helper.ScreenPosition(camera, new Vector3(bounds.min.x, bounds.max.y, bounds.min.z));  //ftl
+			boundsHelper[1] = APG.Helper.ScreenPosition(camera, new Vector3(bounds.max.x, bounds.max.y, bounds.min.z));  //ftr
+			boundsHelper[2] = APG.Helper.ScreenPosition(camera, new Vector3(bounds.max.x, bounds.min.y, bounds.min.z));  //fbr
+			boundsHelper[3] = APG.Helper.ScreenPosition(camera, new Vector3(bounds.min.x, bounds.min.y, bounds.min.z));  //fbl
+			boundsHelper[4] = APG.Helper.ScreenPosition(camera, new Vector3(bounds.min.x, bounds.max.y, bounds.max.z));  //btl
+			boundsHelper[5] = APG.Helper.ScreenPosition(camera, new Vector3(bounds.max.x, bounds.max.y, bounds.max.z));  //btr
+			boundsHelper[6] = APG.Helper.ScreenPosition(camera, new Vector3(bounds.max.x, bounds.min.y, bounds.max.z));  //bbr
+			boundsHelper[7] = APG.Helper.ScreenPosition(camera, new Vector3(bounds.min.x, bounds.min.y, bounds.max.z));   //bbl
+
+			/* Get Max and Min bounding box positions */
+
+			min = boundsHelper[0];
+			max = boundsHelper[0];
+
+			foreach (Vector2 vec in boundsHelper) {
+				min = Vector2.Min(min, vec);
+				max = Vector2.Max(max, vec);
+			}
+
+			return new Rect(min.x, min.y, max.x - min.x, max.y - min.y);
+		}
+	}
 }
