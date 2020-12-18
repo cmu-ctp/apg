@@ -32,6 +32,8 @@ namespace APG {
         public bool connectOnStart = false;
         private ConfigurationOptions metaDataConfig = null;
 
+        public bool recording = true;
+
         [Tooltip("Name of your game, hardcoded for the start message")]
         public string gameName = "";
         [Tooltip("Name of the streamer, ideally set before connection")]
@@ -63,6 +65,7 @@ namespace APG {
         IEnumerator Start() {
             yield return new WaitForEndOfFrame();
             if (connectOnStart) {
+                InitConnection();
                 StartMetaData();
             }
             SnapKeyFrame();
@@ -86,21 +89,25 @@ namespace APG {
         }
 
         private void WriteMetaData(string key, string message, bool asynchronous) {
-            //Debug.Log("Writing Meta Data: " + key + ", " + message);
-            if (redDb == null) { InitConnection(); }
             
-            if (asynchronous) {
-                redDb.StringSetAsync(key, message, flags: CommandFlags.FireAndForget);
-            }
-            else {
-                redDb.StringSet(key, message);
+            /*if (redDb == null) { InitConnection(); }*/
+
+            if (redDb != null && recording) {
+                if (asynchronous) {
+                    Debug.Log("Writing Meta Data Async: " + key + ", " + message);
+                    redDb.StringSetAsync(key, message, flags: CommandFlags.FireAndForget);
+                }
+                else {
+                    Debug.Log("Writing Meta Data: " + key + ", " + message);
+                    redDb.StringSet(key, message);
+                }
             }
         }
 
         private void PublishMetaData(string channel, string message) {
-            if (redDb == null) {
+            /*if (redDb == null) {
                 InitConnection();
-            }
+            }*/
             /*ConfigurationOptions config = new ConfigurationOptions {
                 EndPoints = {
                     { metaDataURL, metaDataPort },
@@ -111,7 +118,9 @@ namespace APG {
 
             redisConn = ConnectionMultiplexer.Connect(config);
             redDb = redisConn.GetDatabase();*/
-            redDb.Publish(channel, message);
+            if (redDb != null && recording) {
+                redDb.Publish(channel, message);
+            }
         }
 
         public void StartMetaData() {
